@@ -35,16 +35,33 @@
 */
 
 /** Terminals. */
-%token <string> STRING
+%token <string> REGEX
 %token <string> ACTION_ID
 %token <string> ACTION_DEF
+%token <string> OPEN_BRACKETS
+%token <string> CLOSE_BRACKETS
+%token <string> RETURN_TOKEN
+%token <string> REGEX_NAME
 
-%token <token> UNKNOWN
+%token <string> REGEX_RANGE_START
+%token <string> REGEX_RANGE_END
+%token <string> REGEX_LITERAL
+
+%token <string
+
 
 /** Non-terminals. */
 
 %type <regex> regex
 %type <program> program
+%type <ruleset> ruleset
+%type <rule> rule
+%type <function_definition> function_definition
+%type <java_function> java_function
+
+%type <regex_definition> regex_definition
+%type <regex_content> regex_content
+%type <regex_range> regex_range
 
 /**
  * Precedence and associativity.
@@ -58,10 +75,33 @@
 
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
 
-program: regex													{ $$ = ProgramSemanticAction(currentCompilerState(), $1); }
+program: ruleset													{ $$ = ProgramSemanticAction(currentCompilerState(), $1); }
 	;
-regex: STRING ACTION_ID									{ $$ = RegexSemanticAction($1, $2, ID); }
-	| STRING ACTION_DEF									{ $$ = RegexSemanticAction($1, $2, DEF); }
+
+ruleset: ruleset ruleset
+	| regex_definition
+	| rule;
+
+rule: REGEX function_definition;
+
+function_definition: RETURN_TOKEN
+	| java_function;
+
+
+regex_definition: REGEX_NAME regex_content;
+
+regex_content: regex_content regex_content
+	| REGEX_LITERAL
+	| regex_range;
+
+regex_range: REGEX_RANGE_START
+	| REGEX_RANGE_END;
+
+
+java_function: OPEN_BRACKETS %empty CLOSE_BRACKETS;
+
+regex: REGEX ACTION_ID									{ $$ = RegexSemanticAction($1, $2, ID); }
+	| REGEX ACTION_DEF									{ $$ = RegexSemanticAction($1, $2, DEF); }
 	;
 
 %%
