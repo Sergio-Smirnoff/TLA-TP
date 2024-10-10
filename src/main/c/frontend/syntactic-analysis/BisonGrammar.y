@@ -47,7 +47,6 @@
 %token <string> REGEX_RANGE_END
 %token <string> REGEX_LITERAL
 
-%token <string
 
 
 /** Non-terminals. */
