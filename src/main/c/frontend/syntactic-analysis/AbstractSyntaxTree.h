@@ -26,22 +26,61 @@ typedef struct Program Program;
  * Node types for the Abstract Syntax Tree (AST).
  */
 
-enum RegexType {
-	ID,
-	DEF
+enum Ruleset_type {
+	regex,
+	lexeme,
+	lexeme_action
 };
 
-struct Regex {
-	char * string;
+enum Action_type {
+	action,
+	function_body
+};
+
+enum Range_type {
+	lowercase,
+	uppercase,
+	number
+};
+
+struct Range {
 	union {
-		char * action_id;
-		Action * action_def;
+		Token lowercase;
+		Token uppercase;
+		Token number
 	}
-	RegexType type;
+	char* range;
+	union {
+		Token lowercase;
+		Token uppercase;
+		Token number;
+	}
+	Range_type type;
+}
+
+struct Action {
+	char* action;
+	Param* param;
+	Action_type type;
+}
+
+struct Param{
+	char* stuff;
+}
+
+struct Ruleset {
+	char* our_regex_id;
+	union{
+		Regex_class regex_class;
+		Lexeme* lexeme;
+	}
+	Action* action;
+	Token* endline;
+	Ruleset_type type;
 }
 
 struct Program {
-	Regex * Regex;
+	Ruleset * ruleset;
 };
 
 /**

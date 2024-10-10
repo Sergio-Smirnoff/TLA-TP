@@ -8,19 +8,26 @@
 %define api.value.union.name SemanticValue
 
 %union {
-	/** Terminals. */
+	/** TerLOWERCASEals. */
 
 	char* string;
 	Token token;
 
-	/** Non-terminals. */
+	/** Non-terLOWERCASEals. */
 
-	Regex * regex;
+	Lexeme* lexeme;
+	RegexClass* regex_class;
+	Action* action;
+	Range* range;
+	closure* closure;
+	Param* param;
+	Ruleset* ruleset;
 	Program * program;
 }
 
+
 /**
- * Destructors. This functions are executed after the parsing ends, so if the
+ * Destructors. This FUNCTION_BODYs are executed after the parsing ends, so if the
  * AST must be used in the following phases of the compiler you shouldn't used
  * this approach. To use this mechanism, the AST must be translated into
  * another structure.
@@ -34,34 +41,43 @@
 %destructor { releaseProgram($$); } <program>
 */
 
-/** Terminals. */
-%token <string> REGEX
-%token <string> ACTION_ID
-%token <string> ACTION_DEF
-%token <string> OPEN_BRACKETS
-%token <string> CLOSE_BRACKETS
-%token <string> RETURN_TOKEN
-%token <string> REGEX_NAME
+/** TerLOWERCASEals. */
+%token <string> DIGIT
+%token <string> LOWERCASE
+%token <string> UPPERCASE
+%token <string> SYMBOL
+%token <string> ESCAPED_SYMBOL
+%token <string> OUR_REGEX_ID
+%token <string> STR
+%token <string> ACTION
+%token <string> KLEENE
+%token <string> POSITIVE
 
-%token <string> REGEX_RANGE_START
-%token <string> REGEX_RANGE_END
-%token <string> REGEX_LITERAL
+%token <token> LOG
+%token <token> RETURN
+%token <token> BOOLEAN_TYPE
+%token <token> STRING_TYPE
+%token <token> INTEGER_TYPE
+%token <token> DOUBLE_TYPE
+%token <token> RANGER
+%token <token> DEFAULT
+%token <token> ENDLINE
+%token <token> UNKNOWN
 
-%token <string
 
 
-/** Non-terminals. */
 
-%type <regex> regex
+/** Non-terLOWERCASEals. */
+
+
 %type <program> program
+%type <lexeme> lexeme
+%type <regex_class> regex_class
+%type <action> action
+%type <range> range
+%type <param> param
 %type <ruleset> ruleset
-%type <rule> rule
-%type <function_definition> function_definition
-%type <java_function> java_function
-
-%type <regex_definition> regex_definition
-%type <regex_content> regex_content
-%type <regex_range> regex_range
+%type <closure> closure
 
 /**
  * Precedence and associativity.
@@ -78,30 +94,57 @@
 program: ruleset													{ $$ = ProgramSemanticAction(currentCompilerState(), $1); }
 	;
 
-ruleset: ruleset ruleset
-	| regex_definition
-	| rule;
+ruleset: OUR_REGEX_ID regex_class ENDLINE
+		| lexeme action ENDLINE
+		| lexeme ENDLINE
+		;
 
-rule: REGEX function_definition;
+lexeme: STR
+	| regex_class closure
+	| OUR_REGEX_ID closure
+	| DEFAULT
+	;
 
-function_definition: RETURN_TOKEN
-	| java_function;
+closure: KLEENE
+	| POSITIVE
+	| %empty
+	; 
 
+regex_class: LOWERCASE
+	    | UPPERCASE
+	    | DIGIT
+		| SYMBOL
+		| ESCAPED_SYMBOL
+	    | range
+        | LOWERCASE regex_class
+	    | UPPERCASE regex_class
+	    | DIGIT regex_class
+	    | range regex_class
+		| SYMBOL regex_class
+		| ESCAPED_SYMBOL regex_class
+		| range 
+		;
 
-regex_definition: REGEX_NAME regex_content;
+range: LOWERCASE    RANGER LOWERCASE
+    | UPPERCASE RANGER UPPERCASE
+    | DIGIT  RANGER DIGIT
+	| UPPERCASE RANGER LOWERCASE
+	;
 
-regex_content: regex_content regex_content
-	| REGEX_LITERAL
-	| regex_range;
+action: ACTION
+	| param function_body
+	;
 
-regex_range: REGEX_RANGE_START
-	| REGEX_RANGE_END;
+function_body: LOG
+	| LOG RETURN
+	| RETURN
+	;
 
-
-java_function: OPEN_BRACKETS %empty CLOSE_BRACKETS;
-
-regex: REGEX ACTION_ID									{ $$ = RegexSemanticAction($1, $2, ID); }
-	| REGEX ACTION_DEF									{ $$ = RegexSemanticAction($1, $2, DEF); }
+param: STRING_TYPE
+    | INTEGER_TYPE
+    | DOUBLE_TYPE
+	| BOOLEAN_TYPE
+	| %empty
 	;
 
 %%
