@@ -73,8 +73,8 @@
 <REGEX_LEXEME>[A-Z]                            { return RegexContentLexeme(createLexicalAnalyzerContext(), MAYUSC); }
 <REGEX_LEXEME>[0-9]                            { return RegexContentLexeme(createLexicalAnalyzerContext(), DIGIT); }
 <REGEX_LEXEME>"-"                              { return RegexContentLexeme(createLexicalAnalyzerContext(), RANGER); }
-<REGEX_LEXEME>[^\-\[\]\\]                      { return RegexContentLexeme(createLexicalAnalyzerContext(), SIMBOL); }
-<REGEX_LEXEME>"\\"[\^\-\[\]\\]                 { return RegexContentLexeme(createLexicalAnalyzerContext(), ESCAPED_SIMBOL); }
+<REGEX_LEXEME>[^\-\[\]\\]                      { return RegexContentLexeme(createLexicalAnalyzerContext(), SYMBOL); }
+<REGEX_LEXEME>"\\"[\^\-\[\]\\]                 { return RegexContentLexeme(createLexicalAnalyzerContext(), ESCAPED_SYMBOL); }
 <REGEX_LEXEME>"]"                              { BEGIN(PRE_ACTION); IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 
 "{"                                             { BEGIN(OUR_REGEX_LEXEME); BeginOurClassLexeme(createLexicalAnalyzerContext()); }
