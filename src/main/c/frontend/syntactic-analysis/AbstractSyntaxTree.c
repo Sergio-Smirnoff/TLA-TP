@@ -38,13 +38,13 @@ void releaseRule(Rule * rule) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (rule != NULL) {
 		switch (rule->type) {
-			case Rule_type.regex:
+			case regex:
 				releaseRegexClass(rule->regex_class);
 				break;
-			case Rule_type.ignore_lexeme:
+			case ignore_lexeme:
 				releaseLexeme(rule->lexeme);
 				break;
-			case Rule_type.lexeme_action:
+			case lexeme_action:
 				releaseLexeme(rule->lexeme);
 				releaseAction(rule->action);
 				break;
@@ -53,13 +53,13 @@ void releaseRule(Rule * rule) {
 	}
 }
 
-void releaseAction(Action * action) {
+void releaseAction(Action * act) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (action != NULL) {
-		if ( action->type == Action_type.param ) {
-			releaseParam(action->param);
+	if (act != NULL) {
+		if ( act->type == action ) {
+			releaseParam(act->param);
 		}
-		free(action);
+		free(act);
 	}
 }
 
@@ -74,11 +74,11 @@ void releaseLexeme(Lexeme * lexeme) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (lexeme != NULL) {
 		switch (lexeme->type) {
-			case Lexeme_type.regex_class:
+			case regex_class:
 				releaseRegexClass(lexeme->regex_class);
 				releaseClosure(lexeme->closure);
 				break;
-			case Lexeme_type.reg:
+			case reg:
 				releaseClosure(lexeme->closure);
 				break;
 		}
@@ -89,7 +89,7 @@ void releaseLexeme(Lexeme * lexeme) {
 void releaseRegexClass(Regex_class * regex_class) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (regex_class != NULL) {
-		if (regex_class->type == Regex_class_type.range) {
+		if (regex_class->type == range) {
 			releaseRange(regex_class->range);	
 		}
 		releaseRegexClass(regex_class->regex_class);
@@ -111,7 +111,7 @@ void releaseClosure(Closure * closure) {
 	}
 }
 
-void releaseFunctionBody(FunctionBody * functionBody) {
+void releaseFunctionBody(Function_body * functionBody) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (functionBody != NULL) {
 		free(functionBody);

@@ -23,11 +23,11 @@ void shutdownBisonActionsModule();
 Program * ProgramSemanticAction(CompilerState * compilerState, Ruleset * ruleset);
 
 //Ruleset
-Ruleset RulesetSemanticAction( Rule* rule, Ruleset* ruleset );
+Ruleset* RulesetSemanticAction( Rule* rule, Ruleset* ruleset );
 
 //Rule
-Rule RuleDefinitionSematicAction( Lexeme* lexeme, Action* action, Token* endline, Ruleset_type type );
-Rule RuleNewRegexSemanticAction( char* our_regex_id, Regex_class* regex_class, Token* endline );
+Rule* RuleDefinitionSematicAction( Lexeme* lexeme, Action* action, Token* endline, Rule_type type );
+Rule* RuleNewRegexSemanticAction( char* our_regex_id, Regex_class* regex_class, Token* endline );
 
 // lexeme
 Lexeme* LexemeSemanticAction( char* string, Regex_class* regex_class, Closure* closure, Lexeme_type type );

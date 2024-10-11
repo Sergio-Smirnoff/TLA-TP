@@ -25,9 +25,7 @@ typedef struct Action Action;
 typedef struct Ruleset Ruleset;
 typedef struct Rule Rule;
 typedef struct Function_body Function_body;
-typedef struct Constant Constant;
-typedef struct Expression Expression;
-typedef struct Factor Factor;
+typedef struct Regex_class Regex_class;
 /**
  * Node types for the Abstract Syntax Tree (AST).
  */
@@ -45,7 +43,7 @@ struct Closure{
 	char* closure;
 };
 
-typedef enum {
+typedef enum Regex_class_type{
 	stuff,
 	range
 } Regex_class_type;
@@ -59,7 +57,7 @@ typedef struct Regex_class {
 	Regex_class_type type;
 } Regex_class;
 
-typedef enum {
+typedef enum Range_type{
 	lowercase,
 	uppercase,
 	number,
@@ -67,22 +65,12 @@ typedef enum {
 } Range_type;
 
 struct Range {
-    union {
-        Token left_lowercase;
-        Token left_uppercase;
-        Token left_number;
-    } left;  
-	char * range;
-    union {
-        Token right_lowercase;
-        Token right_uppercase;
-        Token right_number;
-    } right; 
-
+    char* left;
+    char* right; 
     Range_type type;
 };
 
-typedef enum  {
+typedef enum Action_type{
 	action,
 	function_body
 } Action_type;
@@ -98,7 +86,7 @@ struct Action {
 	Action_type type;
 };
 
-typedef enum  {
+typedef enum Lexeme_type {
 	string,
 	regex_class,
 	reg,
@@ -121,7 +109,7 @@ struct Lexeme{
 	Lexeme_type type;
 };
 
-typedef enum {
+typedef enum Rule_type {
 	regex,
 	ignore_lexeme,
 	lexeme_action
