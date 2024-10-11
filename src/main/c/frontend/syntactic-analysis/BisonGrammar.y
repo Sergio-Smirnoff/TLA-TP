@@ -24,7 +24,7 @@ typedef NULL (void*) 0;
 
 	/*Function_body* function_body;*/
 	Lexeme* lexeme;
-	RegexClass* regex_class;
+	Regex_class* regex_class;
 	Action* action;
 	Range* range;
 	Closure* closure;
