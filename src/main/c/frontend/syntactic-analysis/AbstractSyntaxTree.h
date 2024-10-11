@@ -15,32 +15,50 @@ void shutdownAbstractSyntaxTreeModule();
  */
 
 
-typedef enum RegexType RegexType;
-
-
-typedef struct Action Action;
-typedef struct Regex Regex;
+typedef struct Range Range;
 typedef struct Program Program;
 
 /**
  * Node types for the Abstract Syntax Tree (AST).
  */
 
-enum Ruleset_type {
-	regex,
-	lexeme,
-	lexeme_action
+struct Function_body{
+	char* log;
+	char* ret;
+}
+
+struct Param{
+	char* stuff;
+}
+enum Closure_type {
+	kleene,
+	positive,
+	empty
 };
 
-enum Action_type {
-	action,
-	function_body
-};
+struct Closure{
+	Closure_type type;
+}
+
+enum Regex_class_type{
+	stuff,
+	range
+}
+
+struct Regex_class {
+	union {
+		char* stuff;
+		Range* range;
+	}
+	Regex_class* regex_class;
+	Regex_class_type type;
+}
 
 enum Range_type {
 	lowercase,
 	uppercase,
-	number
+	number,
+	both
 };
 
 struct Range {
@@ -58,23 +76,65 @@ struct Range {
 	Range_type type;
 }
 
+enum Action_type {
+	action,
+	function_body
+};
+
 struct Action {
-	char* action;
-	Param* param;
+	union{
+		char* action;
+		struct{
+			char* function_body;
+			Param* param;
+		}
+	}
 	Action_type type;
 }
 
-struct Param{
-	char* stuff;
+enum Lexeme_type {
+	string,
+	regex_class,
+	regex,
+	default
 }
 
-struct Ruleset {
-	char* our_regex_id;
+struct Lexeme{
 	union{
-		Regex_class regex_class;
-		Lexeme* lexeme;
+		char* string;
+		struct{
+			Regex_class* regex_class;
+			Closure* closure;
+		};
+		struct{
+			char* our_regex_id;
+			Closure* closure;
+		};
+		Token* def;
 	}
-	Action* action;
+	Lexeme_type type;
+}
+
+enum Ruleset_type {
+	regex,
+	ignore_lexeme,
+	lexeme_action
+};
+
+
+struct Ruleset {
+	union{
+		struct{
+			char* our_regex_id;
+			Regex_class* regex_class;
+		};
+		Lexeme* lexeme;
+		struct{
+			Lexeme* lexeme;
+			Action* action;
+		};
+
+	}
 	Token* endline;
 	Ruleset_type type;
 }

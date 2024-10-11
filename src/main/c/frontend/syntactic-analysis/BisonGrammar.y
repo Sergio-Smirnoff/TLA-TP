@@ -15,6 +15,7 @@
 
 	/** Non-terLOWERCASEals. */
 
+	//Function_body* function_body;
 	Lexeme* lexeme;
 	RegexClass* regex_class;
 	Action* action;
@@ -52,9 +53,10 @@
 %token <string> ACTION
 %token <string> KLEENE
 %token <string> POSITIVE
+%token <string> FUNCTION_BODY
 
-%token <token> LOG
-%token <token> RETURN
+//%token <token> LOG
+//%token <token> RETURN
 %token <token> BOOLEAN_TYPE
 %token <token> STRING_TYPE
 %token <token> INTEGER_TYPE
@@ -79,6 +81,7 @@
 %type <param> param
 %type <ruleset> ruleset
 %type <closure> closure
+//%type <function_body> function_body
 
 /**
  * Precedence and associativity.
@@ -96,9 +99,9 @@ program: ruleset													{ $$ = ProgramSemanticAction(currentCompilerState()
 	;
 
 ruleset: OUR_REGEX_ID regex_class ENDLINE
-		| lexeme action ENDLINE
-		| lexeme ENDLINE
-		;
+	| lexeme action ENDLINE
+	| lexeme ENDLINE
+	;
 
 lexeme: STR
 	| regex_class closure
@@ -112,19 +115,18 @@ closure: KLEENE
 	; 
 
 regex_class: LOWERCASE
-	    | UPPERCASE
-	    | DIGIT
-		| SYMBOL
-		| ESCAPED_SYMBOL
-	    | range
-        | LOWERCASE regex_class
-	    | UPPERCASE regex_class
-	    | DIGIT regex_class
-	    | range regex_class
-		| SYMBOL regex_class
-		| ESCAPED_SYMBOL regex_class
-		| range 
-		;
+    | UPPERCASE
+    | DIGIT
+	| SYMBOL
+	| ESCAPED_SYMBOL
+    | range
+	| LOWERCASE regex_class
+    | UPPERCASE regex_class
+    | DIGIT regex_class
+    | range regex_class
+	| SYMBOL regex_class
+	| ESCAPED_SYMBOL regex_class
+	;
 
 range: LOWERCASE    RANGER LOWERCASE
     | UPPERCASE RANGER UPPERCASE
@@ -133,14 +135,15 @@ range: LOWERCASE    RANGER LOWERCASE
 	;
 
 action: ACTION
-	| param function_body
+	| param FUNCTION_BODY
+//	| param function_body
 	;
-
+/*
 function_body: LOG
 	| LOG RETURN
 	| RETURN
 	;
-
+*/
 param: STRING_TYPE
     | INTEGER_TYPE
     | DOUBLE_TYPE
