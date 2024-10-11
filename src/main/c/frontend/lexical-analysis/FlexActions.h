@@ -64,6 +64,7 @@ void BeginStringLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
  * @return Token 
  */
 Token StringLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
+void EndStringLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
 // Lexeme for regex classes functions:
 void BeginClassLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);

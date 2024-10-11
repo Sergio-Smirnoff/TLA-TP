@@ -64,7 +64,9 @@
 <REGEX_CONTENT>"]"                             { IgnoredLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 
 "\""                                            { BEGIN(LEXEME); BeginStringLexeme(createLexicalAnalyzerContext()); }
-<LEXEME>[^"]+"\""                              { return StringLexeme(createLexicalAnalyzerContext(), STR); BEGIN(PRE_ACTION); }   
+<LEXEME>[^"]+                                  { return StringLexeme(createLexicalAnalyzerContext(), STR); }   
+<LEXEME>"\""                                   { EndStringLexeme(createLexicalAnalyzerContext()); BEGIN(PRE_ACTION); }
+/* SECCION DE DECLARACION  REGEX [XXX] (previo al ->) */
 
 "["                                             { BEGIN(REGEX_LEXEME); BeginClassLexeme(createLexicalAnalyzerContext()); }
 <REGEX_LEXEME>[[:space:]]+                     { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
