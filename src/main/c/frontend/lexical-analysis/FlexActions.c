@@ -115,6 +115,12 @@ Token StringLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
 	return STR;
 }
 
+void EndStringLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
+	if (_logIgnoredLexemes) {
+		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	}
+}
+
 // Lexeme for regex classes functions:
 void BeginClassLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	if (_logIgnoredLexemes) {
