@@ -8,19 +8,27 @@
 %define api.value.union.name SemanticValue
 
 %union {
-	/** Terminals. */
+	/** TerLOWERCASEals. */
 
 	char* string;
 	Token token;
 
-	/** Non-terminals. */
+	/** Non-terLOWERCASEals. */
 
-	Regex * regex;
+	//Function_body* function_body;
+	Lexeme* lexeme;
+	RegexClass* regex_class;
+	Action* action;
+	Range* range;
+	closure* closure;
+	Param* param;
+	Ruleset* ruleset;
 	Program * program;
 }
 
+
 /**
- * Destructors. This functions are executed after the parsing ends, so if the
+ * Destructors. This FUNCTION_BODYs are executed after the parsing ends, so if the
  * AST must be used in the following phases of the compiler you shouldn't used
  * this approach. To use this mechanism, the AST must be translated into
  * another structure.
@@ -34,17 +42,46 @@
 %destructor { releaseProgram($$); } <program>
 */
 
-/** Terminals. */
-%token <string> STRING
-%token <string> ACTION_ID
-%token <string> ACTION_DEF
+/** TerLOWERCASEals. */
+%token <string> DIGIT
+%token <string> LOWERCASE
+%token <string> UPPERCASE
+%token <string> SYMBOL
+%token <string> ESCAPED_SYMBOL
+%token <string> OUR_REGEX_ID
+%token <string> STR
+%token <string> ACTION
+%token <string> KLEENE
+%token <string> POSITIVE
+%token <string> FUNCTION_BODY
 
+//%token <token> LOG
+//%token <token> RETURN
+%token <token> BOOLEAN_TYPE
+%token <token> STRING_TYPE
+%token <token> INTEGER_TYPE
+%token <token> DOUBLE_TYPE
+%token <token> RANGER
+%token <token> DEFAULT
+%token <token> ENDLINE
 %token <token> UNKNOWN
 
-/** Non-terminals. */
 
-%type <regex> regex
+
+
+
+/** Non-terLOWERCASEals. */
+
+
 %type <program> program
+%type <lexeme> lexeme
+%type <regex_class> regex_class
+%type <action> action
+%type <range> range
+%type <param> param
+%type <ruleset> ruleset
+%type <closure> closure
+//%type <function_body> function_body
 
 /**
  * Precedence and associativity.
@@ -58,10 +95,60 @@
 
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
 
-program: regex													{ $$ = ProgramSemanticAction(currentCompilerState(), $1); }
+program: ruleset													{ $$ = ProgramSemanticAction(currentCompilerState(), $1); }
 	;
-regex: STRING ACTION_ID									{ $$ = RegexSemanticAction($1, $2, ID); }
-	| STRING ACTION_DEF									{ $$ = RegexSemanticAction($1, $2, DEF); }
+
+ruleset: OUR_REGEX_ID regex_class ENDLINE
+	| lexeme action ENDLINE
+	| lexeme ENDLINE
+	;
+
+lexeme: STR
+	| regex_class closure
+	| OUR_REGEX_ID closure
+	| DEFAULT
+	;
+
+closure: KLEENE
+	| POSITIVE
+	| %empty
+	; 
+
+regex_class: LOWERCASE
+    | UPPERCASE
+    | DIGIT
+	| SYMBOL
+	| ESCAPED_SYMBOL
+    | range
+	| LOWERCASE regex_class
+    | UPPERCASE regex_class
+    | DIGIT regex_class
+    | range regex_class
+	| SYMBOL regex_class
+	| ESCAPED_SYMBOL regex_class
+	;
+
+range: LOWERCASE    RANGER LOWERCASE
+    | UPPERCASE RANGER UPPERCASE
+    | DIGIT  RANGER DIGIT
+	| UPPERCASE RANGER LOWERCASE
+	;
+
+action: ACTION
+	| param FUNCTION_BODY
+//	| param function_body
+	;
+/*
+function_body: LOG
+	| LOG RETURN
+	| RETURN
+	;
+*/
+param: STRING_TYPE
+    | INTEGER_TYPE
+    | DOUBLE_TYPE
+	| BOOLEAN_TYPE
+	| %empty
 	;
 
 %%
