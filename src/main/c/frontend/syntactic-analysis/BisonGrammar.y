@@ -1,6 +1,8 @@
 %{
 
 #include "BisonActions.h"
+typedef NULL (void*) 0;
+
 
 %}
 
@@ -27,6 +29,7 @@
 	Range* range;
 	Closure* closure;
 	Param* param;
+	Rule* rule;
 	Ruleset* ruleset;
 	Program * program;
 }
@@ -82,6 +85,7 @@
 %type <range> range
 %type <param> param
 %type <ruleset> ruleset
+%type <rule> rule
 %type <closure> closure
 //%type <function_body> function_body
 
@@ -100,45 +104,48 @@
 program: ruleset													{ $$ = ProgramSemanticAction(currentCompilerState(), $1); }
 	;
 
-ruleset: OUR_REGEX_ID regex_class ENDLINE
-	| lexeme action ENDLINE
-	| lexeme ENDLINE
+ruleset: rule ruleset											{$$ = RulesetSemanticAction( $rule, $ruleset); }
+	| rule														{$$ = RulesetSemanticAction( $rule, NULL); }
 	;
 
-lexeme: STR
-	| regex_class closure
-	| OUR_REGEX_ID closure
-	| DEFAULT
+rule: OUR_REGEX_ID[def] regex_class[regex] ENDLINE[endline]	    { $$ = RuleNewRegexSemanticAction($def, $regex, $endline); }
+	| lexeme[lex] action[action] ENDLINE[endline]				{ $$ = RuleDefinitionSemanticAction( $lex, $action, $endline, Ruleset_type.lexeme_action); }
+	| lexeme[lex] ENDLINE[endline]								{ $$ = RuleDefinitionSemanticAction( $lex, NULL, $endline, Ruleset_type.ignore_lexeme ); }
 	;
 
-closure: KLEENE
-	| POSITIVE
+lexeme: STR[string]														{ $$ = LexemeSemanticAction( $string, NULL, NULL, Lexeme_type.string); }					
+	| regex_class[regex] closure[closure]								{ $$ = LexemeSemanticAction( NULL, $regex, $closure, Lexeme_type.regex_class); }
+	| OUR_REGEX_ID[id] closure[closure]									{ $$ = LexemeSemanticAction( $id, NULL, $closure, Lexeme_type.reg); }
+	| DEFAULT[string]													{ $$ = LexemeSemanticAction( $string, NULL, NULL, Lexeme_type.default); }
+	;
+
+closure: KLEENE													 		{ $$ = ClosureSemanticAction($1); }
+	| POSITIVE													 		{ $$ = ClosureSemanticAction($1); }					
 	| %empty
 	; 
 
-regex_class: LOWERCASE
-    | UPPERCASE
-    | DIGIT
-	| SYMBOL
-	| ESCAPED_SYMBOL
-    | range
-	| LOWERCASE regex_class
-    | UPPERCASE regex_class
-    | DIGIT regex_class
-    | range regex_class
-	| SYMBOL regex_class
-	| ESCAPED_SYMBOL regex_class
+regex_class: LOWERCASE									{ $$ = RegexClassStringSemanticAction($1, NULL); }
+    | UPPERCASE											{ $$ = RegexClassStringSemanticAction($1, NULL); }
+    | DIGIT												{ $$ = RegexClassStringSemanticAction($1, NULL); }
+	| SYMBOL											{ $$ = RegexClassStringSemanticAction($1, NULL); }
+	| ESCAPED_SYMBOL									{ $$ = RegexClassStringSemanticAction($1, NULL); }
+    | range												{ $$ = RegexClassRangeSemanticAction($1, NULL); }
+	| LOWERCASE regex_class								{ $$ = RegexClassStringSemanticAction($1, $2); }
+    | UPPERCASE regex_class								{ $$ = RegexClassStringSemanticAction($1, $2); }
+    | DIGIT regex_class									{ $$ = RegexClassStringSemanticAction($1, $2); }
+    | range regex_class									{ $$ = RegexClassRangeSemanticAction($1, $2); }
+	| SYMBOL regex_class								{ $$ = RegexClassStringSemanticAction($1, $2); }
+	| ESCAPED_SYMBOL regex_class						{ $$ = RegexClassStringSemanticAction($1, $2); }
 	;
 
-range: LOWERCASE    RANGER LOWERCASE
-    | UPPERCASE RANGER UPPERCASE
-    | DIGIT  RANGER DIGIT
-	| UPPERCASE RANGER LOWERCASE
+range: LOWERCASE    RANGER LOWERCASE									{ $$ = RangeSemanticAction($1, $3); }
+    | UPPERCASE RANGER UPPERCASE										{ $$ = RangeSemanticAction($1, $3); }
+    | DIGIT  RANGER DIGIT												{ $$ = RangeSemanticAction($1, $3); }
+	| UPPERCASE RANGER LOWERCASE										{ $$ = RangeSemanticAction($1, $3); }
 	;
 
-action: ACTION
-	| param FUNCTION_BODY
-//	| param function_body
+action: ACTION												{ $$ = ActionSemanticAction($1); }
+	| param FUNCTION_BODY									{ $$ = ActionParamSemanticAction($1, $2); }
 	;
 /*
 function_body: LOG
@@ -146,10 +153,10 @@ function_body: LOG
 	| RETURN
 	;
 */
-param: STRING_TYPE
-    | INTEGER_TYPE
-    | DOUBLE_TYPE
-	| BOOLEAN_TYPE
+param: STRING_TYPE					{ $$ = ParamSemanticAction($1); }
+    | INTEGER_TYPE					{ $$ = ParamSemanticAction($1); }
+    | DOUBLE_TYPE					{ $$ = ParamSemanticAction($1); }
+	| BOOLEAN_TYPE					{ $$ = ParamSemanticAction($1); }
 	| %empty
 	;
 
