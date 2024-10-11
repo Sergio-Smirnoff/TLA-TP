@@ -95,10 +95,10 @@
 <SIMPLE_ACTION>[a-zA-Z_$]*                     { return ActionNameLexeme(createLexicalAnalyzerContext()); }
 
 <FUNCTION_PARAM>[[:space:]]+                   { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
-<FUNCTION_PARAM>"String"                       { return FunctionParamLexeme(createLexicalAnalyzerContext(), STRING_TYPE); BEGIN(AFTER_PARAM); }
-<FUNCTION_PARAM>"Integer"                      { return FunctionParamLexeme(createLexicalAnalyzerContext(), INTEGER_TYPE); BEGIN(AFTER_PARAM); }
-<FUNCTION_PARAM>"Double"                       { return FunctionParamLexeme(createLexicalAnalyzerContext(), DOUBLE_TYPE); BEGIN(AFTER_PARAM); }
-<FUNCTION_PARAM>"Boolean"                      { return FunctionParamLexeme(createLexicalAnalyzerContext(), BOOLEAN_TYPE); BEGIN(AFTER_PARAM); }
+<FUNCTION_PARAM>"String"                       { return FunctionParamLexeme(createLexicalAnalyzerContext(), STRING_TYPE); BEGIN(FUNCTION_BODY); }
+<FUNCTION_PARAM>"Integer"                      { return FunctionParamLexeme(createLexicalAnalyzerContext(), INTEGER_TYPE); BEGIN(FUNCTION_BODY); }
+<FUNCTION_PARAM>"Double"                       { return FunctionParamLexeme(createLexicalAnalyzerContext(), DOUBLE_TYPE); BEGIN(FUNCTION_BODY); }
+<FUNCTION_PARAM>"Boolean"                      { return FunctionParamLexeme(createLexicalAnalyzerContext(), BOOLEAN_TYPE); BEGIN(FUNCTION_BODY); }
 <FUNCTION_PARAM>")"[[:space]]*"{"              { BEGIN(FUNCTION_BODY);  BeginFunctionBodyLexeme(createLexicalAnalyzerContext()); }
 
 <FUNCTION_BODY>[^{}]+                          { return FunctionBodyContentLexeme(createLexicalAnalyzerContext()); }
