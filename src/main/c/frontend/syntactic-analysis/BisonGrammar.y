@@ -104,18 +104,18 @@ typedef NULL (void*) 0;
 program: ruleset													{ $$ = ProgramSemanticAction(currentCompilerState(), $1); }
 	;
 
-ruleset: rule ruleset											{$$ = RulesetSemanticAction( $rule, $ruleset); }
-	| rule														{$$ = RulesetSemanticAction( $rule, NULL); }
+ruleset: rule ruleset											{$$ = RulesetSemanticAction( $1, $2); }
+	| rule														{$$ = RulesetSemanticAction( $1, NULL); }
 	;
 
 rule: OUR_REGEX_ID[def] regex_class[regex] ENDLINE[endline]	    { $$ = RuleNewRegexSemanticAction($def, $regex, $endline); }
-	| lexeme[lex] action[action] ENDLINE[endline]				{ $$ = RuleDefinitionSemanticAction( $lex, $action, $endline, Ruleset_type.lexeme_action); }
+	| lexeme[lex] action ENDLINE[endline]				{ $$ = RuleDefinitionSemanticAction( $lex, $action, $endline, Ruleset_type.lexeme_action); }
 	| lexeme[lex] ENDLINE[endline]								{ $$ = RuleDefinitionSemanticAction( $lex, NULL, $endline, Ruleset_type.ignore_lexeme ); }
 	;
 
 lexeme: STR[string]														{ $$ = LexemeSemanticAction( $string, NULL, NULL, Lexeme_type.string); }					
-	| regex_class[regex] closure[closure]								{ $$ = LexemeSemanticAction( NULL, $regex, $closure, Lexeme_type.regex_class); }
-	| OUR_REGEX_ID[id] closure[closure]									{ $$ = LexemeSemanticAction( $id, NULL, $closure, Lexeme_type.reg); }
+	| regex_class[regex] closure								{ $$ = LexemeSemanticAction( NULL, $regex, $closure, Lexeme_type.regex_class); }
+	| OUR_REGEX_ID[id] closure								{ $$ = LexemeSemanticAction( $id, NULL, $closure, Lexeme_type.reg); }
 	| DEFAULT[string]													{ $$ = LexemeSemanticAction( $string, NULL, NULL, Lexeme_type.default); }
 	;
 
