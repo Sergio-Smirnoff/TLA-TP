@@ -81,7 +81,7 @@
 <OUR_REGEX_LEXEME>[[:space:]]+                 { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
 <OUR_REGEX_LEXEME>[a-z]*                       { return RegexClassNameLexeme(createLexicalAnalyzerContext()); }
 <OUR_REGEX_LEXEME>"}*"                         { return ClauseOperator(createLexicalAnalyzerContext(), KLEENE); BEGIN(PRE_ACTION); }
-<OUR_REGEX_LEXEME>"}+"                         { return ClauseOperator(createLexicalAnalyzerContext(), POSITIVA); BEGIN(PRE_ACTION); }
+<OUR_REGEX_LEXEME>"}+"                         { return ClauseOperator(createLexicalAnalyzerContext(), POSITIVE); BEGIN(PRE_ACTION); }
 <OUR_REGEX_LEXEME>"}"                          { IgnoredLexemeAction(createLexicalAnalyzerContext()); BEGIN(PRE_ACTION); }
 
 "default"                                       { return DefaultLexeme(createLexicalAnalyzerContext()); }
