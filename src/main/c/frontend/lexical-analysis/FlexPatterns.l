@@ -69,8 +69,8 @@
 
 "["                                             { BEGIN(REGEX_LEXEME); BeginClassLexeme(createLexicalAnalyzerContext()); }
 <REGEX_LEXEME>[[:space:]]+                     { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
-<REGEX_LEXEME>[a-z]                            { return RegexContentLexeme(createLexicalAnalyzerContext(), MIN); }
-<REGEX_LEXEME>[A-Z]                            { return RegexContentLexeme(createLexicalAnalyzerContext(), MAYUSC); }
+<REGEX_LEXEME>[a-z]                            { return RegexContentLexeme(createLexicalAnalyzerContext(), LOWERCASE); }
+<REGEX_LEXEME>[A-Z]                            { return RegexContentLexeme(createLexicalAnalyzerContext(), UPPERCASE); }
 <REGEX_LEXEME>[0-9]                            { return RegexContentLexeme(createLexicalAnalyzerContext(), DIGIT); }
 <REGEX_LEXEME>"-"                              { return RegexContentLexeme(createLexicalAnalyzerContext(), RANGER); }
 <REGEX_LEXEME>[^\-\[\]\\]                      { return RegexContentLexeme(createLexicalAnalyzerContext(), SYMBOL); }
@@ -105,7 +105,7 @@
 <FUNCTION_BODY>"}"                             { EndFunctionBodyLexeme(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 
 [[:space:]]+                                    { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-";"                                             { EndLineLexeme(createLexicalAnalyserContext()); BEGIN(INITIAL); }
+";"                                             { EndLineLexeme(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 "\n"                                            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 "\r"                                            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 .                                               { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
