@@ -20,28 +20,34 @@ void shutdownBisonActionsModule();
 
 // new
 
-//Regex * RegexSemanticAction(char* action_name, char * action, RegexType type);
-Program * ProgramSemanticAction(CompilerState * compilerState, Regex * expression);
+Program * ProgramSemanticAction(CompilerState * compilerState, Ruleset * ruleset);
+
+//Ruleset
+Ruleset RulesetSemanticAction( Rule* rule, Ruleset* ruleset );
+
+//Rule
+Rule RuleDefinitionSematicAction( Lexeme* lexeme, Action* action, Token* endline, Ruleset_type type );
+Rule RuleNewRegexSemanticAction( char* our_regex_id, Regex_class* regex_class, Token* endline );
+
 // lexeme
-Lexeme LexemeSemanticAction( char* string, Regex_class* regex_class, Closure* closure, Lexeme_type type );
+Lexeme* LexemeSemanticAction( char* string, Regex_class* regex_class, Closure* closure, Lexeme_type type );
 
 // closure
-Closure ClosureSemanticAction( char* string );
+Closure* ClosureSemanticAction( char* string );
 
 // range
-Range RangeSemanticAction( char* right, char* left );
+Range* RangeSemanticAction( char* right, char* left );
 
 // Params
-Param ParamSemanticAction( Token* token );
+Param* ParamSemanticAction( Token* token );
 
 // Action
-Action ActionSemanticAction( char* string );
-Action ActionParamSemanticAction( Param* param, char* body );
+Action* ActionSemanticAction( char* string );
+Action* ActionParamSemanticAction( Param* param, char* body );
 
 //Regex_class
-
-Regex_class RegexClassStringSemanticAction( char* string, Regex_class* regex_class );
-Regex_class RegexClassRangeSemanticAction( Range* range, Regex_class* regex_class );
+Regex_class* RegexClassStringSemanticAction( char* string, Regex_class* regex_class );
+Regex_class* RegexClassRangeSemanticAction( Range* range, Regex_class* regex_class );
 
 
 // old

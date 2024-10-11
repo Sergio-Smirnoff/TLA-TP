@@ -1,8 +1,6 @@
 %{
 
 #include "BisonActions.h"
-typedef NULL (void*) 0;
-
 
 %}
 
@@ -16,11 +14,6 @@ typedef NULL (void*) 0;
 	Token token;
 
 	/** Non-terLOWERCASEals */
-
-	Constant * constant;
-	Expression * expression;
-	Factor * factor;
-
 
 	/*Function_body* function_body;*/
 	Lexeme* lexeme;
@@ -43,9 +36,18 @@ typedef NULL (void*) 0;
  *
  * @see https://www.gnu.org/software/bison/manual/html_node/Destructor-Decl.html
  */
-/*
+
+/**%destructor { releaseFunctionBody($$); } <function_body>*/
+%destructor { releaseClosure($$); } <closure>
+%destructor { releaseParam($$); } <param>
+%destructor { releaseRange($$); } <range>
+%destructor { releaseRegexClass($$); } <regex_class>
+%destructor { releaseAction($$); } <action>
+%destructor { releaseLexeme($$); } <lexeme>
+%destructor { releaseRule($$); } <rule>
+%destructor { releaseRuleset($$); } <ruleset>
 %destructor { releaseProgram($$); } <program>
-*/
+
 
 /** TerLOWERCASEals. */
 %token <string> DIGIT

@@ -14,6 +14,7 @@ void shutdownAbstractSyntaxTreeModule();
  * This typedefs allows self-referencing types.
  */
 
+typedef enum RegexType RegexType;
 
 typedef struct Range Range;
 typedef struct Program Program;
@@ -23,8 +24,6 @@ typedef struct Lexeme Lexeme;
 typedef struct Action Action;
 typedef struct Ruleset Ruleset;
 typedef struct Rule Rule;
-typedef struct Regex Regex;
-typedef enum RegexType RegexType;
 typedef struct Function_body Function_body;
 typedef struct Constant Constant;
 typedef struct Expression Expression;
@@ -56,7 +55,7 @@ typedef struct Regex_class {
 		char* stuff;
 		Range* range;
 	};
-	struct Regex_class* regex_class;
+	Regex_class* regex_class;
 	Regex_class_type type;
 } Regex_class;
 
@@ -157,14 +156,18 @@ struct Program {
 /**
  * Node recursive destructors.
  */
-/*
-void releaseConstant(Constant * constant);
-void releaseExpression(Expression * expression);
-void releaseFactor(Factor * factor);
-*/
 
-void releaseRegex(Regex * regex);
 void releaseProgram(Program * program);
+void releaseRuleset(Ruleset * ruleset);
+void releaseRule(Rule * rule);
+void releaseLexeme(Lexeme * lexeme);
+void releaseAction(Action * action);
+void releaseRegexClass(Regex_class * regex_class);
+void releaseRange(Range * range);
+void releaseClosure(Closure * closure);
+void releaseParam(Param * param);
+//void releaseFunctionBody(Function_body * function_body);
+
 
 #endif
 
