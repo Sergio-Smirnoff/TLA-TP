@@ -25,61 +25,63 @@ typedef struct Program Program;
 struct Function_body{
 	char* log;
 	char* ret;
-}
+};
 
 struct Param{
 	char* stuff;
-}
-enum Closure_type {
+};
+
+typedef enum {
 	kleene,
 	positive,
 	empty
-};
+} Closure_type;
 
 struct Closure{
 	Closure_type type;
-}
+};
 
-enum Regex_class_type{
+typedef enum {
 	stuff,
 	range
-}
+} Regex_class_type;
 
-struct Regex_class {
+typedef struct Regex_class {
 	union {
 		char* stuff;
 		Range* range;
-	}
-	Regex_class* regex_class;
+	};
+	struct Regex_class* regex_class;
 	Regex_class_type type;
-}
+} Regex_class;
 
-enum Range_type {
+typedef enum {
 	lowercase,
 	uppercase,
 	number,
 	both
-};
+} Range_type;
 
 struct Range {
-	union {
-		Token lowercase;
-		Token uppercase;
-		Token number
-	}
-	char* range;
-	union {
-		Token lowercase;
-		Token uppercase;
-		Token number;
-	}
-	Range_type type;
-}
+    union {
+        Token left_lowercase;
+        Token left_uppercase;
+        Token left_number;
+    } left;  
+	char * range;
+    union {
+        Token right_lowercase;
+        Token right_uppercase;
+        Token right_number;
+    } right; 
 
-enum Action_type {
+    Range_type type;
+};
+
+typedef enum  {
 	action,
 	function_body
-};
+} Action_type;
 
 struct Action {
 	union{
@@ -87,17 +89,17 @@ struct Action {
 		struct{
 			char* function_body;
 			Param* param;
-		}
-	}
+		};
+	};
 	Action_type type;
-}
+};
 
-enum Lexeme_type {
+typedef enum  {
 	string,
 	regex_class,
 	regex,
 	default
-}
+} Lexeme_type;
 
 struct Lexeme{
 	union{
@@ -111,15 +113,15 @@ struct Lexeme{
 			Closure* closure;
 		};
 		Token* def;
-	}
+	};
 	Lexeme_type type;
-}
+};
 
-enum Ruleset_type {
+typedef enum {
 	regex,
 	ignore_lexeme,
 	lexeme_action
-};
+} Ruleset_type;
 
 
 struct Ruleset {
@@ -134,10 +136,10 @@ struct Ruleset {
 			Action* action;
 		};
 
-	}
+	};
 	Token* endline;
 	Ruleset_type type;
-}
+};
 
 struct Program {
 	Ruleset * ruleset;
