@@ -22,13 +22,18 @@ void shutdownFlexActionsModule();
  */
 
 // NEW, actions are interpreted in Flex2Actions.h
+// Comments:
 // Multiline comment functions:
 void BeginMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void EndMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void IgnoredLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
-// Regex class names:
-void BeginRegexLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
+// Line comment functions:
+void BeginLineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+void EndLineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+
+// Regex class names functions:
+void BeginRegexLine(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void BeginRegexNameLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 /** 
  * @brief retorna el token OUR_REGEX_ID de clase string con el nombre definido 
@@ -36,13 +41,21 @@ void BeginRegexNameLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
  * @param lexicalAnalyzerContext
  * @return Token
  */
-Token ClassNameLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token RegexClassNameLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
-// Regex class content:
+// Regex class content functions:
 void BeginRegexContentLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
-Token RegexContentLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext, Token currentContent);
+/**
+ * @brief Retorna el token LOWER, UPPER, DIGIT, RANGER, SYMOBOL o ESCAPED_SYMBOL
+ * de tipo string con el contenido de la clase.
+ * 
+ * @param lexicalAnalyzerContext 
+ * @param currentContent indica el tipo (LOWER, UPPER, DIGIT, RANGER, SYMOBOL o ESCAPED_SYMBOL)
+ * @return Token 
+ */
+Token RegexContentLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
 
-// Lexeme for strings:
+// Lexeme for strings functions:
 void BeginStringLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 /**
  * @brief Retorna el token STR con el contenido de la cadena
@@ -52,19 +65,11 @@ void BeginStringLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
  */
 Token StringLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
-// Lexeme for regex classes:
+// Lexeme for regex classes functions:
 void BeginClassLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
-/**
- * @brief Retorna el token MIN, MAYUSC, DIGIT, RANGER, SYMOBOL o ESCAPED_SYMBOL
- * de tipo string con el contenido de la clase.
- * 
- * @param lexicalAnalyzerContext 
- * @param currentContent indica el tipo (MIN, MAYUSC, DIGIT, RANGER, SYMOBOL o ESCAPED_SYMBOL)
- * @return Token 
- */
-Token RegexContentLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext, Token currentContent);
+// se reutiliza RegexContentLexeme
 
-// Lexeme for our classes:
+// Lexeme for our classes functions:
 void BeginOurClassLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 // se reutiliza ClassNameLexeme
 /**
@@ -76,15 +81,15 @@ void BeginOurClassLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
  */
 Token ClauseOperator(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
 
-// Default usage:
+// Default usage functions:
 void DefaultLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
-// Actions:
+// Actions functions:
 void BeginSimpleActionLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void BeginFunctionBodyLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void BeginFunctionParamLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
-// Simple actions:
+// Simple actions functions:
 /**
  * @brief Retorna un token ACTION de tipo string con el nombre del
  * token que se retornaría ante el lexema
@@ -94,7 +99,7 @@ void BeginFunctionParamLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
  */
 Token ActionNameLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
-// Function param:
+// Function param functions:
 /**
  * @brief Retorna el token recibido por param 
  * 
@@ -104,7 +109,7 @@ Token ActionNameLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 Token FunctionParamLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext, Token param);
 // Se reutiliza BeginFunctionBodyLexeme
 
-// Function body:
+// Function body functions:
 /**
  * @brief Retorna un token BODY de tipo string con el contenido del cuerpo de la función
  * 
@@ -112,9 +117,9 @@ Token FunctionParamLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext, Token
  * @return Token 
  */
 Token FunctionBodyContentLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
-void endFunctionBodyLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
+void EndFunctionBodyLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
-// Endline:
+// Endline functions:
 /**
  * @brief Retorna el token ENDLINE.
  * 
@@ -123,10 +128,7 @@ void endFunctionBodyLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
  */
 Token EndlineLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
-// Ignored lexemes:
-void IgnoredLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-
-// Unknown lexeme:
+// Unknown lexeme functions:
 Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
 // OLD, PORLAS

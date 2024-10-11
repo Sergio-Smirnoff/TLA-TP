@@ -14,6 +14,7 @@
  * @see https://westes.github.io/flex/manual/Start-Conditions.html
  */
 %x MULTILINE_COMMENT
+%x LINE_COMMENT
 %x REGEX
 %x REGEX_NAME
 %x REGEX_PRECONTENT
@@ -34,35 +35,34 @@
  */
 
 %%
+/* SECCION DE COMENTARIOS */
 "/*"								            { BEGIN(MULTILINE_COMMENT); BeginMultilineCommentLexemeAction(createLexicalAnalyzerContext()); }
 <MULTILINE_COMMENT>"*/"				            { EndMultilineCommentLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 <MULTILINE_COMMENT>[[:space:]]+		            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 <MULTILINE_COMMENT>[^*]+			            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 <MULTILINE_COMMENT>.				            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 
-/* Para mi, todos los Begin...Lexeme() podrían ser una sola función BeginLexeme(), idem con end */
-/* Un dif entre este commit y el anterior muestra que saque los "nombre" del token de aca a las 
-funciones que siempre usaban el mismo token, y los que no, los deje aca. (solo sobrevivió en el content */
-
+"//"                                            { BEGIN(LINE_COMMENT); BeginLineCommentLexemeAction(createLexicalAnalyzerContext()); }
+<LINE_COMMENT> "\n"                             { EndLineCommentLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
+<LINE_COMMENT> .                                { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 
 /* SECCION DE DEFINICION DE REGEX Regex|regex nombre [xxx]x */
-
-"[Rr]egex"                                      { BEGIN(REGEX); BeginRegexLexeme(createLexicalAnalyzerContext()); }
+"[Rr]egex"                                      { BEGIN(REGEX); BeginRegexLine(createLexicalAnalyzerContext()); }
 <REGEX> [a-zA-Z]                                { BEGIN(REGEX_NAME); BeginRegexNameLexeme(createLexicalAnalyzerContext()); }
 
 <REGEX_NAME> [[:space:]]+                       { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
-<REGEX_NAME> [a-zA-Z0-9_$]*                     { return RegexClassNameLexeme(createLexicalAnalyzerContext(), OUR_REGEX_ID); BEGIN(REGEX_PRECONTENT); }
+<REGEX_NAME> [a-zA-Z0-9_$]+                     { return RegexClassNameLexeme(createLexicalAnalyzerContext()); BEGIN(REGEX_PRECONTENT); }
 
 <REGEX_PRECONTENT> "["                          { BEGIN(REGEX_CONTENT); BeginRegexContentLexeme(createLexicalAnalyzerContext()); }
 <REGEX_PRECONTENT> [^[:space:]]                 { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
 
 <REGEX_CONTENT> [[:space:]]+                    { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
-<REGEX_CONTENT> [a-z]                           { return RegexContentLexeme(createLexicalAnalyzerContext(), MIN); }
-<REGEX_CONTENT> [A-Z]                           { return RegexContentLexeme(createLexicalAnalyzerContext(), MAYUSC); }
+<REGEX_CONTENT> [a-z]                           { return RegexContentLexeme(createLexicalAnalyzerContext(), LOWERCASE); }
+<REGEX_CONTENT> [A-Z]                           { return RegexContentLexeme(createLexicalAnalyzerContext(), UPPERCASE); }
 <REGEX_CONTENT> [0-9]                           { return RegexContentLexeme(createLexicalAnalyzerContext(), DIGIT); }
 <REGEX_CONTENT> "-"                             { return RegexContentLexeme(createLexicalAnalyzerContext(), RANGER); }
-<REGEX_CONTENT> [^\-\[\]\\]                     { return RegexContentLexeme(createLexicalAnalyzerContext(), SIMBOL); }
-<REGEX_CONTENT> "\\"[\^\-\[\]\\]                { return RegexContentLexeme(createLexicalAnalyzerContext(), ESCAPED_SIMBOL); }
+<REGEX_CONTENT> [^\-\[\]\\]                     { return RegexContentLexeme(createLexicalAnalyzerContext(), SYMBOL); }
+<REGEX_CONTENT> "\\"[\^\-\[\]\\]                { return RegexContentLexeme(createLexicalAnalyzerContext(), ESCAPED_SYMBOL); }
 <REGEX_CONTENT> "]"                             { IgnoredLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 
 /* SECCION DE DECLARACION DE "xxxx" (previo al ->) */
@@ -86,7 +86,7 @@ funciones que siempre usaban el mismo token, y los que no, los deje aca. (solo s
 
 "{"                                             { BEGIN(OUR_REGEX_LEXEME); BeginOurClassLexeme(createLexicalAnalyzerContext()); }
 <OUR_REGEX_LEXEME> [[:space:]]+                 { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
-<OUR_REGEX_LEXEME> [a-z]*                       { return ClassNameLexeme(createLexicalAnalyzerContext()); }
+<OUR_REGEX_LEXEME> [a-z]*                       { return RegexClassNameLexeme(createLexicalAnalyzerContext()); }
 <OUR_REGEX_LEXEME> "}*"                         { return ClauseOperator(createLexicalAnalyzerContext(), KLEENE); BEGIN(PRE_ACTION); }
 <OUR_REGEX_LEXEME> "}+"                         { return ClauseOperator(createLexicalAnalyzerContext(), POSITIVA); BEGIN(PRE_ACTION); }
 <OUR_REGEX_LEXEME> "}"                          { IgnoredLexemeAction(createLexicalAnalyzerContext()); BEGIN(PRE_ACTION); }
