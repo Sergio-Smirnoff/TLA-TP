@@ -89,7 +89,7 @@
 <PRE_ACTION>"->"                               { IgnoredLexemeAction(createLexicalAnalyzerContext()); BEGIN(ACTION); }
 <ACTION>[a-zA-Z_$]                             { BEGIN(SIMPLE_ACTION); BeginSimpleActionLexeme(createLexicalAnalyzerContext()); }
 <ACTION>"{"                                    { BEGIN(FUNCTION_BODY); BeginFunctionBodyLexeme(createLexicalAnalyzerContext()); }
-<ACTION>"("                                    { BEGIN(FUNCTION_PARAMS); BeginFunctionParamLexeme(createLexicalAnalyzerContext()); }
+<ACTION>"("                                    { BEGIN(FUNCTION_PARAM); BeginFunctionParamLexeme(createLexicalAnalyzerContext()); }
 
 <SIMPLE_ACTION>[[:space:]]+                    { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
 <SIMPLE_ACTION>[a-zA-Z_$]*                     { return ActionNameLexeme(createLexicalAnalyzerContext()); }
