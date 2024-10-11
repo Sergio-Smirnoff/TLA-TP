@@ -8,19 +8,24 @@
 %define api.value.union.name SemanticValue
 
 %union {
-	/** TerLOWERCASEals. */
+	/** TerLOWERCASEals */
 
 	char* string;
 	Token token;
 
-	/** Non-terLOWERCASEals. */
+	/** Non-terLOWERCASEals */
 
-	//Function_body* function_body;
+	Constant * constant;
+	Expression * expression;
+	Factor * factor;
+
+
+	/*Function_body* function_body;*/
 	Lexeme* lexeme;
 	RegexClass* regex_class;
 	Action* action;
 	Range* range;
-	closure* closure;
+	Closure* closure;
 	Param* param;
 	Ruleset* ruleset;
 	Program * program;
@@ -36,9 +41,6 @@
  * @see https://www.gnu.org/software/bison/manual/html_node/Destructor-Decl.html
  */
 /*
-%destructor { releaseConstant($$); } <constant>
-%destructor { releaseExpression($$); } <expression>
-%destructor { releaseFactor($$); } <factor>
 %destructor { releaseProgram($$); } <program>
 */
 

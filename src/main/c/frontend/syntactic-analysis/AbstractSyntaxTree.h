@@ -17,7 +17,18 @@ void shutdownAbstractSyntaxTreeModule();
 
 typedef struct Range Range;
 typedef struct Program Program;
-
+typedef struct Closure Closure;
+typedef struct Param Param;
+typedef struct Lexeme Lexeme;
+typedef struct Action Action;
+typedef struct Ruleset Ruleset;
+typedef struct Rule Rule;
+typedef struct Regex Regex;
+typedef enum RegexType RegexType;
+typedef struct Function_body Function_body;
+typedef struct Constant Constant;
+typedef struct Expression Expression;
+typedef struct Factor Factor;
 /**
  * Node types for the Abstract Syntax Tree (AST).
  */
@@ -31,14 +42,8 @@ struct Param{
 	char* stuff;
 };
 
-typedef enum {
-	kleene,
-	positive,
-	empty
-} Closure_type;
-
 struct Closure{
-	Closure_type type;
+	char* closure;
 };
 
 typedef enum {
@@ -97,8 +102,8 @@ struct Action {
 typedef enum  {
 	string,
 	regex_class,
-	regex,
-	default
+	reg,
+	def
 } Lexeme_type;
 
 struct Lexeme{
@@ -110,7 +115,7 @@ struct Lexeme{
 		};
 		struct{
 			char* our_regex_id;
-			Closure* closure;
+			Closure* clre;
 		};
 		Token* def;
 	};
@@ -121,10 +126,9 @@ typedef enum {
 	regex,
 	ignore_lexeme,
 	lexeme_action
-} Ruleset_type;
+} Rule_type;
 
-
-struct Ruleset {
+struct Rule {
 	union{
 		struct{
 			char* our_regex_id;
@@ -132,13 +136,18 @@ struct Ruleset {
 		};
 		Lexeme* lexeme;
 		struct{
-			Lexeme* lexeme;
+			Lexeme* lex;
 			Action* action;
 		};
 
 	};
 	Token* endline;
-	Ruleset_type type;
+	Rule_type type;
+};
+
+struct Ruleset{
+	Rule* rule;
+	Ruleset* ruleset;
 };
 
 struct Program {
