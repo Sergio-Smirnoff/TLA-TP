@@ -64,7 +64,7 @@
 <REGEX_CONTENT>"]"                             { IgnoredLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 
 "\""                                            { BEGIN(LEXEME); BeginStringLexeme(createLexicalAnalyzerContext()); }
-<LEXEME>[^"]+                                  { return StringLexeme(createLexicalAnalyzerContext(), STR); }   
+<LEXEME>[^"]+                                  { return StringLexeme(createLexicalAnalyzerContext()); }   
 <LEXEME>"\""                                   { EndStringLexeme(createLexicalAnalyzerContext()); BEGIN(PRE_ACTION); }
 
 "["                                             { BEGIN(REGEX_LEXEME); BeginClassLexeme(createLexicalAnalyzerContext()); }
@@ -84,7 +84,7 @@
 <OUR_REGEX_LEXEME>"}+"                         { return ClauseOperator(createLexicalAnalyzerContext(), POSITIVE); BEGIN(PRE_ACTION); }
 <OUR_REGEX_LEXEME>"}"                          { IgnoredLexemeAction(createLexicalAnalyzerContext()); BEGIN(PRE_ACTION); }
 
-"default"                                       { return DefaultLexeme(createLexicalAnalyzerContext()); }
+"default"                                       { DefaultLexeme(createLexicalAnalyzerContext()); }
 
 <PRE_ACTION>"->"                               { IgnoredLexemeAction(createLexicalAnalyzerContext()); BEGIN(ACTION); }
 <ACTION>[a-zA-Z_$]                             { BEGIN(SIMPLE_ACTION); BeginSimpleActionLexeme(createLexicalAnalyzerContext()); }
@@ -105,7 +105,7 @@
 <FUNCTION_BODY>"}"                             { EndFunctionBodyLexeme(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 
 [[:space:]]+                                    { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-";"                                             { EndLineLexeme(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
+";"                                             { return EndLineLexeme(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 "\n"                                            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 "\r"                                            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 .                                               { return UnknownLexemeAction(createLexicalAnalyzerContext()); }

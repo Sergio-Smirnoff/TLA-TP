@@ -127,7 +127,7 @@ void EndFunctionBodyLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
  * @param lexicalAnalyzerContext 
  * @return Token 
  */
-Token EndlineLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token EndLineLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
 // Unknown lexeme functions:
 Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);

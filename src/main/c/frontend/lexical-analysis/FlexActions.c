@@ -195,7 +195,7 @@ void EndFunctionBodyLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
 }
 
 // Endline functions:
-Token EndlineLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext){
+Token EndLineLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
 	if (_logIgnoredLexemes) {
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
