@@ -57,9 +57,8 @@ yydebug = true;
 %token <string> UPPERCASE
 %token <string> SYMBOL
 %token <string> ESCAPED_SYMBOL
-%token <string> OUR_REGEX_ID
-%token <string> STR
 %token <string> VAR_NAME
+%token <string> STR
 %token <string> ACTION
 %token <string> FUNCTION_BODY
 %token <string> DEFAULT
@@ -117,14 +116,14 @@ ruleset: rule ruleset											{$$ = RulesetSemanticAction( $1, $2); }
 	| rule														{$$ = RulesetSemanticAction( $1, NULL); }
 	;
 
-rule: OUR_REGEX_ID[def] regex_class[regex] ENDLINE[endline]	    { $$ = RuleNewRegexSemanticAction($def, $regex, $endline); }
+rule: VAR_NAME[def] regex_class[regex] ENDLINE[endline]	    { $$ = RuleNewRegexSemanticAction($def, $regex, $endline); }
 	| lexeme[lex] ARROW action[act] ENDLINE[endline]				{ $$ = RuleDefinitionSemanticAction( $lex, $act, $endline, lexeme_action); }
 	| lexeme[lex] ENDLINE[endline]								{ $$ = RuleDefinitionSemanticAction( $lex, NULL, $endline, ignore_lexeme ); }
 	;
 
 lexeme: STR[string]														{ $$ = LexemeSemanticAction( $string, NULL, NULL, string); }					
 	| OPEN_BRACES regex_class[regex] closure								{ $$ = LexemeSemanticAction( NULL, $regex, $3, regex_class); }
-	| OPEN_BRACES OUR_REGEX_ID[id] closure								{ $$ = LexemeSemanticAction( $id, NULL, $3, reg); }
+	| OPEN_BRACES VAR_NAME[id] closure								{ $$ = LexemeSemanticAction( $id, NULL, $3, reg); }
 	| DEFAULT[string]													{ $$ = LexemeSemanticAction( $string, NULL, NULL, def); }
 	;
 
@@ -153,7 +152,7 @@ range: LOWERCASE RANGER LOWERCASE									{ $$ = RangeSemanticAction($1, $3); }
 	| UPPERCASE RANGER LOWERCASE										{ $$ = RangeSemanticAction($1, $3); }
 	;
 
-action: OUR_REGEX_ID												{ $$ = ActionSemanticAction($1); }
+action: VAR_NAME												{ $$ = ActionSemanticAction($1); }
 	| OPEN_PARENTHESES param FUNCTION_BODY									{ $$ = ActionParamSemanticAction($2, $3); }
 	;
 /*

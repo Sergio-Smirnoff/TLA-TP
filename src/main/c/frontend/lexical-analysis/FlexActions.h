@@ -36,7 +36,7 @@ void EndLineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext)
 void BeginRegexLine(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void BeginRegexNameLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 /** 
- * @brief retorna el token OUR_REGEX_ID de clase string con el nombre definido 
+ * @brief retorna el token VAR_NAME de clase string con el nombre definido 
  * 
  * @param lexicalAnalyzerContext
  * @return Token

@@ -86,7 +86,7 @@ void BeginRegexNameLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 Token RegexClassNameLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	lexicalAnalyzerContext->semanticValue->string = lexicalAnalyzerContext->lexeme;
-	return OUR_REGEX_ID;
+	return VAR_NAME;
 }
 
 // Regex class content functions:
