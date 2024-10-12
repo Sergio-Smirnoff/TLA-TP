@@ -112,48 +112,48 @@ yydebug = true;
 program: ruleset													{ $$ = ProgramSemanticAction(currentCompilerState(), $1); }
 	;
 
-ruleset: rule ruleset											{$$ = RulesetSemanticAction( $1, $2); }
-	| rule														{$$ = RulesetSemanticAction( $1, NULL); }
+ruleset: rule ruleset											{$$ = NULL; }
+	| rule														{$$ = NULL; }
 	;
 
-rule: VAR_NAME[def] regex_class[regex] ENDLINE[endline]	    { $$ = RuleNewRegexSemanticAction($def, $regex, $endline); }
-	| lexeme[lex] ARROW action[act] ENDLINE[endline]				{ $$ = RuleDefinitionSemanticAction( $lex, $act, $endline, lexeme_action); }
-	| lexeme[lex] ENDLINE[endline]								{ $$ = RuleDefinitionSemanticAction( $lex, NULL, $endline, ignore_lexeme ); }
+rule: VAR_NAME[def] regex_class[regex] ENDLINE[endline]	    { $$ = NULL; }
+	| lexeme[lex] ARROW action[act] ENDLINE[endline]				{ $$ = NULL; }
+	| lexeme[lex] ENDLINE[endline]								{ $$ = NULL; }
 	;
 
-lexeme: STR[string]														{ $$ = LexemeSemanticAction( $string, NULL, NULL, string); }					
-	| OPEN_BRACES regex_class[regex] closure								{ $$ = LexemeSemanticAction( NULL, $regex, $3, regex_class); }
-	| OPEN_BRACES VAR_NAME[id] closure								{ $$ = LexemeSemanticAction( $id, NULL, $3, reg); }
-	| DEFAULT[string]													{ $$ = LexemeSemanticAction( $string, NULL, NULL, def); }
+lexeme: STR[string]														{ $$ = NULL; }					
+	| OPEN_BRACES regex_class[regex] closure								{ $$ = NULL; }
+	| OPEN_BRACES VAR_NAME[id] closure								{ $$ = NULL; }
+	| DEFAULT[string]													{ $$ = NULL; }
 	;
 
-closure: KLEENE													 		{ $$ = ClosureSemanticAction($1); }
-	| POSITIVE													 		{ $$ = ClosureSemanticAction($1); }					
+closure: KLEENE													 		{ $$ = NULL; }
+	| POSITIVE													 		{ $$ = NULL; }					
 	| CLOSE_BRACES														{ $$ = NULL; }	
 	; 
 
-regex_class: LOWERCASE									{ $$ = RegexClassStringSemanticAction($1, NULL); }
-    | UPPERCASE											{ $$ = RegexClassStringSemanticAction($1, NULL); }
-    | DIGIT												{ $$ = RegexClassStringSemanticAction($1, NULL); }
-	| SYMBOL											{ $$ = RegexClassStringSemanticAction($1, NULL); }
-	| ESCAPED_SYMBOL									{ $$ = RegexClassStringSemanticAction($1, NULL); }
-    | range												{ $$ = RegexClassRangeSemanticAction($1, NULL); }
-	| LOWERCASE regex_class								{ $$ = RegexClassStringSemanticAction($1, $2); }
-    | UPPERCASE regex_class								{ $$ = RegexClassStringSemanticAction($1, $2); }
-    | DIGIT regex_class									{ $$ = RegexClassStringSemanticAction($1, $2); }
-    | range regex_class									{ $$ = RegexClassRangeSemanticAction($1, $2); }
-	| SYMBOL regex_class								{ $$ = RegexClassStringSemanticAction($1, $2); }
-	| ESCAPED_SYMBOL regex_class						{ $$ = RegexClassStringSemanticAction($1, $2); }
+regex_class: LOWERCASE									{ $$ = NULL; }
+    | UPPERCASE											{ $$ = NULL; }
+    | DIGIT												{ $$ = NULL; }
+	| SYMBOL											{ $$ = NULL; }
+	| ESCAPED_SYMBOL									{ $$ = NULL; }
+    | range												{ $$ = NULL; }
+	| LOWERCASE regex_class								{ $$ = NULL; }
+    | UPPERCASE regex_class								{ $$ = NULL; }
+    | DIGIT regex_class									{ $$ = NULL; }
+    | range regex_class									{ $$ = NULL; }
+	| SYMBOL regex_class								{ $$ = NULL; }
+	| ESCAPED_SYMBOL regex_class						{ $$ = NULL; }
 	;
 
-range: LOWERCASE RANGER LOWERCASE									{ $$ = RangeSemanticAction($1, $3); }
-    | UPPERCASE RANGER UPPERCASE										{ $$ = RangeSemanticAction($1, $3); }
-    | DIGIT RANGER DIGIT												{ $$ = RangeSemanticAction($1, $3); }
-	| UPPERCASE RANGER LOWERCASE										{ $$ = RangeSemanticAction($1, $3); }
+range: LOWERCASE RANGER LOWERCASE										{ $$ = NULL; }
+    | UPPERCASE RANGER UPPERCASE										{ $$ = NULL; }
+    | DIGIT RANGER DIGIT												{ $$ = NULL; }
+	| UPPERCASE RANGER LOWERCASE										{ $$ = NULL; }
 	;
 
-action: VAR_NAME												{ $$ = ActionSemanticAction($1); }
-	| OPEN_PARENTHESES param FUNCTION_BODY									{ $$ = ActionParamSemanticAction($2, $3); }
+action: VAR_NAME															{ $$ = NULL; }
+	| OPEN_PARENTHESES param FUNCTION_BODY									{ $$ = NULL; }
 	;
 /*
 function_body: LOG
@@ -161,10 +161,10 @@ function_body: LOG
 	| RETURN
 	;
 */
-param: STRING_TYPE					{ $$ = ParamSemanticAction($1); }
-    | INTEGER_TYPE					{ $$ = ParamSemanticAction($1); }
-    | DOUBLE_TYPE					{ $$ = ParamSemanticAction($1); }
-	| BOOLEAN_TYPE					{ $$ = ParamSemanticAction($1); }
+param: STRING_TYPE					{ $$ = NULL; }
+    | INTEGER_TYPE					{ $$ = NULL; }
+    | DOUBLE_TYPE					{ $$ = NULL; }
+	| BOOLEAN_TYPE					{ $$ = NULL; }
 	| %empty						{ $$ = NULL; }
 	;
 

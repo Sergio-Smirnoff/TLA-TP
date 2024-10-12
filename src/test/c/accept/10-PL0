@@ -12,7 +12,7 @@
 "<>" -> NEQ;
 "<"  -> LSS;
 ">"  -> GTR;
-"<=" ->LEQ;
+"<=" -> LEQ;
 ">=" -> GEQ;
 "begin"-> BEGINSYM;
 "call" -> CALLSYM;
@@ -39,6 +39,9 @@ Regex letter        [a-zA-Z];
                        return NUMBER;
  };
 
-[ \t\n\r]            /* skip whitespace */;
+/*Skipps white spaces*/ 
+"\t";
+"\n";
+"\r";
 
 "default" -> REJECT;
