@@ -66,7 +66,7 @@
 <FUNCTION_BODY>[^{}]+                           { return FunctionBodyContentLexeme(createLexicalAnalyzerContext()); }
 <FUNCTION_BODY>"}"                              { EndFunctionBodyLexeme(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 
-"\""                                            { BeginStringLexeme(createLexicalAnalyzerContext()); }
+"\""                                            { BeginStringLexeme(createLexicalAnalyzerContext()); BEGIN(STRING); }
 <STRING>[^"]+                                   { return StringLexeme(createLexicalAnalyzerContext()); }   
 <STRING>"\""                                    { EndStringLexeme(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 

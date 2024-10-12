@@ -1,6 +1,7 @@
 %{
 
 #include "BisonActions.h"
+#define YYDEBUG 1
 yydebug = true;
 %}
 
@@ -152,7 +153,7 @@ range: LOWERCASE RANGER LOWERCASE									{ $$ = RangeSemanticAction($1, $3); }
 	| UPPERCASE RANGER LOWERCASE										{ $$ = RangeSemanticAction($1, $3); }
 	;
 
-action: ACTION												{ $$ = ActionSemanticAction($1); }
+action: OUR_REGEX_ID												{ $$ = ActionSemanticAction($1); }
 	| OPEN_PARENTHESES param FUNCTION_BODY									{ $$ = ActionParamSemanticAction($2, $3); }
 	;
 /*
