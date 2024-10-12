@@ -57,7 +57,7 @@ Ruleset* RulesetSemanticAction( Rule* rule, Ruleset* ruleset ) {
 	return rt;
 }
 
-Rule* RuleDefinitionSematicAction( Lexeme* lexeme, Action* action, Token* endline, Rule_type type ) {
+Rule* RuleDefinitionSemanticAction( Lexeme* lexeme, Action* action, Token* endline, Rule_type type ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Rule * rule = calloc(1, sizeof(Rule));
 	rule->lexeme = lexeme;
