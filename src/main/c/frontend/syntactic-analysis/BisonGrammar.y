@@ -61,6 +61,7 @@
 %token <string> VAR_NAME
 %token <string> ACTION
 %token <string> FUNCTION_BODY
+%token <string> DEFAULT
 
 //%token <token> LOG
 //%token <token> RETURN
@@ -71,7 +72,6 @@
 %token <token> INTEGER_TYPE
 %token <token> DOUBLE_TYPE
 %token <token> RANGER
-%token <token> DEFAULT
 %token <token> ENDLINE
 %token <token> ARROW
 %token <token> OPEN_BRACES
@@ -117,7 +117,7 @@ ruleset: rule ruleset											{$$ = RulesetSemanticAction( $1, $2); }
 	;
 
 rule: OUR_REGEX_ID[def] regex_class[regex] ENDLINE[endline]	    { $$ = RuleNewRegexSemanticAction($def, $regex, $endline); }
-	| lexeme[lex] ARROW action[action] ENDLINE[endline]				{ $$ = RuleDefinitionSemanticAction( $lex, $action, $endline, lexeme_action); }
+	| lexeme[lex] ARROW action[act] ENDLINE[endline]				{ $$ = RuleDefinitionSemanticAction( $lex, $act, $endline, lexeme_action); }
 	| lexeme[lex] ENDLINE[endline]								{ $$ = RuleDefinitionSemanticAction( $lex, NULL, $endline, ignore_lexeme ); }
 	;
 
@@ -153,7 +153,7 @@ range: LOWERCASE RANGER LOWERCASE									{ $$ = RangeSemanticAction($1, $3); }
 	;
 
 action: ACTION												{ $$ = ActionSemanticAction($1); }
-	| OPEN_PARENTHESES param FUNCTION_BODY									{ $$ = ActionParamSemanticAction($1, $2); }
+	| OPEN_PARENTHESES param FUNCTION_BODY									{ $$ = ActionParamSemanticAction($2, $3); }
 	;
 /*
 function_body: LOG

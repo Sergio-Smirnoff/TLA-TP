@@ -102,7 +102,7 @@ Range* RangeSemanticAction( char* right, char* left ) {
 	return range;
 }
 
-Param* ParamSemanticAction( char* stuff ) {
+Param* ParamSemanticAction( Token stuff ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Param * param = calloc(1, sizeof(Param));
 	param->stuff = stuff;
