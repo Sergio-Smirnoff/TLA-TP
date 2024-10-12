@@ -27,6 +27,15 @@
  */
 
 %%
+
+"String"                                        {  Token token = FunctionParamLexeme(createLexicalAnalyzerContext(), STRING_TYPE); BEGIN(FUNCTION_BODY); return token; }
+"Integer"                                       {  Token token = FunctionParamLexeme(createLexicalAnalyzerContext(), INTEGER_TYPE); BEGIN(FUNCTION_BODY); return token; }
+"Double"                                        {  Token token = FunctionParamLexeme(createLexicalAnalyzerContext(), DOUBLE_TYPE); BEGIN(FUNCTION_BODY); return token; }
+"Boolean"                                       {  Token token = FunctionParamLexeme(createLexicalAnalyzerContext(), BOOLEAN_TYPE); BEGIN(FUNCTION_BODY); return token; }
+"default"                                       { return DefaultLexeme(createLexicalAnalyzerContext()); }
+"\n"                                            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+"\r"                                            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+
 "/*"								            { BEGIN(MULTILINE_COMMENT); BeginMultilineCommentLexemeAction(createLexicalAnalyzerContext()); }
 <MULTILINE_COMMENT>"*/"				            { EndMultilineCommentLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 <MULTILINE_COMMENT>[[:space:]]+		            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
@@ -51,11 +60,6 @@
 <REGEX_CONTENT>"\\"[\^\-\[\]\\]                 { return RegexContentLexeme(createLexicalAnalyzerContext(), ESCAPED_SYMBOL); }
 <REGEX_CONTENT>"]"                              { IgnoredLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 
-"String"                                        {  Token token = FunctionParamLexeme(createLexicalAnalyzerContext(), STRING_TYPE); BEGIN(FUNCTION_BODY); return token; }
-"Integer"                                       {  Token token = FunctionParamLexeme(createLexicalAnalyzerContext(), INTEGER_TYPE); BEGIN(FUNCTION_BODY); return token; }
-"Double"                                        {  Token token = FunctionParamLexeme(createLexicalAnalyzerContext(), DOUBLE_TYPE); BEGIN(FUNCTION_BODY); return token; }
-"Boolean"                                       {  Token token = FunctionParamLexeme(createLexicalAnalyzerContext(), BOOLEAN_TYPE); BEGIN(FUNCTION_BODY); return token; }
-
 "("                                             { Token token = OpenParenthesesLexeme(createLexicalAnalyzerContext()); return token; }
 ")"[[:space]]*"{"                               { BEGIN(FUNCTION_BODY);  BeginFunctionBodyLexeme(createLexicalAnalyzerContext()); }
 
@@ -71,14 +75,12 @@
 "}"                                             { Token token = CloseBracesLexeme(createLexicalAnalyzerContext()); return token; }
 "{"                                             { Token token = OpenBracesLexeme(createLexicalAnalyzerContext()); return token; }
 
-"default"                                       { return DefaultLexeme(createLexicalAnalyzerContext()); }
+
 
 "-> "                                            { return ArrowLexeme(createLexicalAnalyzerContext()); }
 
 [[:space:]]+                                    { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 ";"                                             { return EndLineLexeme(createLexicalAnalyzerContext()); }
-"\n"                                            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-"\r"                                            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 .                                               { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
 %%
 
