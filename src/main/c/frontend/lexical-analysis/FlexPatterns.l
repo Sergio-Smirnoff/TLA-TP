@@ -18,7 +18,6 @@
 %x REGEX_CONTENT
 %x FUNCTION_BODY
 %x STRING
-%x FUNCTION_PARAM
 /**
  * Reusable patterns.
  *
@@ -61,7 +60,7 @@
 <REGEX_CONTENT>"]"                              { IgnoredLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 
 "("                                             { Token token = OpenParenthesesLexeme(createLexicalAnalyzerContext()); return token; }
-")"[[:space]]*"{"                               { BEGIN(FUNCTION_BODY);  BeginFunctionBodyLexeme(createLexicalAnalyzerContext()); }
+")"[[:space:]]*"{"                               { BEGIN(FUNCTION_BODY);  BeginFunctionBodyLexeme(createLexicalAnalyzerContext()); }
 
 <FUNCTION_BODY>[^{}]+                           { return FunctionBodyContentLexeme(createLexicalAnalyzerContext()); }
 <FUNCTION_BODY>"}"                              { EndFunctionBodyLexeme(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
