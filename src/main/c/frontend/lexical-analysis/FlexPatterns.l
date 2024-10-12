@@ -45,7 +45,7 @@
 <LINE_COMMENT>"\n"                             { EndLineCommentLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 <LINE_COMMENT>.                                { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 
-"[Rr]egex"                                      { BEGIN(REGEX); BeginRegexLine(createLexicalAnalyzerContext()); }
+[Rr]"egex"                                      { BEGIN(REGEX); BeginRegexLine(createLexicalAnalyzerContext()); }
 <REGEX>[a-zA-Z]                                { BEGIN(REGEX_NAME); BeginRegexNameLexeme(createLexicalAnalyzerContext()); }
 
 <REGEX_NAME>[[:space:]]+                       { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
@@ -109,7 +109,6 @@
 "\n"                                            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 "\r"                                            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 .                                               { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
-
 %%
 
 #include "FlexExport.h"
