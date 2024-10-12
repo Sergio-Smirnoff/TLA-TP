@@ -1,7 +1,7 @@
 %{
 
 #include "BisonActions.h"
-
+yydebug = true;
 %}
 
 // You touch this, and you die.
