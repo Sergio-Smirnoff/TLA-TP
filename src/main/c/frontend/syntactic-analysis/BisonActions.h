@@ -39,7 +39,7 @@ Closure* ClosureSemanticAction( char* string );
 Range* RangeSemanticAction( char* right, char* left );
 
 // Params
-Param* ParamSemanticAction( Token* token );
+Param* ParamSemanticAction( char* stuff );
 
 // Action
 Action* ActionSemanticAction( char* string );

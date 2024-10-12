@@ -102,18 +102,18 @@ Range* RangeSemanticAction( char* right, char* left ) {
 	return range;
 }
 
-Param* ParamSemanticAction( Token* token ) {
+Param* ParamSemanticAction( char* stuff ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Param * param = calloc(1, sizeof(Param));
-	param->token = token;
+	param->stuff = stuff;
 	return param;
 }
 
 Action* ActionSemanticAction( char* string ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Action * action = calloc(1, sizeof(Action));
-	action->action = string;
-	action->type = Action_type.action;
+	Action * act = calloc(1, sizeof(Action));
+	act->action = string;
+	act->type = action;
 	return action;
 }
 
@@ -122,25 +122,25 @@ Action* ActionParamSemanticAction( Param* param, char* body ) {
 	Action * action = calloc(1, sizeof(Action));
 	action->param = param;
 	action->function_body = body;
-	action->type = Action_type.function_body;
+	action->type = function_body;
 	return action;
 }
 
 Regex_class* RegexClassStringSemanticAction( char* string, Regex_class* regex_class ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Regex_class * regex_class = calloc(1, sizeof(Regex_class));
-	regex_class->string = string;
-	regex_class->regex_class = regex_class;
-	regex_class->type = Regex_class_type.stuff
-	return regex_class;
+	Regex_class * new_regex_class = calloc(1, sizeof(Regex_class));
+	regex_class->stuff = string;
+	regex_class->regex_class = new_regex_class;
+	regex_class->type = stuff;
+	return new_regex_class;
 }
 
-Regex_class* RegexClassRangeSemanticAction( Range* range, Regex_class* regex_class ) {
+Regex_class* RegexClassRangeSemanticAction( Range* range_v, Regex_class* regex_class ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Regex_class * regex_class = calloc(1, sizeof(Regex_class));
-	regex_class->range = range;
-	regex_class->regex_class = regex_class;
-	regex_class->type = Regex_class_type.range;
-	return regex_class;
+	Regex_class * new_regex_class = calloc(1, sizeof(Regex_class));
+	regex_class->range = range_v;
+	regex_class->regex_class = new_regex_class;
+	regex_class->type = range;
+	return new_regex_class;
 }
 
