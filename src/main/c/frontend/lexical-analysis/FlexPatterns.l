@@ -7,7 +7,7 @@
  * Enable start condition manipulation functions.
  */
 %option stack
-
+%option debug
 /**
  * Flex contexts (a.k.a. start conditions).
  *
