@@ -37,7 +37,8 @@
  * @see https://www.gnu.org/software/bison/manual/html_node/Destructor-Decl.html
  */
 
-/**%destructor { releaseFunctionBody($$); } <function_body>*/
+/**
+%destructor { releaseFunctionBody($$); } <function_body>
 %destructor { releaseClosure($$); } <closure>
 %destructor { releaseParam($$); } <param>
 %destructor { releaseRange($$); } <range>
@@ -47,7 +48,7 @@
 %destructor { releaseRule($$); } <rule>
 %destructor { releaseRuleset($$); } <ruleset>
 %destructor { releaseProgram($$); } <program>
-
+*/
 
 /** Terminals. */
 %token <string> DIGIT
@@ -59,12 +60,12 @@
 %token <string> STR
 %token <string> VAR_NAME
 %token <string> ACTION
-%token <string> KLEENE
-%token <string> POSITIVE
 %token <string> FUNCTION_BODY
 
 //%token <token> LOG
 //%token <token> RETURN
+%token <token> KLEENE
+%token <token> POSITIVE
 %token <token> BOOLEAN_TYPE
 %token <token> STRING_TYPE
 %token <token> INTEGER_TYPE
@@ -116,19 +117,19 @@ ruleset: rule ruleset											{$$ = RulesetSemanticAction( $1, $2); }
 	;
 
 rule: OUR_REGEX_ID[def] regex_class[regex] ENDLINE[endline]	    { $$ = RuleNewRegexSemanticAction($def, $regex, $endline); }
-	| lexeme[lex] ARROW action ENDLINE[endline]				{ $$ = RuleDefinitionSemanticAction( $lex, $2, $endline, lexeme_action); }
+	| lexeme[lex] ARROW action[action] ENDLINE[endline]				{ $$ = RuleDefinitionSemanticAction( $lex, $action, $endline, lexeme_action); }
 	| lexeme[lex] ENDLINE[endline]								{ $$ = RuleDefinitionSemanticAction( $lex, NULL, $endline, ignore_lexeme ); }
 	;
 
 lexeme: STR[string]														{ $$ = LexemeSemanticAction( $string, NULL, NULL, string); }					
 	| OPEN_BRACES regex_class[regex] closure								{ $$ = LexemeSemanticAction( NULL, $regex, $3, regex_class); }
-	| OPEN_BRACES OUR_REGEX_ID[id] closure								{ $$ = LexemeSemanticAction( $id, NULL, $2, reg); }
+	| OPEN_BRACES OUR_REGEX_ID[id] closure								{ $$ = LexemeSemanticAction( $id, NULL, $3, reg); }
 	| DEFAULT[string]													{ $$ = LexemeSemanticAction( $string, NULL, NULL, def); }
 	;
 
 closure: KLEENE													 		{ $$ = ClosureSemanticAction($1); }
 	| POSITIVE													 		{ $$ = ClosureSemanticAction($1); }					
-	| CLOSE_BRACES
+	| CLOSE_BRACES														{ $$ = NULL; }	
 	; 
 
 regex_class: LOWERCASE									{ $$ = RegexClassStringSemanticAction($1, NULL); }
@@ -152,7 +153,7 @@ range: LOWERCASE RANGER LOWERCASE									{ $$ = RangeSemanticAction($1, $3); }
 	;
 
 action: ACTION												{ $$ = ActionSemanticAction($1); }
-	| param FUNCTION_BODY									{ $$ = ActionParamSemanticAction($1, $2); }
+	| OPEN_PARENTHESES param FUNCTION_BODY									{ $$ = ActionParamSemanticAction($1, $2); }
 	;
 /*
 function_body: LOG
@@ -164,7 +165,7 @@ param: STRING_TYPE					{ $$ = ParamSemanticAction($1); }
     | INTEGER_TYPE					{ $$ = ParamSemanticAction($1); }
     | DOUBLE_TYPE					{ $$ = ParamSemanticAction($1); }
 	| BOOLEAN_TYPE					{ $$ = ParamSemanticAction($1); }
-	| %empty
+	| %empty						{ $$ = NULL; }
 	;
 
 %%

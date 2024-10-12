@@ -1,6 +1,6 @@
 Regex letter      [a-zA-Z];
 
-{letter}+ -> (State var){
+{letter}+ -> (){
     var.attibute.id = var.text.toString();
     return WORD;
 };

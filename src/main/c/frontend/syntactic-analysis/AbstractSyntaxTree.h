@@ -36,11 +36,11 @@ struct Function_body{
 };
 
 struct Param{
-	char* stuff;
+	Token stuff;
 };
 
 struct Closure{
-	char* closure;
+	Token closure;
 };
 
 typedef enum Regex_class_type{
@@ -104,7 +104,7 @@ struct Lexeme{
 			char* our_regex_id;
 			Closure* clre;
 		};
-		Token* def;
+		Token def;
 	};
 	Lexeme_type type;
 };
@@ -128,7 +128,7 @@ struct Rule {
 		};
 
 	};
-	Token* endline;
+	Token endline;
 	Rule_type type;
 };
 

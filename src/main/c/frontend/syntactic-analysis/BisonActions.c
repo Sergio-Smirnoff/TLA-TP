@@ -57,7 +57,7 @@ Ruleset* RulesetSemanticAction( Rule* rule, Ruleset* ruleset ) {
 	return rt;
 }
 
-Rule* RuleDefinitionSemanticAction( Lexeme* lexeme, Action* action, Token* endline, Rule_type type ) {
+Rule* RuleDefinitionSemanticAction( Lexeme* lexeme, Action* action, Token endline, Rule_type type ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Rule * rule = calloc(1, sizeof(Rule));
 	rule->lexeme = lexeme;
@@ -67,7 +67,7 @@ Rule* RuleDefinitionSemanticAction( Lexeme* lexeme, Action* action, Token* endli
 	return rule;
 }
 
-Rule* RuleNewRegexSemanticAction( char* our_regex_id, Regex_class* regex_class, Token* endline ) {
+Rule* RuleNewRegexSemanticAction( char* our_regex_id, Regex_class* regex_class, Token endline ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Rule * rule = calloc(1, sizeof(Rule));
 	rule->our_regex_id = our_regex_id;
@@ -87,7 +87,7 @@ Lexeme* LexemeSemanticAction( char* string, Regex_class* regex_class, Closure* c
 	return lexeme;
 }
 
-Closure* ClosureSemanticAction( char* string ) {
+Closure* ClosureSemanticAction( Token string ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Closure * closure = calloc(1, sizeof(Closure));
 	closure->closure = string;

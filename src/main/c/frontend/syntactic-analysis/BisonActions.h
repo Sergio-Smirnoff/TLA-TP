@@ -26,14 +26,14 @@ Program * ProgramSemanticAction(CompilerState * compilerState, Ruleset * ruleset
 Ruleset* RulesetSemanticAction( Rule* rule, Ruleset* ruleset );
 
 //Rule
-Rule* RuleDefinitionSemanticAction( Lexeme* lexeme, Action* action, Token* endline, Rule_type type );
-Rule* RuleNewRegexSemanticAction( char* our_regex_id, Regex_class* regex_class, Token* endline );
+Rule* RuleDefinitionSemanticAction( Lexeme* lexeme, Action* action, Token endline, Rule_type type );
+Rule* RuleNewRegexSemanticAction( char* our_regex_id, Regex_class* regex_class, Token endline );
 
 // lexeme
 Lexeme* LexemeSemanticAction( char* string, Regex_class* regex_class, Closure* closure, Lexeme_type type );
 
 // closure
-Closure* ClosureSemanticAction( char* string );
+Closure* ClosureSemanticAction( Token string );
 
 // range
 Range* RangeSemanticAction( char* right, char* left );
