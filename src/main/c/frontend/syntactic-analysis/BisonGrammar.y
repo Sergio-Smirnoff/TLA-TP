@@ -49,7 +49,7 @@
 %destructor { releaseProgram($$); } <program>
 
 
-/** TerLOWERCASEals. */
+/** Terminals. */
 %token <string> DIGIT
 %token <string> LOWERCASE
 %token <string> UPPERCASE
@@ -57,6 +57,7 @@
 %token <string> ESCAPED_SYMBOL
 %token <string> OUR_REGEX_ID
 %token <string> STR
+%token <string> VAR_NAME
 %token <string> ACTION
 %token <string> KLEENE
 %token <string> POSITIVE
@@ -71,13 +72,16 @@
 %token <token> RANGER
 %token <token> DEFAULT
 %token <token> ENDLINE
+%token <token> ARROW
+%token <token> OPEN_BRACES
+%token <token> CLOSE_BRACES
 %token <token> UNKNOWN
 
 
 
 
 
-/** Non-terLOWERCASEals. */
+/** Non-terminals. */
 
 
 %type <program> program
@@ -111,19 +115,19 @@ ruleset: rule ruleset											{$$ = RulesetSemanticAction( $1, $2); }
 	;
 
 rule: OUR_REGEX_ID[def] regex_class[regex] ENDLINE[endline]	    { $$ = RuleNewRegexSemanticAction($def, $regex, $endline); }
-	| lexeme[lex] action ENDLINE[endline]				{ $$ = RuleDefinitionSemanticAction( $lex, $action, $endline, lexeme_action); }
+	| lexeme[lex] ARROW action ENDLINE[endline]				{ $$ = RuleDefinitionSemanticAction( $lex, $2, $endline, lexeme_action); }
 	| lexeme[lex] ENDLINE[endline]								{ $$ = RuleDefinitionSemanticAction( $lex, NULL, $endline, ignore_lexeme ); }
 	;
 
 lexeme: STR[string]														{ $$ = LexemeSemanticAction( $string, NULL, NULL, string); }					
-	| regex_class[regex] closure								{ $$ = LexemeSemanticAction( NULL, $regex, $closure, regex_class); }
-	| OUR_REGEX_ID[id] closure								{ $$ = LexemeSemanticAction( $id, NULL, $closure, reg); }
+	| OPEN_BRACES regex_class[regex] closure								{ $$ = LexemeSemanticAction( NULL, $regex, $3, regex_class); }
+	| OPEN_BRACES OUR_REGEX_ID[id] closure								{ $$ = LexemeSemanticAction( $id, NULL, $2, reg); }
 	| DEFAULT[string]													{ $$ = LexemeSemanticAction( $string, NULL, NULL, def); }
 	;
 
 closure: KLEENE													 		{ $$ = ClosureSemanticAction($1); }
 	| POSITIVE													 		{ $$ = ClosureSemanticAction($1); }					
-	| %empty
+	| CLOSE_BRACES
 	; 
 
 regex_class: LOWERCASE									{ $$ = RegexClassStringSemanticAction($1, NULL); }
@@ -140,9 +144,9 @@ regex_class: LOWERCASE									{ $$ = RegexClassStringSemanticAction($1, NULL); 
 	| ESCAPED_SYMBOL regex_class						{ $$ = RegexClassStringSemanticAction($1, $2); }
 	;
 
-range: LOWERCASE    RANGER LOWERCASE									{ $$ = RangeSemanticAction($1, $3); }
+range: LOWERCASE RANGER LOWERCASE									{ $$ = RangeSemanticAction($1, $3); }
     | UPPERCASE RANGER UPPERCASE										{ $$ = RangeSemanticAction($1, $3); }
-    | DIGIT  RANGER DIGIT												{ $$ = RangeSemanticAction($1, $3); }
+    | DIGIT RANGER DIGIT												{ $$ = RangeSemanticAction($1, $3); }
 	| UPPERCASE RANGER LOWERCASE										{ $$ = RangeSemanticAction($1, $3); }
 	;
 
