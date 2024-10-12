@@ -26,7 +26,7 @@ Program * ProgramSemanticAction(CompilerState * compilerState, Ruleset * ruleset
 Ruleset* RulesetSemanticAction( Rule* rule, Ruleset* ruleset );
 
 //Rule
-Rule* RuleDefinitionSematicAction( Lexeme* lexeme, Action* action, Token* endline, Rule_type type );
+Rule* RuleDefinitionSemanticAction( Lexeme* lexeme, Action* action, Token* endline, Rule_type type );
 Rule* RuleNewRegexSemanticAction( char* our_regex_id, Regex_class* regex_class, Token* endline );
 
 // lexeme
