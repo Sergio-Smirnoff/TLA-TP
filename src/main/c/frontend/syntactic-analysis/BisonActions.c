@@ -130,7 +130,7 @@ Regex_class* RegexClassStringSemanticAction( char* string, Regex_class* regex_cl
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Regex_class * new_regex_class = calloc(1, sizeof(Regex_class));
 	regex_class->stuff = string;
-	regex_class->regex_class = new_regex_class;
+	regex_class->regex_class = regex_class;
 	regex_class->type = stuff;
 	return new_regex_class;
 }
@@ -139,7 +139,7 @@ Regex_class* RegexClassRangeSemanticAction( Range* range_v, Regex_class* regex_c
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Regex_class * new_regex_class = calloc(1, sizeof(Regex_class));
 	regex_class->range = range_v;
-	regex_class->regex_class = new_regex_class;
+	regex_class->regex_class = regex_class;
 	regex_class->type = range;
 	return new_regex_class;
 }
