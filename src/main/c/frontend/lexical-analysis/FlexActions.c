@@ -208,6 +208,38 @@ Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	return UNKNOWN;
 }
 
+Token OpenParenthesesLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
+	if (_logIgnoredLexemes) {
+		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	}
+	lexicalAnalyzerContext->semanticValue->token = OPEN_PARENTHESES;
+	return OPEN_PARENTHESES;
+}
+
+Token OpenBracesLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
+	if (_logIgnoredLexemes) {
+		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	}
+	lexicalAnalyzerContext->semanticValue->token = OPEN_BRACES;
+	return OPEN_BRACES;
+}
+
+Token CloseBracesLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
+	if (_logIgnoredLexemes) {
+		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	}
+	lexicalAnalyzerContext->semanticValue->token = CLOSE_BRACES;
+	return CLOSE_BRACES;
+}
+
+ Token ArrowLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
+	if (_logIgnoredLexemes) {
+		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	}
+	lexicalAnalyzerContext->semanticValue->token = ARROW;
+	return ARROW;
+ }
+
 // old
 /*
 

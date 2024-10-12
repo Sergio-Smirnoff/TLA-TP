@@ -132,6 +132,14 @@ Token EndLineLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 // Unknown lexeme functions:
 Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
+Token OpenParenthesesLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
+
+Token OpenBracesLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
+
+Token CloseBracesLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
+
+Token ArrowLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
+
 // OLD, PORLAS
 /*
 Token ArithmeticOperatorLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);

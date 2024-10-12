@@ -75,6 +75,7 @@
 %token <token> ARROW
 %token <token> OPEN_BRACES
 %token <token> CLOSE_BRACES
+%token <token> OPEN_PARENTHESES
 %token <token> UNKNOWN
 
 
