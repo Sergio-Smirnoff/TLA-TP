@@ -41,4 +41,4 @@ Regex letter        [a-zA-Z];
 
 [ \t\n\r]            /* skip whitespace */;
 
-default -> REJECT;
+"default" -> REJECT;

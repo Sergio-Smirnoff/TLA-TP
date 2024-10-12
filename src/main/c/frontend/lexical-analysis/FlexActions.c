@@ -142,10 +142,12 @@ Token ClauseOperator(LexicalAnalyzerContext * lexicalAnalyzerContext, Token clau
 }
 
 // Default usage functions:
-void DefaultLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+Token DefaultLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	if (_logIgnoredLexemes) {
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	lexicalAnalyzerContext->semanticValue->string = lexicalAnalyzerContext->lexeme;
+	return DEFAULT;
 }
 
 // Actions functions:

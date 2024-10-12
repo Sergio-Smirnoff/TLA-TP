@@ -83,7 +83,7 @@ void BeginOurClassLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 Token ClauseOperator(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
 
 // Default usage functions:
-void DefaultLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token DefaultLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
 // Actions functions:
 void BeginSimpleActionLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);

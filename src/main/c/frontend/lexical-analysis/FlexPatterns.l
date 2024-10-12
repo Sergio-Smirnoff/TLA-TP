@@ -71,7 +71,7 @@
 "}"                                             { Token token = CloseBracesLexeme(createLexicalAnalyzerContext()); return token; }
 "{"                                             { Token token = OpenBracesLexeme(createLexicalAnalyzerContext()); return token; }
 
-"default"                                       { DefaultLexeme(createLexicalAnalyzerContext()); }
+"default"                                       { return DefaultLexeme(createLexicalAnalyzerContext()); }
 
 "-> "                                            { return ArrowLexeme(createLexicalAnalyzerContext()); }
 
