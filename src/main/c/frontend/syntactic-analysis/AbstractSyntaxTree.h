@@ -30,6 +30,7 @@ typedef struct Java_function_body Java_function_body;
 
 typedef struct NumericComparison NumericComparison;
 typedef struct Statement Statement;
+typedef struct Block Block;
 typedef struct ForInit ForInit;
 typedef struct StatementExpressionList StatementExpressionList;
 typedef struct IfThenStatement IfThenStatement;
@@ -69,6 +70,9 @@ struct NumericComparison{
 	char * TODO;
 };
 
+struct Block{
+	char * TODO;
+};
 
 struct Statement{
 	char * TODO;

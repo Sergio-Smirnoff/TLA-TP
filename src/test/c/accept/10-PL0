@@ -29,7 +29,7 @@
 Regex digit         [0-9];
 Regex letter        [a-zA-Z];
 
-{letter}({letter}|{digit})* -> (){
+{letter}[{letter}{digit}]* -> (){
                        var.attribute.id = var.text.toString(); /* var.text is an instance of StringBuilder */
                        return IDENT;
  };

@@ -1,6 +1,7 @@
 %{
 
 #include "BisonActions.h"
+//yydebug = 1;
 
 %}
 
@@ -27,6 +28,7 @@
 	Program * program;
 	
 	NumericComparison* NumericComparison;
+	Block* Block;
 	Statement* Statement;
 	ForInit* ForInit;
 	StatementExpressionList* StatementExpressionList;
@@ -156,6 +158,7 @@
 %type <closure> closure
 
 %type <NumericComparison> NumericComparison
+%type <Block> Block
 %type <Statement> Statement
 %type <ForInit> ForInit
 %type <StatementExpressionList> StatementExpressionList
@@ -213,7 +216,9 @@ rule: VAR_NAME[def] regex_class[regex] ENDLINE[endline]	    		{ $$ = NULL; }
 	| lexeme[lex] ENDLINE[endline]									{ $$ = NULL; }
 	;
 
-lexeme: STR[string]													{ $$ = NULL; }					
+lexeme: lexeme lexeme												{ $$ = NULL; }
+	| lexeme PIPE lexeme											{ $$ = NULL; }
+	| STR[string]													{ $$ = NULL; }					
 	| regex_class[regex] closure									{ $$ = NULL; }
 	| OPEN_BRACES VAR_NAME[id] CLOSE_BRACES closure					{ $$ = NULL; }
 	| DEFAULT[string]												{ $$ = NULL; }
@@ -245,7 +250,7 @@ range: LOWERCASE RANGER LOWERCASE									{ $$ = NULL; }
 	;
 
 action: VAR_NAME													{ $$ = NULL; }
-	| OPEN_PARENTHESES param Statement								{ $$ = NULL; }
+	| OPEN_PARENTHESES param CLOSE_PARENTHESES OPEN_BRACES Block CLOSE_BRACES								{ $$ = NULL; }
 	;
 
 param: STRING_TYPE													{ $$ = NULL; }
@@ -272,7 +277,11 @@ NumericComparison: JAVA_GEQ														{ $$ = NULL; }
 	| JAVA_LESSER														{ $$ = NULL; }
 	;
 
-Statement: StatementWithoutTrailingSubstatement														{ $$ = NULL; }
+Block: Statement Block												{ $$ = NULL; }
+	| Statement														{ $$ = NULL; }
+	;
+
+Statement: StatementWithoutTrailingSubstatement ENDLINE														{ $$ = NULL; }
 	| IfThenStatement														{ $$ = NULL; }
 	| IfThenElseStatement														{ $$ = NULL; }
 	| JAVA_WHILE OPEN_PARENTHESES Expression CLOSE_PARENTHESES OPEN_BRACES Statement CLOSE_BRACES														{ $$ = NULL; }
@@ -312,7 +321,8 @@ StatementExpression: Assignment														{ $$ = NULL; }
 	;
 
 VarAccess: VAR_NAME														{ $$ = NULL; }
-	| VAR_NAME JAVA_DOT_OPERATOR VAR_NAME VarAccess														{ $$ = NULL; }
+	| VAR_NAME JAVA_DOT_OPERATOR VarAccess														{ $$ = NULL; }
+	| param JAVA_DOT_OPERATOR VarAccess										{ $$ = NULL; }
 	| MethodInvocation														{ $$ = NULL; }
 	;
 
@@ -373,12 +383,12 @@ UnaryExpressionNotPlusMinus: PostfixExpression														{ $$ = NULL; }
 	;
 
 PostfixExpression: Primary														{ $$ = NULL; }
-	| VAR_NAME														{ $$ = NULL; }
+	| VarAccess														{ $$ = NULL; }
 	| PostfixExpression PLUS PLUS														{ $$ = NULL; }
 	| PostfixExpression MINUS MINUS														{ $$ = NULL; }
 	;
 
-Assignment: VAR_NAME JAVA_ASSIGNMENT Expression														{ $$ = NULL; }
+Assignment: VarAccess JAVA_ASSIGNMENT Expression														{ $$ = NULL; }
 	;
 
 Primary: PrimaryNoNewArray														{ $$ = NULL; }
