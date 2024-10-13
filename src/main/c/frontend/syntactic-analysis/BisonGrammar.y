@@ -213,8 +213,7 @@ rule: VAR_NAME[def] regex_class[regex] ENDLINE[endline]	    		{ $$ = NULL; }
 	| lexeme[lex] ENDLINE[endline]									{ $$ = NULL; }
 	;
 
-lexeme: lexeme PIPE lexeme											{ $$ = NULL; }
-	| STR[string]													{ $$ = NULL; }					
+lexeme: STR[string]													{ $$ = NULL; }					
 	| regex_class[regex] closure									{ $$ = NULL; }
 	| OPEN_BRACES VAR_NAME[id] CLOSE_BRACES closure					{ $$ = NULL; }
 	| DEFAULT[string]												{ $$ = NULL; }
