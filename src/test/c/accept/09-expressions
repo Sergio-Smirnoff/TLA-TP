@@ -8,16 +8,19 @@
 "<>" -> NEQ;
 "<"  -> LSS;
 ">"  -> GTR;
-"<=" ->LEQ;
+"<=" -> LEQ;
 ">=" -> GEQ;
 
 Regex digit         [0-9];
 
-{digit}+ -> (State var){
+{digit}+ -> (){
                        var.attribute.num = Integer.parseInt(var.text.toString());
                        return NUMBER;
- };
+};
 
-[ \t\n\r]            /* skip whitespace */;
+/*Skipps white spaces*/ 
+"\t";
+"\n";
+"\r";
 
-default -> { return REJECT; };
+"default" -> (){ return REJECT; };

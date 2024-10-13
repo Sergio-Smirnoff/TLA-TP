@@ -36,12 +36,12 @@ void EndLineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext)
 void BeginRegexLine(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void BeginRegexNameLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 /** 
- * @brief retorna el token OUR_REGEX_ID de clase string con el nombre definido 
+ * @brief retorna el token VAR_NAME de clase string con el nombre definido 
  * 
  * @param lexicalAnalyzerContext
  * @return Token
  */
-Token RegexClassNameLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token VarNameLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
 // Regex class content functions:
 void BeginRegexContentLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
@@ -64,6 +64,7 @@ void BeginStringLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
  * @return Token 
  */
 Token StringLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
+void EndStringLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
 // Lexeme for regex classes functions:
 void BeginClassLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
@@ -82,22 +83,17 @@ void BeginOurClassLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 Token ClauseOperator(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
 
 // Default usage functions:
-void DefaultLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token DefaultLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
 // Actions functions:
 void BeginSimpleActionLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void BeginFunctionBodyLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void BeginFunctionParamLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
-// Simple actions functions:
-/**
- * @brief Retorna un token ACTION de tipo string con el nombre del
- * token que se retornaría ante el lexema
- * 
- * @param lexicalAnalyzerContext 
- * @return Token 
- */
-Token ActionNameLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
+//Utility
+Token SimpleTokenInsert(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
+Token SimpleStringInsert(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token);
+
 
 // Function param functions:
 /**
@@ -116,7 +112,6 @@ Token FunctionParamLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext, Token
  * @param lexicalAnalyzerContext 
  * @return Token 
  */
-Token FunctionBodyContentLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 void EndFunctionBodyLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
 // Endline functions:
@@ -126,10 +121,20 @@ void EndFunctionBodyLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
  * @param lexicalAnalyzerContext 
  * @return Token 
  */
-Token EndlineLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+Token EndLineLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
 // Unknown lexeme functions:
 Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+
+Token OpenParenthesesLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
+
+Token CloseParenthesesLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
+
+Token OpenBracesLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
+
+Token CloseBracesLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
+
+Token ArrowLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
 // OLD, PORLAS
 /*

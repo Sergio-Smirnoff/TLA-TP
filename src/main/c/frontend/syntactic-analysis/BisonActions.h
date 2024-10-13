@@ -20,8 +20,37 @@ void shutdownBisonActionsModule();
 
 // new
 
-Regex * RegexSemanticAction(char* action_name, char * action, RegexType type);
-Program * ProgramSemanticAction(CompilerState * compilerState, Regex * expression);
+Program * ProgramSemanticAction(CompilerState * compilerState, Ruleset * ruleset);
+
+//Ruleset
+Ruleset* RulesetSemanticAction( Rule* rule, Ruleset* ruleset );
+
+//Rule
+Rule* RuleDefinitionSemanticAction( Lexeme_precursor* lexeme, Action* action, Token endline, Rule_type type );
+Rule* RuleNewRegexSemanticAction( char* our_regex_id, Regex_class* regex_class, Token endline );
+
+// lexeme
+Lexeme* LexemeSemanticAction( char* string, Regex_class* regex_class, Closure* closure, Lexeme_type type );
+
+// closure
+Closure* ClosureSemanticAction( Token string );
+
+// range
+Range* RangeSemanticAction( char* right, char* left );
+
+// Params
+Param* ParamSemanticAction( Token stuff );
+
+// Action
+Action* ActionSemanticAction( char* string );
+Action* ActionParamSemanticAction( Param* param, char* body );
+
+//Regex_class
+Regex_class* RegexClassStringSemanticAction( char* string, Regex_class* regex_class );
+Regex_class* RegexClassRangeSemanticAction( Range* range, Regex_class* regex_class );
+
+Lexeme_precursor* LexemePrecursorSemanticAction( Lexeme *lex, Lexeme_precursor *lex_prec );
+
 
 // old
 /*

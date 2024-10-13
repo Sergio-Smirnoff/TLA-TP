@@ -33,25 +33,11 @@ static void _logSyntacticAnalyzerAction(const char * functionName) {
 
 // new
 
-Regex * RegexSemanticAction(char* action_name, char * action, RegexType type){
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Regex * regex = calloc(1, sizeof(Regex));
-	regex->string = action_name;
-	if (type == ID) {
-		regex->action_id = action_id;
-	}
-	else {
-		regex->action_def = action_id;
-	}
-	regex->type = type;
-	return regex;
 
-}
-
-Program * ProgramSemanticAction(CompilerState * compilerState, Regex * regex) {
+Program * ProgramSemanticAction(CompilerState * compilerState, Ruleset * ruleset) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Program * program = calloc(1, sizeof(Program));
-	program->regex = regex;
+	program->ruleset = ruleset;
 	compilerState->abstractSyntaxtTree = program;
 	if (0 < flexCurrentContext()) {
 		logError(_logger, "The final context is not the default (0): %d", flexCurrentContext());
@@ -63,47 +49,105 @@ Program * ProgramSemanticAction(CompilerState * compilerState, Regex * regex) {
 	return program;
 }
 
-
-// old
-/*
-Constant * IntegerConstantSemanticAction(const int value) {
+Ruleset* RulesetSemanticAction( Rule* rule, Ruleset* ruleset ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Constant * constant = calloc(1, sizeof(Constant));
-	constant->value = value;
-	return constant;
+	Ruleset * rt = calloc(1, sizeof(Ruleset));
+	rt->rule = rule;
+	rt->ruleset = ruleset;
+	return rt;
 }
 
-Expression * ArithmeticExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, ExpressionType type) {
+Rule* RuleDefinitionSemanticAction( Lexeme_precursor* lexeme, Action* action, Token endline, Rule_type type ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Expression * expression = calloc(1, sizeof(Expression));
-	expression->leftExpression = leftExpression;
-	expression->rightExpression = rightExpression;
-	expression->type = type;
-	return expression;
+	Rule * rule = calloc(1, sizeof(Rule));
+	rule->lexeme = lexeme;
+	rule->action = action;
+	rule->endline = endline;
+	rule->type = type;
+	return rule;
 }
 
-Expression * FactorExpressionSemanticAction(Factor * factor) {
+Rule* RuleNewRegexSemanticAction( char* our_regex_id, Regex_class* regex_class, Token endline ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Expression * expression = calloc(1, sizeof(Expression));
-	expression->factor = factor;
-	expression->type = FACTOR;
-	return expression;
+	Rule * rule = calloc(1, sizeof(Rule));
+	rule->our_regex_id = our_regex_id;
+	rule->regex_class = regex_class;
+	rule->endline = endline;
+	rule->type = regex;
+	return rule;
 }
 
-Factor * ConstantFactorSemanticAction(Constant * constant) {
+Lexeme* LexemeSemanticAction( char* string, Regex_class* regex_class, Closure* closure, Lexeme_type type ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Factor * factor = calloc(1, sizeof(Factor));
-	factor->constant = constant;
-	factor->type = CONSTANT;
-	return factor;
+	Lexeme * lexeme = calloc(1, sizeof(Lexeme));
+	lexeme->string = string;
+	lexeme->regex_class = regex_class;
+	lexeme->closure = closure;
+	lexeme->type = type;
+	return lexeme;
 }
 
-Factor * ExpressionFactorSemanticAction(Expression * expression) {
+Closure* ClosureSemanticAction( Token string ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Factor * factor = calloc(1, sizeof(Factor));
-	factor->expression = expression;
-	factor->type = EXPRESSION;
-	return factor;
+	Closure * closure = calloc(1, sizeof(Closure));
+	closure->closure = string;
+	return closure;
 }
 
-*/
+Range* RangeSemanticAction( char* right, char* left ) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Range * range = calloc(1, sizeof(Range));
+	range->right = right;
+	range->left = left;
+	return range;
+}
+
+Param* ParamSemanticAction( Token stuff ) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Param * param = calloc(1, sizeof(Param));
+	param->stuff = stuff;
+	return param;
+}
+
+Action* ActionSemanticAction( char* string ) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Action * act = calloc(1, sizeof(Action));
+	act->action = string;
+	act->type = action;
+	return action;
+}
+
+Action* ActionParamSemanticAction( Param* param, char* body ) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Action * action = calloc(1, sizeof(Action));
+	action->param = param;
+	action->function_body = body;
+	action->type = function_body;
+	return action;
+}
+
+Regex_class* RegexClassStringSemanticAction( char* string, Regex_class* regex_class ) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Regex_class * new_regex_class = calloc(1, sizeof(Regex_class));
+	new_regex_class->stuff = string;
+	new_regex_class->regex_class = regex_class;
+	new_regex_class->type = stuff;
+	return new_regex_class;
+}
+
+Regex_class* RegexClassRangeSemanticAction( Range* range_v, Regex_class* regex_class ) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Regex_class * new_regex_class = calloc(1, sizeof(Regex_class));
+	new_regex_class->range = range_v;
+	new_regex_class->regex_class = regex_class;
+	new_regex_class->type = range;
+	return new_regex_class;
+}
+
+Lexeme_precursor* LexemePrecursorSemanticAction( Lexeme *lex, Lexeme_precursor *lex_prec ){
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Lexeme_precursor * new_lexeme_precursor = calloc(1, sizeof(Lexeme_precursor));
+	new_lexeme_precursor->lex = lex;
+	new_lexeme_precursor->lex_prec = lex_prec;
+	return new_lexeme_precursor;
+}
