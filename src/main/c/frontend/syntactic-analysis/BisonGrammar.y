@@ -47,7 +47,6 @@
 	ConditionalOrExpression* ConditionalOrExpression;
 	ConditionalAndExpression* ConditionalAndExpression;
 	EqualityExpression* EqualityExpression;
-		BinaryExpression* BinaryExpression;
 	UnaryExpression* UnaryExpression;
 	PostfixExpression* PostfixExpression;
 	Assignment* Assignment;
@@ -178,7 +177,6 @@
 %type <PostfixExpression> PostfixExpression
 %type <Assignment> Assignment
 %type <Primary> Primary
-%type <BinaryExpression> BinaryExpression
 %type <ClassInstanceCreationExpression> ClassInstanceCreationExpression
 %type <UnqualifiedClassInstanceCreationExpression> UnqualifiedClassInstanceCreationExpression
 %type <Literal> Literal
@@ -277,6 +275,12 @@ param: STRING_TYPE													{ $$ = ParamSemanticAction($1); }
 ** Extending java parsing beyond this point far extends the scope of this program.
 */
 
+NumericComparison: JAVA_GEQ														{ $$ = NULL; }
+	| JAVA_GREATER														{ $$ = NULL; }
+	| JAVA_LEQ														{ $$ = NULL; }
+	| JAVA_LESSER														{ $$ = NULL; }
+	;
+
 Block: Statement Block												{ $$ = NULL; }
 	| Statement														{ $$ = NULL; }
 	;
@@ -349,38 +353,23 @@ ConditionalAndExpression: EqualityExpression														{ $$ = NULL; }
 	;
 
 EqualityExpression: UnaryExpression														{ $$ = NULL; }
-	| BinaryExpression                                                                 { $$ = NULL; }
+	| EqualityExpression JAVA_EXACT_COMPARISON UnaryExpression														{ $$ = NULL; }
 	;
 
-
-BinaryExpression:
-    BinaryExpression PLUS BinaryExpression    { $$ = NULL; }
-  | BinaryExpression MINUS BinaryExpression   { $$ = NULL; }
-  | BinaryExpression STAR BinaryExpression     { $$ = NULL; }
-  | BinaryExpression DIV BinaryExpression      { $$ = NULL; }
-  | BinaryExpression MOD BinaryExpression      { $$ = NULL; }
-  | NumericComparison                        { $$ = NULL; } 
-;
-
-
-UnaryExpression:
-    PostfixExpression                       { $$ = NULL; }
-  | JAVA_NOT UnaryExpression                { $$ = NULL; }
-  | DECREMENT UnaryExpression               { $$ = NULL; }
-  | INCREMENT UnaryExpression               { $$ = NULL; }
-  | MINUS UnaryExpression                   { $$ = NULL; }
-  | PLUS UnaryExpression                    { $$ = NULL; }
-  | OPEN_PARENTHESES Expression CLOSE_PARENTHESES { $$ = NULL; }
-;
-
-
-NumericComparison:
-    UnaryExpression JAVA_LESSER UnaryExpression         { $$ = NULL; }
-  | UnaryExpression JAVA_LEQ UnaryExpression            { $$ = NULL; }
-  | UnaryExpression JAVA_GREATER UnaryExpression         { $$ = NULL; }
-  | UnaryExpression JAVA_GEQ UnaryExpression            { $$ = NULL; }
-  | UnaryExpression JAVA_EXACT_COMPARISON UnaryExpression { $$ = NULL; }
-;
+UnaryExpression:  UnaryExpression NumericComparison UnaryExpression						{ $$ = NULL; }
+	| UnaryExpression STAR UnaryExpression														{ $$ = NULL; }
+	| UnaryExpression DIV UnaryExpression														{ $$ = NULL; }
+	| UnaryExpression MOD UnaryExpression													{ $$ = NULL; }
+	| UnaryExpression PLUS UnaryExpression														{ $$ = NULL; }
+	| UnaryExpression MINUS UnaryExpression														{ $$ = NULL; }
+	| PostfixExpression														{ $$ = NULL; }
+	| JAVA_NOT UnaryExpression														{ $$ = NULL; }
+	| OPEN_PARENTHESES param CLOSE_PARENTHESES														{ $$ = NULL; }
+	| DECREMENT UnaryExpression														{ $$ = NULL; }
+	| MINUS UnaryExpression														{ $$ = NULL; }
+	| INCREMENT UnaryExpression														{ $$ = NULL; }
+	| PLUS UnaryExpression														{ $$ = NULL; }
+	;
 
 
 PostfixExpression: Primary														{ $$ = NULL; }
