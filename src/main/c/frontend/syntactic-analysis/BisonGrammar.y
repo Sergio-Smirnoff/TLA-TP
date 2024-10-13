@@ -374,8 +374,8 @@ UnaryExpression:  UnaryExpression NumericComparison UnaryExpression						{ $$ = 
 
 PostfixExpression: Primary														{ $$ = NULL; }
 	| VarAccess														{ $$ = NULL; }
-	| PostfixExpression INCREMENT														{ $$ = NULL; }
-	| PostfixExpression DECREMENT														{ $$ = NULL; }
+	| VarAccess INCREMENT														{ $$ = NULL; }
+	| VarAccess DECREMENT														{ $$ = NULL; }
 	;
 
 Assignment: VarAccess JAVA_ASSIGNMENT Expression														{ $$ = NULL; }
@@ -384,7 +384,6 @@ Assignment: VarAccess JAVA_ASSIGNMENT Expression														{ $$ = NULL; }
 Primary: Literal														{ $$ = NULL; }
 	| OPEN_PARENTHESES Expression CLOSE_PARENTHESES														{ $$ = NULL; }
 	| ClassInstanceCreationExpression														{ $$ = NULL; }
-	| MethodInvocation														{ $$ = NULL; }
 	;
 
 ClassInstanceCreationExpression: UnqualifiedClassInstanceCreationExpression														{ $$ = NULL; }
