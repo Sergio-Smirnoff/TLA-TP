@@ -1,7 +1,7 @@
 %{
 
 #include "BisonActions.h"
-//yydebug = 1;
+yydebug = 1;
 
 %}
 
@@ -318,6 +318,7 @@ StatementExpression: Assignment														{ $$ = NULL; }
 	| UnaryExpression PLUS PLUS 														{ $$ = NULL; }
 	| UnaryExpression MINUS MINUS														{ $$ = NULL; } 
 	| MethodInvocation														{ $$ = NULL; }
+	| param VAR_NAME JAVA_ASSIGNMENT Expression								{ $$ = NULL; }
 	;
 
 VarAccess: VAR_NAME														{ $$ = NULL; }
