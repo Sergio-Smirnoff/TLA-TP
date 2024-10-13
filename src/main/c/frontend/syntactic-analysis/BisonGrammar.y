@@ -348,15 +348,11 @@ Literal: NUMBER
 	| STR
 	;
 
-ArrayCreationExpression: JAVA_NEW param DimExprs Dims
+ArrayCreationExpression: JAVA_NEW param Dims
 	;
 
 Dims: JAVA_DIMS
-	| JAVA_DIMS JAVA_DIMS
-	;
-
-DimExprs: Expression
-	| Expression Expression
+	| JAVA_DIMS Dims
 	;
 
 %%
