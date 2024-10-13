@@ -347,19 +347,19 @@ EqualityExpression: UnaryExpression																														{ $$ = NULL; }
 	| EqualityExpression JAVA_EXACT_COMPARISON UnaryExpression																							{ $$ = NULL; }
 	;
 
-UnaryExpression:  UnaryExpression NumericComparison UnaryExpression						{ $$ = NULL; }
-	| UnaryExpression STAR UnaryExpression														{ $$ = NULL; }
-	| UnaryExpression DIV UnaryExpression														{ $$ = NULL; }
-	| UnaryExpression MOD UnaryExpression													{ $$ = NULL; }
-	| UnaryExpression PLUS UnaryExpression														{ $$ = NULL; }
-	| UnaryExpression MINUS UnaryExpression														{ $$ = NULL; }
-	| PostfixExpression														{ $$ = NULL; }
-	| JAVA_NOT UnaryExpression														{ $$ = NULL; }
-	| OPEN_PARENTHESES param CLOSE_PARENTHESES														{ $$ = NULL; }
-	| DECREMENT UnaryExpression														{ $$ = NULL; }
-	| MINUS UnaryExpression														{ $$ = NULL; }
-	| INCREMENT UnaryExpression														{ $$ = NULL; }
-	| PLUS UnaryExpression														{ $$ = NULL; }
+UnaryExpression:  UnaryExpression NumericComparison UnaryExpression																						{ $$ = NULL; }
+	| UnaryExpression STAR UnaryExpression																												{ $$ = NULL; }
+	| UnaryExpression DIV UnaryExpression																												{ $$ = NULL; }
+	| UnaryExpression MOD UnaryExpression																												{ $$ = NULL; }
+	| UnaryExpression PLUS UnaryExpression																												{ $$ = NULL; }
+	| UnaryExpression MINUS UnaryExpression																												{ $$ = NULL; }
+	| PostfixExpression																																	{ $$ = NULL; }
+	| JAVA_NOT UnaryExpression																															{ $$ = NULL; }
+	| OPEN_PARENTHESES param CLOSE_PARENTHESES																											{ $$ = NULL; }
+	| DECREMENT UnaryExpression																															{ $$ = NULL; }
+	| MINUS UnaryExpression																																{ $$ = NULL; }
+	| INCREMENT UnaryExpression																															{ $$ = NULL; }
+	| PLUS UnaryExpression																																{ $$ = NULL; }
 	;
 
 PostfixExpression: Primary																																{ $$ = NULL; }
