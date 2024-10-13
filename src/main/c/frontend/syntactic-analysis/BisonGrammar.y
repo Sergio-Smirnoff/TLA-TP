@@ -1,22 +1,20 @@
 %{
 
 #include "BisonActions.h"
-#define YYDEBUG 1
-yydebug = true;
+
 %}
 
 // You touch this, and you die.
 %define api.value.union.name SemanticValue
 
 %union {
-	/** TerLOWERCASEals */
+	/** Terminals */
 
 	char* string;
 	Token token;
 
-	/** Non-terLOWERCASEals */
+	/** Non-terminals */
 
-	/*Function_body* function_body;*/
 	Lexeme* lexeme;
 	Regex_class* regex_class;
 	Action* action;
@@ -27,6 +25,37 @@ yydebug = true;
 	Rule* rule;
 	Ruleset* ruleset;
 	Program * program;
+	NumericComparison* NumericComparison;
+	Statement* Statement;
+	ForInit* ForInit;
+	StatementExpressionList* StatementExpressionList;
+	IfThenStatement* IfThenStatement;
+	IfThenElseStatement* IfThenElseStatement;
+	IfThenElseStatementNoShortIf* IfThenElseStatementNoShortIf;
+	StatementWithoutTrailingSubstatement* StatementWithoutTrailingSubstatement;
+	StatementExpression* StatementExpression;
+	VarAccess* VarAccess;
+	MethodInvocation* MethodInvocation;
+	ArgumentList* ArgumentList;
+	Expression* Expression;
+	ConditionalExpression* ConditionalExpression;
+	ConditionalOrExpression* ConditionalOrExpression;
+	ConditionalAndExpression* ConditionalAndExpression;
+	EqualityExpression* EqualityExpression;
+	RelationalExpression* RelationalExpression;
+	AdditiveExpression* AdditiveExpression;
+	MultiplicativeExpression* MultiplicativeExpression;
+	UnaryExpression* UnaryExpression;
+	UnaryExpressionNotPlusMinus* UnaryExpressionNotPlusMinus;
+	PostfixExpression* PostfixExpression;
+	Assignment* Assignment;
+	Primary* Primary;
+	PrimaryNoNewArray* PrimaryNoNewArray;
+	ClassInstanceCreationExpression* ClassInstanceCreationExpression;
+	UnqualifiedClassInstanceCreationExpression* UnqualifiedClassInstanceCreationExpression;
+	Literal* Literal;
+	ArrayCreationExpression* ArrayCreationExpression;
+	Dims* Dims;
 }
 
 
@@ -125,6 +154,38 @@ yydebug = true;
 %type <ruleset> ruleset
 %type <rule> rule
 %type <closure> closure
+
+%type <NumericComparison> NumericComparison
+%type <Statement> Statement
+%type <ForInit> ForInit
+%type <StatementExpressionList> StatementExpressionList
+%type <IfThenStatement> IfThenStatement
+%type <IfThenElseStatement> IfThenElseStatement
+%type <IfThenElseStatementNoShortIf> IfThenElseStatementNoShortIf
+%type <StatementWithoutTrailingSubstatement> StatementWithoutTrailingSubstatement
+%type <StatementExpression> StatementExpression
+%type <VarAccess> VarAccess
+%type <MethodInvocation> MethodInvocation
+%type <ArgumentList> ArgumentList
+%type <Expression> Expression
+%type <ConditionalExpression> ConditionalExpression
+%type <ConditionalOrExpression> ConditionalOrExpression
+%type <ConditionalAndExpression> ConditionalAndExpression
+%type <EqualityExpression> EqualityExpression
+%type <RelationalExpression> RelationalExpression
+%type <AdditiveExpression> AdditiveExpression
+%type <MultiplicativeExpression> MultiplicativeExpression
+%type <UnaryExpression> UnaryExpression
+%type <UnaryExpressionNotPlusMinus> UnaryExpressionNotPlusMinus
+%type <PostfixExpression> PostfixExpression
+%type <Assignment> Assignment
+%type <Primary> Primary
+%type <PrimaryNoNewArray> PrimaryNoNewArray
+%type <ClassInstanceCreationExpression> ClassInstanceCreationExpression
+%type <UnqualifiedClassInstanceCreationExpression> UnqualifiedClassInstanceCreationExpression
+%type <Literal> Literal
+%type <ArrayCreationExpression> ArrayCreationExpression
+%type <Dims> Dims
 
 //%type <function_body> function_body
 
