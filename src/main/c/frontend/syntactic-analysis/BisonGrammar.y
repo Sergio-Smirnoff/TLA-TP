@@ -94,6 +94,8 @@ yydebug=1;
 %token <token> STAR
 %token <token> PLUS
 %token <token> MINUS
+%token <token> INCREMENT
+%token <token> DECREMENT
 %token <token> DIV
 %token <token> MOD
 %token <token> COMMA
@@ -134,10 +136,6 @@ yydebug=1;
 %token <token> FLOAT
 %token <token> PIPE
 %token <token> UNKNOWN
-
-
-
-
 
 /** Non-terminals. */
 
@@ -187,8 +185,18 @@ yydebug=1;
  * @see https://www.gnu.org/software/bison/manual/html_node/Precedence.html
  * %left ADD SUB %left MUL DIV
  */
-%left UPPERCASE LOWERCASE DIGIT SYMBOL ESCAPED_SYMBOL 
 
+%left ','
+%precedence INCREMENT DECREMENT
+%left PLUS MINUS              
+%left STAR DIV MOD           
+%left JAVA_OR                
+%left JAVA_AND               
+%nonassoc JAVA_TERNARY_OPERATOR 
+%left JAVA_LESSER JAVA_LEQ JAVA_GREATER JAVA_GEQ JAVA_EXACT_COMPARISON
+%left JAVA_ASSIGNMENT       
+%right JAVA_NOT              
+%left UPPERCASE LOWERCASE DIGIT SYMBOL ESCAPED_SYMBOL
 %%
 
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
@@ -304,10 +312,10 @@ StatementWithoutTrailingSubstatement: ENDLINE														{ $$ = NULL; }
 	;
 
 StatementExpression: Assignment														{ $$ = NULL; }
-	| PLUS PLUS UnaryExpression														{ $$ = NULL; }
-	| MINUS MINUS UnaryExpression														{ $$ = NULL; }
-	| UnaryExpression PLUS PLUS 														{ $$ = NULL; }
-	| UnaryExpression MINUS MINUS														{ $$ = NULL; } 
+	| INCREMENT UnaryExpression														{ $$ = NULL; }
+	| DECREMENT UnaryExpression														{ $$ = NULL; }
+	| UnaryExpression INCREMENT 														{ $$ = NULL; }
+	| UnaryExpression DECREMENT														{ $$ = NULL; } 
 	| MethodInvocation														{ $$ = NULL; }
 	| param VAR_NAME JAVA_ASSIGNMENT Expression								{ $$ = NULL; }
 	;
@@ -355,17 +363,17 @@ UnaryExpression:  UnaryExpression NumericComparison UnaryExpression						{ $$ = 
 	| PostfixExpression														{ $$ = NULL; }
 	| JAVA_NOT UnaryExpression														{ $$ = NULL; }
 	| OPEN_PARENTHESES param CLOSE_PARENTHESES														{ $$ = NULL; }
-	| MINUS MINUS UnaryExpression														{ $$ = NULL; }
+	| DECREMENT UnaryExpression														{ $$ = NULL; }
 	| MINUS UnaryExpression														{ $$ = NULL; }
-	| PLUS PLUS UnaryExpression														{ $$ = NULL; }
+	| INCREMENT UnaryExpression														{ $$ = NULL; }
 	| PLUS UnaryExpression														{ $$ = NULL; }
 	;
 
 
 PostfixExpression: Primary														{ $$ = NULL; }
 	| VarAccess														{ $$ = NULL; }
-	| PostfixExpression PLUS PLUS														{ $$ = NULL; }
-	| PostfixExpression MINUS MINUS														{ $$ = NULL; }
+	| PostfixExpression INCREMENT														{ $$ = NULL; }
+	| PostfixExpression DECREMENT														{ $$ = NULL; }
 	;
 
 Assignment: VarAccess JAVA_ASSIGNMENT Expression														{ $$ = NULL; }

@@ -75,6 +75,8 @@
 <STRING>"\""                                    { EndStringLexeme(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 
 "*"                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), STAR); }
+"++"                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), INCREMENT); }
+"--"                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), DECREMENT); }
 "+"                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), PLUS); }
 "-"                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), MINUS); }
 "/"                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), DIV); }
