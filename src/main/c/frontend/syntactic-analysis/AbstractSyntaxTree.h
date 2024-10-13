@@ -21,6 +21,7 @@ typedef struct Program Program;
 typedef struct Closure Closure;
 typedef struct Param Param;
 typedef struct Lexeme Lexeme;
+typedef struct Lexeme_precursor Lexeme_precursor;
 typedef struct Action Action;
 typedef struct Ruleset Ruleset;
 typedef struct Rule Rule;
@@ -228,6 +229,11 @@ struct Function_body{
 	char* ret;
 };
 
+struct Lexeme_precursor{
+	Lexeme *lex;
+	Lexeme_precursor *lex_prec;
+};
+
 struct Param{
 	Token stuff;
 };
@@ -323,9 +329,9 @@ struct Rule {
 			char* our_regex_id;
 			Regex_class* regex_class;
 		};
-		Lexeme* lexeme;
+		Lexeme_precursor* lexeme;
 		struct{
-			Lexeme* lex;
+			Lexeme_precursor* lex;
 			Action* action;
 		};
 
@@ -356,6 +362,7 @@ void releaseRegexClass(Regex_class * regex_class);
 void releaseRange(Range * range);
 void releaseClosure(Closure * closure);
 void releaseParam(Param * param);
+void releaseLexemePrecursor(Lexeme_precursor * lexeme_precursor);
 //void releaseFunctionBody(Function_body * function_body);
 
 

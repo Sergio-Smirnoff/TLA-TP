@@ -57,7 +57,7 @@ Ruleset* RulesetSemanticAction( Rule* rule, Ruleset* ruleset ) {
 	return rt;
 }
 
-Rule* RuleDefinitionSemanticAction( Lexeme* lexeme, Action* action, Token endline, Rule_type type ) {
+Rule* RuleDefinitionSemanticAction( Lexeme_precursor* lexeme, Action* action, Token endline, Rule_type type ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Rule * rule = calloc(1, sizeof(Rule));
 	rule->lexeme = lexeme;
@@ -129,18 +129,25 @@ Action* ActionParamSemanticAction( Param* param, char* body ) {
 Regex_class* RegexClassStringSemanticAction( char* string, Regex_class* regex_class ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Regex_class * new_regex_class = calloc(1, sizeof(Regex_class));
-	regex_class->stuff = string;
-	regex_class->regex_class = regex_class;
-	regex_class->type = stuff;
+	new_regex_class->stuff = string;
+	new_regex_class->regex_class = regex_class;
+	new_regex_class->type = stuff;
 	return new_regex_class;
 }
 
 Regex_class* RegexClassRangeSemanticAction( Range* range_v, Regex_class* regex_class ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Regex_class * new_regex_class = calloc(1, sizeof(Regex_class));
-	regex_class->range = range_v;
-	regex_class->regex_class = regex_class;
-	regex_class->type = range;
+	new_regex_class->range = range_v;
+	new_regex_class->regex_class = regex_class;
+	new_regex_class->type = range;
 	return new_regex_class;
 }
 
+Lexeme_precursor* LexemePrecursorSemanticAction( Lexeme *lex, Lexeme_precursor *lex_prec ){
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Lexeme_precursor * new_lexeme_precursor = calloc(1, sizeof(Lexeme_precursor));
+	new_lexeme_precursor->lex = lex;
+	new_lexeme_precursor->lex_prec = lex_prec;
+	return new_lexeme_precursor;
+}

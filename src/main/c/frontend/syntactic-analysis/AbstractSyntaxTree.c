@@ -42,10 +42,10 @@ void releaseRule(Rule * rule) {
 				releaseRegexClass(rule->regex_class);
 				break;
 			case ignore_lexeme:
-				releaseLexeme(rule->lexeme);
+				releaseLexemePrecursor(rule->lexeme);
 				break;
 			case lexeme_action:
-				releaseLexeme(rule->lexeme);
+				releaseLexemePrecursor(rule->lexeme);
 				releaseAction(rule->action);
 				break;
 		}
@@ -67,6 +67,15 @@ void releaseParam(Param * param) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (param != NULL) {
 		free(param);
+	}
+}
+
+void releaseLexemePrecursor(Lexeme_precursor * lexeme_precursor) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (lexeme_precursor != NULL) {
+		releaseLexeme(lexeme_precursor->lex);
+		releaseLexemePrecursor(lexeme_precursor->lex_prec);
+		free(lexeme_precursor);
 	}
 }
 
