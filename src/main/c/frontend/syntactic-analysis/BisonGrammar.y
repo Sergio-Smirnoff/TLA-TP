@@ -307,89 +307,88 @@ StatementWithoutTrailingSubstatement: %empty																											{ $$ = NU
 StatementExpression: Assignment																															{ $$ = JavaAsignmentSemanticAction($1); }
 	| INCREMENT UnaryExpression																															{ $$ = JavaModifyingStatementExpressionSemanticAction(pre, $1, $2); }
 	| DECREMENT UnaryExpression																											     			{ $$ = JavaModifyingStatementExpressionSemanticAction(pre, $1, $2); }
-	| UnaryExpression INCREMENT 																														{ $$ = JavaModifyingStatementExpressionSemanticAction(pre, $2, $1); }
-	| UnaryExpression DECREMENT																															{ $$ = JavaModifyingStatementExpressionSemanticAction(pre, $2, $1); } 
-	| MethodInvocation																																	{ $$ = NULL; }
-	| param VAR_NAME JAVA_ASSIGNMENT Expression																											{ $$ = NULL; }
+	| UnaryExpression INCREMENT 																														{ $$ = JavaModifyingStatementExpressionSemanticAction(post, $2, $1); }
+	| UnaryExpression DECREMENT																															{ $$ = JavaModifyingStatementExpressionSemanticAction(post, $2, $1); } 
+	| MethodInvocation																																	{ $$ = JavaMethodInvocationSemanticAction($1); }
+	| param VAR_NAME JAVA_ASSIGNMENT Expression																											{ $$ = JavaAsignmentParamSemanticAction($1, $2, $3, $4); }
 	;
 
-VarAccess: VAR_NAME																																		{ $$ = NULL; }
-	| VAR_NAME JAVA_DOT_OPERATOR VarAccess																												{ $$ = NULL; }
-	| param JAVA_DOT_OPERATOR VarAccess																													{ $$ = NULL; }
-	| MethodInvocation																																	{ $$ = NULL; }
+VarAccess: VAR_NAME																																		{ $$ = VarAccessVarSemanticAction($1); }
+	| VAR_NAME JAVA_DOT_OPERATOR VarAccess																												{ $$ = VarAccessVarOperatorSemanticAction($1,$3); }
+	| param JAVA_DOT_OPERATOR VarAccess																													{ $$ = VarAccessParamOperatorSemanticAction($1,$3); }
+	| MethodInvocation																																	{ $$ = VarAccessMethodInvocationSemanticAction($1); }
 	;
 
-MethodInvocation: VarAccess OPEN_PARENTHESES ArgumentList CLOSE_PARENTHESES																				{ $$ = NULL; }
+MethodInvocation: VarAccess OPEN_PARENTHESES ArgumentList CLOSE_PARENTHESES																				{ $$ = InvocationSemanticAction($1, $2 ); }
 	;
 
 ArgumentList: %empty																																	{ $$ = NULL; }
-	| Expression																																		{ $$ = NULL; }
-	| Expression COMMA ArgumentList																														{ $$ = NULL; }
+	| Expression																																		{ $$ = ArgListSemanticExpression($1,NULL); }
+	| Expression COMMA ArgumentList																														{ $$ = ArgListSemanticExpression($1,$2); }
 	;
 
-Expression: ConditionalExpression																														{ $$ = NULL; }
-	| Assignment																																		{ $$ = NULL; }
+Expression: ConditionalExpression																														{ $$ = expressionSematicAction( $1, NULL, cexp ); }
+	| Assignment																																		{ $$ = expressionSematicAction( NULL, $1, assignment ); }
 	;
 
-ConditionalExpression: ConditionalOrExpression																											{ $$ = NULL; }
-	| ConditionalOrExpression JAVA_TERNARY_OPERATOR Expression JAVA_DOTS_OPERATOR ConditionalExpression													{ $$ = NULL; }
+ConditionalExpression: ConditionalOrExpression																											{ $$ = JavaConditionalExpSemanticAction($1,NULL,NULL); }
+	| ConditionalOrExpression JAVA_TERNARY_OPERATOR Expression JAVA_DOTS_OPERATOR ConditionalExpression													{ $$ = JavaConditionalExpSemanticAction($1, $3, $5); }
 	;
 
-ConditionalOrExpression: ConditionalAndExpression																										{ $$ = NULL; }
-	| ConditionalOrExpression JAVA_OR ConditionalAndExpression																							{ $$ = NULL; }
+ConditionalOrExpression: ConditionalAndExpression																										{ $$ = JavaConditionalOrExpressionSemanticAction( $1 ); }
+	| ConditionalOrExpression JAVA_OR ConditionalAndExpression																							{ $$ = JavaConditionalOrExpressionSemanticAction( $3, $1 ); }
 	;
 
-ConditionalAndExpression: EqualityExpression																											{ $$ = NULL; }
-	| ConditionalAndExpression JAVA_AND EqualityExpression																								{ $$ = NULL; }
+ConditionalAndExpression: EqualityExpression																											{ $$ = JavaConditionalAndExpressionSemanticAction($1); }
 	;
 
-EqualityExpression: UnaryExpression																														{ $$ = NULL; }
-	| EqualityExpression JAVA_EXACT_COMPARISON UnaryExpression																							{ $$ = NULL; }
+EqualityExpression: UnaryExpression																														{ $$ = EqualityExpressionSemanticAction( $1 ); }
+	| EqualityExpression JAVA_EXACT_COMPARISON UnaryExpression																							{ $$ = EqualityExpressionSemanticAction( $2,$1 ); }
 	;
 
-UnaryExpression:  UnaryExpression NumericComparison UnaryExpression																						{ $$ = NULL; }
-	| UnaryExpression STAR UnaryExpression																												{ $$ = NULL; }
-	| UnaryExpression DIV UnaryExpression																												{ $$ = NULL; }
-	| UnaryExpression MOD UnaryExpression																												{ $$ = NULL; }
-	| UnaryExpression PLUS UnaryExpression																												{ $$ = NULL; }
-	| UnaryExpression MINUS UnaryExpression																												{ $$ = NULL; }
-	| PostfixExpression																																	{ $$ = NULL; }
-	| JAVA_NOT UnaryExpression																															{ $$ = NULL; }
-	| OPEN_PARENTHESES param CLOSE_PARENTHESES																											{ $$ = NULL; }
-	| DECREMENT UnaryExpression																															{ $$ = NULL; }
-	| MINUS UnaryExpression																																{ $$ = NULL; }
-	| INCREMENT UnaryExpression																															{ $$ = NULL; }
-	| PLUS UnaryExpression																																{ $$ = NULL; }
+UnaryExpression:  UnaryExpression NumericComparison UnaryExpression																						{ $$ = UnaryExpressionNumericComparisonSintaticAction($1,$2;$3); }
+	| UnaryExpression STAR UnaryExpression																												{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,star ,$3); }
+	| UnaryExpression DIV UnaryExpression																												{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,div ,$3); }
+	| UnaryExpression MOD UnaryExpression																												{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,mod ,$3); }
+	| UnaryExpression PLUS UnaryExpression																												{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,plus ,$3); }
+	| UnaryExpression MINUS UnaryExpression																												{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,minus ,$3); }
+	| PostfixExpression																																	{ $$ = UnaryExpressionPostfixExpressionSintaticAction($1); }
+	| JAVA_NOT UnaryExpression																															{ $$ = UnaryExpressionSingleTokenSintaticAction($2,$1); }
+	| OPEN_PARENTHESES param CLOSE_PARENTHESES																											{ $$ = UnaryExpressionParamSintaticAction($2); }
+	| DECREMENT UnaryExpression																															{ $$ = UnaryExpressionSingleTokenSintaticAction($2,$1); }
+	| MINUS UnaryExpression																																{ $$ = UnaryExpressionSingleTokenSintaticAction($2,$1); }
+	| INCREMENT UnaryExpression																															{ $$ = UnaryExpressionSingleTokenSintaticAction($2,$1); }
+	| PLUS UnaryExpression																																{ $$ = UnaryExpressionSingleTokenSintaticAction($2,$1); }
 	;
 
-PostfixExpression: Primary																																{ $$ = NULL; }
-	| VarAccess																																			{ $$ = NULL; }
-	| PostfixExpression INCREMENT																														{ $$ = NULL; }
-	| PostfixExpression DECREMENT																														{ $$ = NULL; }
+PostfixExpression: Primary																																{ $$ = PostfixExpressionPrimarySemanticAction($1); }
+	| VarAccess																																			{ $$ = PostfixExpressionVAccessSemanticAction($1); }
+	| PostfixExpression INCREMENT																														{ $$ = PostfixExpressionPostfixSemanticAction($1,$2); }
+	| PostfixExpression DECREMENT																														{ $$ = PostfixExpressionSemanticAction($1,$2); }
 	;
 
-Assignment: VarAccess JAVA_ASSIGNMENT Expression																										{ $$ = NULL; }
+Assignment: VarAccess JAVA_ASSIGNMENT Expression																										{ $$ = AssignmentSemanticAction($1,$3); }
 	;
 
-Primary: Literal																																		{ $$ = NULL; }
-	| OPEN_PARENTHESES Expression CLOSE_PARENTHESES																										{ $$ = NULL; }
-	| ClassInstanceCreationExpression																													{ $$ = NULL; }
-	| MethodInvocation																						    										{ $$ = NULL; }
+Primary: Literal																																		{ $$ = PrimaryLiteralSemanticAction($1); }
+	| OPEN_PARENTHESES Expression CLOSE_PARENTHESES																										{ $$ = PrimaryExpressionSemanticAction($2); }
+	| ClassInstanceCreationExpression																													{ $$ = PrimaryCExpSemanticAction($1); }
+	| MethodInvocation																						    										{ $$ = PrimaryMethodInvocationSemanticAction($1); }
 	;
 
-ClassInstanceCreationExpression: UnqualifiedClassInstanceCreationExpression																				{ $$ = NULL; }
-	| VarAccess JAVA_DOT_OPERATOR UnqualifiedClassInstanceCreationExpression																			{ $$ = NULL; }
-	| Primary JAVA_DOT_OPERATOR UnqualifiedClassInstanceCreationExpression																				{ $$ = NULL; }
+ClassInstanceCreationExpression: UnqualifiedClassInstanceCreationExpression																				{ $$ = InstanceCreationExpressionSemanticAction($1); }
+	| VarAccess JAVA_DOT_OPERATOR UnqualifiedClassInstanceCreationExpression																			{ $$ = VAccessInstanceCreationExpressionSemanticAction($1, $3); }
+	| Primary JAVA_DOT_OPERATOR UnqualifiedClassInstanceCreationExpression																				{ $$ = PrimaryInstanceCreationExpressionSemanticAction($1,$3); }
 	;
 
-UnqualifiedClassInstanceCreationExpression: JAVA_NEW param OPEN_PARENTHESES ArgumentList CLOSE_PARENTHESES												{ $$ = NULL; }
+UnqualifiedClassInstanceCreationExpression: JAVA_NEW param OPEN_PARENTHESES ArgumentList CLOSE_PARENTHESES												{ $$ = UnqualifiedClassSemanticAction($2,$4); }
 	;
 
-Literal: NUMBER																																			{ $$ = NULL; }
-	| JAVA_TRUE																																			{ $$ = NULL; }
-	| JAVA_FALSE																																		{ $$ = NULL; }
-	| FLOAT																																				{ $$ = NULL; }
-	| STR																																				{ $$ = NULL; }
+Literal: NUMBER																																			{ $$ = JavaLiteralTokenSemanticAction($1); }
+	| JAVA_TRUE																																			{ $$ = JavaLiteralTokenSemanticAction($1); }
+	| JAVA_FALSE																																		{ $$ = JavaLiteralTokenSemanticAction($1); }
+	| FLOAT																																				{ $$ = JavaLiteralTokenSemanticAction($1); }
+	| STR																																				{ $$ = JavaLiteralStrSemanticAction($1); }
 	;
 
 %%
