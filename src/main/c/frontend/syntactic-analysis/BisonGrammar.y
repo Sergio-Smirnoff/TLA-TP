@@ -271,12 +271,6 @@ param: STRING_TYPE													{ $$ = ParamSemanticAction($1); }
 ** Extending java parsing beyond this point far extends the scope of this program.
 */
 
-NumericComparison: JAVA_GEQ														{ $$ = NULL; }
-	| JAVA_GREATER														{ $$ = NULL; }
-	| JAVA_LEQ														{ $$ = NULL; }
-	| JAVA_LESSER														{ $$ = NULL; }
-	;
-
 Block: Statement Block												{ $$ = NULL; }
 	| Statement														{ $$ = NULL; }
 	;
