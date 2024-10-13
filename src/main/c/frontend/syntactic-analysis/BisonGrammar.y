@@ -343,7 +343,7 @@ ConditionalAndExpression: EqualityExpression														{ $$ = NULL; }
 	;
 
 EqualityExpression: UnaryExpression														{ $$ = NULL; }
-	| EqualityExpression JAVA_EXACT_COMPARISON UnaryExpression														{ $$ = NULL; }
+	| BinaryExpression                                                                 { $$ = NULL; }
 	;
 
 
