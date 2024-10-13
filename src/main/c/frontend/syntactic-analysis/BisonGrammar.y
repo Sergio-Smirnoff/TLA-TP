@@ -267,153 +267,151 @@ param: STRING_TYPE													{ $$ = NULL; }
 ** Extending java parsing beyond this point far extends the scope of this program.
 */
 
-NumericComparison: JAVA_GEQ
-	| JAVA_GREATER
-	| JAVA_LEQ
-	| JAVA_LESSER
+NumericComparison: JAVA_GEQ														{ $$ = NULL; }
+	| JAVA_GREATER														{ $$ = NULL; }
+	| JAVA_LEQ														{ $$ = NULL; }
+	| JAVA_LESSER														{ $$ = NULL; }
 	;
 
-Statement: StatementWithoutTrailingSubstatement
-	| IfThenStatement
-	| IfThenElseStatement
-	| JAVA_WHILE OPEN_PARENTHESES Expression CLOSE_PARENTHESES OPEN_BRACES Statement CLOSE_BRACES
-	| JAVA_FOR OPEN_PARENTHESES ForInit ENDLINE Expression ENDLINE StatementExpressionList CLOSE_PARENTHESES OPEN_BRACES Statement CLOSE_BRACES
+Statement: StatementWithoutTrailingSubstatement														{ $$ = NULL; }
+	| IfThenStatement														{ $$ = NULL; }
+	| IfThenElseStatement														{ $$ = NULL; }
+	| JAVA_WHILE OPEN_PARENTHESES Expression CLOSE_PARENTHESES OPEN_BRACES Statement CLOSE_BRACES														{ $$ = NULL; }
+	| JAVA_FOR OPEN_PARENTHESES ForInit ENDLINE Expression ENDLINE StatementExpressionList CLOSE_PARENTHESES OPEN_BRACES Statement CLOSE_BRACES														{ $$ = NULL; }
 	;
 
-ForInit: StatementExpressionList
-	| param VAR_NAME
+ForInit: StatementExpressionList														{ $$ = NULL; }
+	| param VAR_NAME														{ $$ = NULL; }
 	;
 
-StatementExpressionList: %empty
-	| StatementExpression
-	| StatementExpression COMMA StatementExpressionList
+StatementExpressionList: %empty														{ $$ = NULL; }
+	| StatementExpression														{ $$ = NULL; }
+	| StatementExpression COMMA StatementExpressionList														{ $$ = NULL; }
 	;
 
-IfThenStatement: JAVA_IF OPEN_PARENTHESES Expression CLOSE_PARENTHESES Statement
+IfThenStatement: JAVA_IF OPEN_PARENTHESES Expression CLOSE_PARENTHESES Statement														{ $$ = NULL; }
 	;
 
-IfThenElseStatement: JAVA_IF OPEN_PARENTHESES Expression CLOSE_PARENTHESES Statement JAVA_ELSE Statement
+IfThenElseStatement: JAVA_IF OPEN_PARENTHESES Expression CLOSE_PARENTHESES Statement JAVA_ELSE Statement														{ $$ = NULL; }
 	;
 
-IfThenElseStatementNoShortIf: JAVA_IF OPEN_PARENTHESES Expression CLOSE_PARENTHESES Statement JAVA_ELSE Statement
+IfThenElseStatementNoShortIf: JAVA_IF OPEN_PARENTHESES Expression CLOSE_PARENTHESES Statement JAVA_ELSE Statement														{ $$ = NULL; }
 	;
 
-StatementWithoutTrailingSubstatement:
-	| ENDLINE
-	| StatementExpression
-	| JAVA_RETURN Expression
-	| JAVA_THROW Expression
+StatementWithoutTrailingSubstatement: ENDLINE														{ $$ = NULL; }
+	| StatementExpression														{ $$ = NULL; }
+	| JAVA_RETURN Expression														{ $$ = NULL; }
+	| JAVA_THROW Expression														{ $$ = NULL; }
 	;
 
-StatementExpression: Assignment
-	| PLUS PLUS UnaryExpression
-	| MINUS MINUS UnaryExpression
-	| UnaryExpression PLUS PLUS 
-	| UnaryExpression MINUS MINUS 
-	| MethodInvocation
+StatementExpression: Assignment														{ $$ = NULL; }
+	| PLUS PLUS UnaryExpression														{ $$ = NULL; }
+	| MINUS MINUS UnaryExpression														{ $$ = NULL; }
+	| UnaryExpression PLUS PLUS 														{ $$ = NULL; }
+	| UnaryExpression MINUS MINUS														{ $$ = NULL; } 
+	| MethodInvocation														{ $$ = NULL; }
 	;
 
-VarAccess: VAR_NAME
-	| VAR_NAME JAVA_DOT_OPERATOR VAR_NAME VarAccess
-	| MethodInvocation
+VarAccess: VAR_NAME														{ $$ = NULL; }
+	| VAR_NAME JAVA_DOT_OPERATOR VAR_NAME VarAccess														{ $$ = NULL; }
+	| MethodInvocation														{ $$ = NULL; }
 	;
 
-MethodInvocation: VarAccess OPEN_PARENTHESES ArgumentList CLOSE_PARENTHESES
+MethodInvocation: VarAccess OPEN_PARENTHESES ArgumentList CLOSE_PARENTHESES														{ $$ = NULL; }
 	;
 
-ArgumentList: %empty
-	| Expression
-	| Expression COMMA ArgumentList
+ArgumentList: %empty														{ $$ = NULL; }
+	| Expression														{ $$ = NULL; }
+	| Expression COMMA ArgumentList														{ $$ = NULL; }
 	;
 
-Expression: ConditionalExpression
-	| Assignment
+Expression: ConditionalExpression														{ $$ = NULL; }
+	| Assignment														{ $$ = NULL; }
 	;
 
-ConditionalExpression: ConditionalOrExpression
-	| ConditionalOrExpression JAVA_TERNARY_OPERATOR Expression JAVA_DOTS_OPERATOR ConditionalExpression
+ConditionalExpression: ConditionalOrExpression														{ $$ = NULL; }
+	| ConditionalOrExpression JAVA_TERNARY_OPERATOR Expression JAVA_DOTS_OPERATOR ConditionalExpression														{ $$ = NULL; }
 	;
 
-ConditionalOrExpression: ConditionalAndExpression
-	| ConditionalOrExpression JAVA_OR ConditionalAndExpression
+ConditionalOrExpression: ConditionalAndExpression														{ $$ = NULL; }
+	| ConditionalOrExpression JAVA_OR ConditionalAndExpression														{ $$ = NULL; }
 	;
 
-ConditionalAndExpression: EqualityExpression
-	| ConditionalAndExpression JAVA_AND EqualityExpression
+ConditionalAndExpression: EqualityExpression														{ $$ = NULL; }
+	| ConditionalAndExpression JAVA_AND EqualityExpression														{ $$ = NULL; }
 	;
 
-EqualityExpression: RelationalExpression
-	| EqualityExpression JAVA_EXACT_COMPARISON RelationalExpression
+EqualityExpression: RelationalExpression														{ $$ = NULL; }
+	| EqualityExpression JAVA_EXACT_COMPARISON RelationalExpression														{ $$ = NULL; }
 	;
 
-RelationalExpression: AdditiveExpression
-	| RelationalExpression NumericComparison AdditiveExpression
+RelationalExpression: AdditiveExpression														{ $$ = NULL; }
+	| RelationalExpression NumericComparison AdditiveExpression														{ $$ = NULL; }
 	;
 
-AdditiveExpression: MultiplicativeExpression
-	| AdditiveExpression PLUS MultiplicativeExpression
-	| AdditiveExpression MINUS MultiplicativeExpression
+AdditiveExpression: MultiplicativeExpression														{ $$ = NULL; }
+	| AdditiveExpression PLUS MultiplicativeExpression														{ $$ = NULL; }
+	| AdditiveExpression MINUS MultiplicativeExpression														{ $$ = NULL; }
 	;
 
-MultiplicativeExpression: UnaryExpression
-	| MultiplicativeExpression STAR UnaryExpression
-	| MultiplicativeExpression DIV UnaryExpression
-	| MultiplicativeExpression MOD UnaryExpression
+MultiplicativeExpression: UnaryExpression														{ $$ = NULL; }
+	| MultiplicativeExpression STAR UnaryExpression														{ $$ = NULL; }
+	| MultiplicativeExpression DIV UnaryExpression														{ $$ = NULL; }
+	| MultiplicativeExpression MOD UnaryExpression														{ $$ = NULL; }
 	;
 
-UnaryExpression: MINUS MINUS UnaryExpression
-	| MINUS UnaryExpression
-	| PLUS PLUS UnaryExpression
-	| PLUS UnaryExpression
-	| UnaryExpressionNotPlusMinus
+UnaryExpression: MINUS MINUS UnaryExpression														{ $$ = NULL; }
+	| MINUS UnaryExpression														{ $$ = NULL; }
+	| PLUS PLUS UnaryExpression														{ $$ = NULL; }
+	| PLUS UnaryExpression														{ $$ = NULL; }
+	| UnaryExpressionNotPlusMinus														{ $$ = NULL; }
 	;
 
-UnaryExpressionNotPlusMinus: PostfixExpression
-	| JAVA_NOT UnaryExpression
-	| OPEN_PARENTHESES param CLOSE_PARENTHESES
-	| AdditiveExpression
+UnaryExpressionNotPlusMinus: PostfixExpression														{ $$ = NULL; }
+	| JAVA_NOT UnaryExpression														{ $$ = NULL; }
+	| OPEN_PARENTHESES param CLOSE_PARENTHESES														{ $$ = NULL; }
+	| AdditiveExpression														{ $$ = NULL; }
 	;
 
-PostfixExpression:
-	| Primary
-	| VAR_NAME
-	| PostfixExpression PLUS PLUS
-	| PostfixExpression MINUS MINUS
+PostfixExpression: Primary														{ $$ = NULL; }
+	| VAR_NAME														{ $$ = NULL; }
+	| PostfixExpression PLUS PLUS														{ $$ = NULL; }
+	| PostfixExpression MINUS MINUS														{ $$ = NULL; }
 	;
 
-Assignment: VAR_NAME JAVA_ASSIGNMENT Expression
+Assignment: VAR_NAME JAVA_ASSIGNMENT Expression														{ $$ = NULL; }
 	;
 
-Primary: PrimaryNoNewArray
-	| ArrayCreationExpression
+Primary: PrimaryNoNewArray														{ $$ = NULL; }
+	| ArrayCreationExpression														{ $$ = NULL; }
 	;
 
-PrimaryNoNewArray: Literal
-	| OPEN_PARENTHESES Expression CLOSE_PARENTHESES
-	| ClassInstanceCreationExpression
-	| MethodInvocation
+PrimaryNoNewArray: Literal														{ $$ = NULL; }
+	| OPEN_PARENTHESES Expression CLOSE_PARENTHESES														{ $$ = NULL; }
+	| ClassInstanceCreationExpression														{ $$ = NULL; }
+	| MethodInvocation														{ $$ = NULL; }
 	;
 
-ClassInstanceCreationExpression: UnqualifiedClassInstanceCreationExpression
-	| VarAccess JAVA_DOT_OPERATOR UnqualifiedClassInstanceCreationExpression
-	| Primary JAVA_DOT_OPERATOR UnqualifiedClassInstanceCreationExpression
+ClassInstanceCreationExpression: UnqualifiedClassInstanceCreationExpression														{ $$ = NULL; }
+	| VarAccess JAVA_DOT_OPERATOR UnqualifiedClassInstanceCreationExpression														{ $$ = NULL; }
+	| Primary JAVA_DOT_OPERATOR UnqualifiedClassInstanceCreationExpression														{ $$ = NULL; }
 	;
 
-UnqualifiedClassInstanceCreationExpression: JAVA_NEW param OPEN_PARENTHESES ArgumentList CLOSE_PARENTHESES
+UnqualifiedClassInstanceCreationExpression: JAVA_NEW param OPEN_PARENTHESES ArgumentList CLOSE_PARENTHESES														{ $$ = NULL; }
 	;
 
-Literal: NUMBER
-	| JAVA_TRUE
-	| JAVA_FALSE
-	| FLOAT
-	| STR
+Literal: NUMBER														{ $$ = NULL; }
+	| JAVA_TRUE														{ $$ = NULL; }
+	| JAVA_FALSE														{ $$ = NULL; }
+	| FLOAT														{ $$ = NULL; }
+	| STR														{ $$ = NULL; }
 	;
 
-ArrayCreationExpression: JAVA_NEW param Dims
+ArrayCreationExpression: JAVA_NEW param Dims														{ $$ = NULL; }
 	;
 
-Dims: JAVA_DIMS
-	| JAVA_DIMS Dims
+Dims: JAVA_DIMS														{ $$ = NULL; }
+	| JAVA_DIMS Dims														{ $$ = NULL; }
 	;
 
 %%
