@@ -54,12 +54,9 @@ yydebug=1;
 	PostfixExpression* PostfixExpression;
 	Assignment* Assignment;
 	Primary* Primary;
-	PrimaryNoNewArray* PrimaryNoNewArray;
 	ClassInstanceCreationExpression* ClassInstanceCreationExpression;
 	UnqualifiedClassInstanceCreationExpression* UnqualifiedClassInstanceCreationExpression;
 	Literal* Literal;
-	ArrayCreationExpression* ArrayCreationExpression;
-	Dims* Dims;
 }
 
 
@@ -136,7 +133,6 @@ yydebug=1;
 %token <token> JAVA_WHILE
 %token <token> JAVA_THROW
 %token <token> JAVA_NOT
-%token <token> JAVA_DIMS
 %token <token> JAVA_NEW
 %token <token> NUMBER
 %token <token> FLOAT
@@ -187,12 +183,9 @@ yydebug=1;
 %type <PostfixExpression> PostfixExpression
 %type <Assignment> Assignment
 %type <Primary> Primary
-%type <PrimaryNoNewArray> PrimaryNoNewArray
 %type <ClassInstanceCreationExpression> ClassInstanceCreationExpression
 %type <UnqualifiedClassInstanceCreationExpression> UnqualifiedClassInstanceCreationExpression
 %type <Literal> Literal
-%type <ArrayCreationExpression> ArrayCreationExpression
-%type <Dims> Dims
 
 //%type <function_body> function_body
 
@@ -398,11 +391,7 @@ PostfixExpression: Primary														{ $$ = NULL; }
 Assignment: VarAccess JAVA_ASSIGNMENT Expression														{ $$ = NULL; }
 	;
 
-Primary: PrimaryNoNewArray														{ $$ = NULL; }
-	| ArrayCreationExpression														{ $$ = NULL; }
-	;
-
-PrimaryNoNewArray: Literal														{ $$ = NULL; }
+Primary: Literal														{ $$ = NULL; }
 	| OPEN_PARENTHESES Expression CLOSE_PARENTHESES														{ $$ = NULL; }
 	| ClassInstanceCreationExpression														{ $$ = NULL; }
 	| MethodInvocation														{ $$ = NULL; }
@@ -421,13 +410,6 @@ Literal: NUMBER														{ $$ = NULL; }
 	| JAVA_FALSE														{ $$ = NULL; }
 	| FLOAT														{ $$ = NULL; }
 	| STR														{ $$ = NULL; }
-	;
-
-ArrayCreationExpression: JAVA_NEW param Dims														{ $$ = NULL; }
-	;
-
-Dims: JAVA_DIMS														{ $$ = NULL; }
-	| JAVA_DIMS Dims														{ $$ = NULL; }
 	;
 
 %%

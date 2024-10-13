@@ -55,12 +55,9 @@ typedef struct UnaryExpressionNotPlusMinus UnaryExpressionNotPlusMinus;
 typedef struct PostfixExpression PostfixExpression;
 typedef struct Assignment Assignment;
 typedef struct Primary Primary;
-typedef struct PrimaryNoNewArray PrimaryNoNewArray;
 typedef struct ClassInstanceCreationExpression ClassInstanceCreationExpression;
 typedef struct UnqualifiedClassInstanceCreationExpression UnqualifiedClassInstanceCreationExpression;
 typedef struct Literal Literal;
-typedef struct ArrayCreationExpression ArrayCreationExpression;
-typedef struct Dims Dims;
 /**
  * Node types for the Abstract Syntax Tree (AST).
  */
@@ -195,11 +192,6 @@ struct Primary{
 };
 
 
-struct PrimaryNoNewArray{
-	char * TODO;
-};
-
-
 struct ClassInstanceCreationExpression{
 	char * TODO;
 };
@@ -211,16 +203,6 @@ struct UnqualifiedClassInstanceCreationExpression{
 
 
 struct Literal{
-	char * TODO;
-};
-
-
-struct ArrayCreationExpression{
-	char * TODO;
-};
-
-
-struct Dims{
 	char * TODO;
 };
 

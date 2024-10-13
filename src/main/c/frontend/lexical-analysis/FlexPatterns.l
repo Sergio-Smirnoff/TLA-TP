@@ -34,7 +34,6 @@
 "false"                                         { return SimpleTokenInsert(createLexicalAnalyzerContext(), JAVA_FALSE); }
 "throw"                                         { return SimpleTokenInsert(createLexicalAnalyzerContext(), JAVA_THROW); }
 "new"                                           { return SimpleTokenInsert(createLexicalAnalyzerContext(), JAVA_NEW); }
-"[]"                                            { return SimpleTokenInsert(createLexicalAnalyzerContext(), JAVA_DIMS); }
 "?"                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), JAVA_TERNARY_OPERATOR); }
 ":"                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), JAVA_DOTS_OPERATOR); }
 "<"                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), JAVA_LESSER); }
