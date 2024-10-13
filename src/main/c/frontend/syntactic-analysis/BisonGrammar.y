@@ -35,7 +35,6 @@ yydebug=1;
 	StatementExpressionList* StatementExpressionList;
 	IfThenStatement* IfThenStatement;
 	IfThenElseStatement* IfThenElseStatement;
-	IfThenElseStatementNoShortIf* IfThenElseStatementNoShortIf;
 	StatementWithoutTrailingSubstatement* StatementWithoutTrailingSubstatement;
 	StatementExpression* StatementExpression;
 	VarAccess* VarAccess;
@@ -158,7 +157,6 @@ yydebug=1;
 %type <StatementExpressionList> StatementExpressionList
 %type <IfThenStatement> IfThenStatement
 %type <IfThenElseStatement> IfThenElseStatement
-%type <IfThenElseStatementNoShortIf> IfThenElseStatementNoShortIf
 %type <StatementWithoutTrailingSubstatement> StatementWithoutTrailingSubstatement
 %type <StatementExpression> StatementExpression
 %type <VarAccess> VarAccess
@@ -300,9 +298,6 @@ IfThenStatement: JAVA_IF OPEN_PARENTHESES Expression CLOSE_PARENTHESES Statement
 	;
 
 IfThenElseStatement: JAVA_IF OPEN_PARENTHESES Expression CLOSE_PARENTHESES Statement JAVA_ELSE Statement														{ $$ = NULL; }
-	;
-
-IfThenElseStatementNoShortIf: JAVA_IF OPEN_PARENTHESES Expression CLOSE_PARENTHESES Statement JAVA_ELSE Statement														{ $$ = NULL; }
 	;
 
 StatementWithoutTrailingSubstatement: ENDLINE														{ $$ = NULL; }
