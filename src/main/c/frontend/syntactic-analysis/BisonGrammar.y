@@ -1,7 +1,7 @@
 %{
 
 #include "BisonActions.h"
-yydebug=1;
+//yydebug=1;
 
 %}
 
@@ -19,8 +19,10 @@ yydebug=1;
 	Lexeme* lexeme;
 	Lexeme_precursor* lexeme_precursor;
 	Regex_class* regex_class;
+	Regexes *regexes;
+	Symbols *symbols;
+	Symbol *symbol;
 	Action* action;
-	Range* range;
 	Closure* closure;
 	Java_function_body* java_function_body;
 	Param* param;
@@ -108,6 +110,8 @@ yydebug=1;
 %token <token> CLOSE_BRACES
 %token <token> OPEN_PARENTHESES
 %token <token> CLOSE_PARENTHESES
+%token <token> OPEN_BRACKET
+%token <token> CLOSE_BRACKET
 
 %token <token> JAVA_RETURN
 %token <token> JAVA_IF
@@ -141,8 +145,10 @@ yydebug=1;
 %type <lexeme> lexeme
 %type <lexeme_precursor> lexeme_precursor
 %type <regex_class> regex_class
+%type <symbol> symbol
+%type <symbols> symbols
+%type <regexes> regexes
 %type <action> action
-%type <range> range
 %type <param> param
 %type <ruleset> ruleset
 %type <rule> rule
@@ -183,16 +189,17 @@ yydebug=1;
  */
 
 %left ','
-%precedence INCREMENT DECREMENT
+%precedence INCREMENT DECREMENT CLOSE_PARENTHESES
+%left JAVA_DOT_OPERATOR JAVA_DOTS_OPERATOR
 %left PLUS MINUS              
 %left STAR DIV MOD           
 %left JAVA_OR                
 %left JAVA_AND               
 %nonassoc JAVA_TERNARY_OPERATOR 
-%left JAVA_LESSER JAVA_LEQ JAVA_GREATER JAVA_GEQ JAVA_EXACT_COMPARISON
-%left JAVA_ASSIGNMENT       
+%left JAVA_LESSER JAVA_LEQ JAVA_GREATER JAVA_GEQ JAVA_EXACT_COMPARISON JAVA_ASSIGNMENT   
 %right JAVA_NOT              
 %left UPPERCASE LOWERCASE DIGIT SYMBOL ESCAPED_SYMBOL
+%left  OPEN_PARENTHESES
 %%
 
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
@@ -204,19 +211,19 @@ ruleset: rule ruleset																																	{ $$ = RulesetSemanticActi
 	| rule																																				{ $$ = RulesetSemanticAction( $1, NULL); }
 	;
 
-rule: VAR_NAME[def] regex_class[regex] ENDLINE[endline]	    																							{ $$ = RuleNewRegexSemanticAction($def, $regex, $endline); }
-	| lexeme_precursor[lex] ARROW action ENDLINE[endline]																								{ $$ = RuleDefinitionSemanticAction( $lex, $action, $endline, lexeme_action); }
-	| lexeme_precursor[lex] ENDLINE[endline]																											{ $$ = RuleDefinitionSemanticAction( $lex, NULL, $endline, ignore_lexeme ); }
+rule: VAR_NAME[def] OPEN_BRACKET regexes[regex] CLOSE_BRACKET ENDLINE[endline]	    		{ $$ = RuleNewRegexSemanticAction($def, $regex, $endline); }
+	| lexeme_precursor[lex] ARROW action ENDLINE[endline]					{ $$ = RuleDefinitionSemanticAction( $lex, $action, $endline, lexeme_action); }
+	| lexeme_precursor[lex] ENDLINE[endline]						{ $$ = RuleDefinitionSemanticAction( $lex, NULL, $endline, ignore_lexeme ); }
 	;
 
-lexeme_precursor: lexeme lexeme_precursor																												{ $$ = LexemePrecursorSemanticAction( $1, $2); }
-	| lexeme																																			{ $$ = LexemePrecursorSemanticAction( $1, NULL); }
+lexeme_precursor: lexeme lexeme_precursor							{ $$ = LexemePrecursorSemanticAction( $1, $2); }
+	| lexeme														{ $$ = LexemePrecursorSemanticAction( $1, NULL); }
+	| DEFAULT[string]												{ $$ = LexemeSemanticAction( $string, NULL, NULL, def); }
+	| STR[string]													{ $$ = LexemeSemanticAction( $string, NULL, NULL, string); }
 	;
 
-lexeme: STR[string]																																		{ $$ = LexemeSemanticAction( $string, NULL, NULL, string); }					
-	| regex_class[regex] closure																														{ $$ = LexemeSemanticAction( NULL, $regex, $closure, regex_class); }
-	| OPEN_BRACES VAR_NAME[id] CLOSE_BRACES closure																										{ $$ = LexemeSemanticAction( $id, NULL, $closure, reg); }
-	| DEFAULT[string]																																	{ $$ = LexemeSemanticAction( $string, NULL, NULL, def); }
+lexeme: OPEN_BRACKET regex_class[regex] CLOSE_BRACKET closure									{ $$ = LexemeSemanticAction( NULL, $regex, $closure, regex_class); }
+	| OPEN_BRACES VAR_NAME[id] CLOSE_BRACES closure					{ $$ = LexemeSemanticAction( $id, NULL, $closure, reg); }
 	;
 
 closure: %empty 																																		{ $$ = NULL; }
@@ -224,24 +231,24 @@ closure: %empty 																																		{ $$ = NULL; }
 	| STAR																																				{ $$ = ClosureSemanticAction($1); }
 	;
 
-regex_class: LOWERCASE																																	{ $$ = RegexClassStringSemanticAction($1, NULL); }
-    | UPPERCASE																																			{ $$ = RegexClassStringSemanticAction($1, NULL); }
-    | DIGIT																																				{ $$ = RegexClassStringSemanticAction($1, NULL); }
-	| SYMBOL																																			{ $$ = RegexClassStringSemanticAction($1, NULL); }
-	| ESCAPED_SYMBOL																																	{ $$ = RegexClassStringSemanticAction($1, NULL); }
-    | range																																				{ $$ = RegexClassRangeSemanticAction($1, NULL); }
-	| LOWERCASE regex_class																																{ $$ = RegexClassStringSemanticAction($1, $2); }
-    | UPPERCASE regex_class																																{ $$ = RegexClassStringSemanticAction($1, $2); }
-    | DIGIT regex_class																																	{ $$ = RegexClassStringSemanticAction($1, $2); }
-    | range regex_class																																	{ $$ = RegexClassRangeSemanticAction($1, $2); }
-	| SYMBOL regex_class																																{ $$ = RegexClassStringSemanticAction($1, $2); }
-	| ESCAPED_SYMBOL regex_class																														{ $$ = RegexClassStringSemanticAction($1, $2); }
+regexes: regex_class { $$ = NULL; }
+	| regex_class regexes { $$ = NULL; }
 	;
 
-range: LOWERCASE RANGER LOWERCASE																														{ $$ = RangeSemanticAction($1, $3); }
-    | UPPERCASE RANGER UPPERCASE																														{ $$ = RangeSemanticAction($1, $3); }
-    | DIGIT RANGER DIGIT																																{ $$ = RangeSemanticAction($1, $3); }
-	| UPPERCASE RANGER LOWERCASE																														{ $$ = RangeSemanticAction($1, $3); }
+regex_class: symbols												{ $$ = RegexClassStringSemanticAction($1, NULL); }
+    | symbol RANGER symbol															{ $$ = RangeSemanticAction($1, $3); }
+	;
+
+symbols: symbol { $$ = NULL; }
+	| symbol symbols { $$ = NULL; }
+	;
+
+symbol: LOWERCASE 																																		{ $$ = RegexClassStringSemanticAction($1, NULL); }
+	| UPPERCASE 																																		{ $$ = RegexClassStringSemanticAction($1, NULL); }
+	| DIGIT 																																			{ $$ = RegexClassStringSemanticAction($1, NULL); }
+	| SYMBOL 																																			{ $$ = RegexClassStringSemanticAction($1, NULL); }
+	| ESCAPED_SYMBOL 																																	{ $$ = RegexClassStringSemanticAction($1, NULL); }
+	
 	;
 
 action: VAR_NAME																																		{ $$ = ActionSemanticAction($1); }
@@ -362,10 +369,11 @@ UnaryExpression:  UnaryExpression NumericComparison UnaryExpression													
 	| PLUS UnaryExpression																																{ $$ = NULL; }
 	;
 
+
 PostfixExpression: Primary																																{ $$ = NULL; }
 	| VarAccess																																			{ $$ = NULL; }
-	| PostfixExpression INCREMENT																														{ $$ = NULL; }
-	| PostfixExpression DECREMENT																														{ $$ = NULL; }
+	| VarAccess INCREMENT																																{ $$ = NULL; }
+	| VarAccess DECREMENT																																{ $$ = NULL; }
 	;
 
 Assignment: VarAccess JAVA_ASSIGNMENT Expression																										{ $$ = NULL; }
@@ -374,7 +382,6 @@ Assignment: VarAccess JAVA_ASSIGNMENT Expression																										{ $$ =
 Primary: Literal																																		{ $$ = NULL; }
 	| OPEN_PARENTHESES Expression CLOSE_PARENTHESES																										{ $$ = NULL; }
 	| ClassInstanceCreationExpression																													{ $$ = NULL; }
-	| MethodInvocation																						    										{ $$ = NULL; }
 	;
 
 ClassInstanceCreationExpression: UnqualifiedClassInstanceCreationExpression																				{ $$ = NULL; }

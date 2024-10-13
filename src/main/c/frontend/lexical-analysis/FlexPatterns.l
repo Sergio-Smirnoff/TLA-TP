@@ -97,14 +97,14 @@
 [0-9]+                                          { return SimpleTokenInsert(createLexicalAnalyzerContext(), NUMBER); }
 [0-9]+"."[0-9]+                                 { return SimpleTokenInsert(createLexicalAnalyzerContext(), FLOAT); }
 
-"["                                             { BEGIN(REGEX_CONTENT); BeginRegexContentLexeme(createLexicalAnalyzerContext()); }
+"["                                             { BEGIN(REGEX_CONTENT); return SimpleTokenInsert(createLexicalAnalyzerContext(), OPEN_BRACKET); }
 <REGEX_CONTENT>[a-z]                            { return RegexContentLexeme(createLexicalAnalyzerContext(), LOWERCASE); }
 <REGEX_CONTENT>[A-Z]                            { return RegexContentLexeme(createLexicalAnalyzerContext(), UPPERCASE); }
 <REGEX_CONTENT>[0-9]                            { return RegexContentLexeme(createLexicalAnalyzerContext(), DIGIT); }
 <REGEX_CONTENT>"-"                              { return RegexContentLexeme(createLexicalAnalyzerContext(), RANGER); }
 <REGEX_CONTENT>[^\-\[\]\\ ]                     { return RegexContentLexeme(createLexicalAnalyzerContext(), SYMBOL); }
 <REGEX_CONTENT>"\\"[\^\-\[\]\\]                 { return RegexContentLexeme(createLexicalAnalyzerContext(), ESCAPED_SYMBOL); }
-<REGEX_CONTENT>"]"                              { IgnoredLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
+<REGEX_CONTENT>"]"                              { BEGIN(INITIAL); return SimpleTokenInsert(createLexicalAnalyzerContext(), CLOSE_BRACKET);}
 
 
 

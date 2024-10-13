@@ -29,6 +29,10 @@ typedef struct Function_body Function_body;
 typedef struct Regex_class Regex_class;
 typedef struct Java_function_body Java_function_body;
 
+typedef struct Regexes Regexes;
+typedef struct Symbol Symbol;
+typedef struct Symbols Symbols;
+
 typedef struct NumericComparison NumericComparison;
 typedef struct Statement Statement;
 typedef struct Block Block;
@@ -51,6 +55,7 @@ typedef struct RelationalExpression RelationalExpression;
 typedef struct AdditiveExpression AdditiveExpression;
 typedef struct MultiplicativeExpression MultiplicativeExpression;
 typedef struct UnaryExpression UnaryExpression;
+typedef struct BinaryExpression BinaryExpression;
 typedef struct UnaryExpressionNotPlusMinus UnaryExpressionNotPlusMinus;
 typedef struct PostfixExpression PostfixExpression;
 typedef struct Assignment Assignment;
@@ -172,6 +177,10 @@ struct UnaryExpression{
 };
 
 
+struct BinaryExpression{
+	char * TODO;
+};
+
 struct UnaryExpressionNotPlusMinus{
 	char * TODO;
 };
@@ -222,6 +231,16 @@ struct Param{
 
 struct Closure{
 	Token closure;
+};
+
+struct Regexes{
+	char *TODO;
+};
+struct Symbol{
+	char *TODO;
+};
+struct Symbols{
+	char *TODO;
 };
 
 typedef enum Regex_class_type{
