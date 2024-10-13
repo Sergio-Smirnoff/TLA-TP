@@ -82,7 +82,7 @@
 "("                                             { return OpenParenthesesLexeme(createLexicalAnalyzerContext()); }
 ")"                                             { return CloseParenthesesLexeme(createLexicalAnalyzerContext()); }
 
-[a-zA-Z0-9_$]+                                  { return VarNameLexeme(createLexicalAnalyzerContext()); }
+[a-zA-Z_$][a-zA-Z0-9_$]*                                  { return VarNameLexeme(createLexicalAnalyzerContext()); }
 [0-9]+                                          { return SimpleTokenInsert(createLexicalAnalyzerContext(), NUMBER); }
 [0-9]+"."[0-9]+                                 { return SimpleTokenInsert(createLexicalAnalyzerContext(), FLOAT); }
 

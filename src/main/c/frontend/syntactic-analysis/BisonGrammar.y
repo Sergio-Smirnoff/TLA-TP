@@ -25,6 +25,7 @@
 	Rule* rule;
 	Ruleset* ruleset;
 	Program * program;
+	
 	NumericComparison* NumericComparison;
 	Statement* Statement;
 	ForInit* ForInit;
@@ -122,7 +123,6 @@
 %token <token> JAVA_EXACT_COMPARISON
 %token <token> JAVA_ASSIGNMENT
 %token <token> JAVA_DOT_OPERATOR
-%token <token> JAVA_DIAMOND
 %token <token> JAVA_DOTS_OPERATOR
 %token <token> JAVA_TERNARY_OPERATOR
 %token <token> JAVA_OR
@@ -213,17 +213,17 @@ rule: VAR_NAME[def] regex_class[regex] ENDLINE[endline]	    		{ $$ = NULL; }
 	| lexeme[lex] ENDLINE[endline]									{ $$ = NULL; }
 	;
 
-lexeme: lexeme | lexeme												{ $$ = NULL; }
+lexeme: lexeme PIPE lexeme											{ $$ = NULL; }
 	| STR[string]													{ $$ = NULL; }					
-	| OPEN_BRACES regex_class[regex] closure						{ $$ = NULL; }
-	| OPEN_BRACES VAR_NAME[id] closure								{ $$ = NULL; }
+	| regex_class[regex] closure									{ $$ = NULL; }
+	| OPEN_BRACES VAR_NAME[id] CLOSE_BRACES closure					{ $$ = NULL; }
 	| DEFAULT[string]												{ $$ = NULL; }
 	;
 
-closure: CLOSE_BRACES STAR									 		{ $$ = NULL; }
-	| CLOSE_BRACES PLUS										 		{ $$ = NULL; }					
-	| CLOSE_BRACES													{ $$ = NULL; }	
-	; 
+closure: %empty 													{ $$ = NULL; }
+	| PLUS															{ $$ = NULL; }
+	| STAR															{ $$ = NULL; }
+	;
 
 regex_class: LOWERCASE												{ $$ = NULL; }
     | UPPERCASE														{ $$ = NULL; }
