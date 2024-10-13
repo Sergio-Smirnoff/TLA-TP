@@ -46,11 +46,7 @@ yydebug=1;
 	ConditionalOrExpression* ConditionalOrExpression;
 	ConditionalAndExpression* ConditionalAndExpression;
 	EqualityExpression* EqualityExpression;
-	RelationalExpression* RelationalExpression;
-	AdditiveExpression* AdditiveExpression;
-	MultiplicativeExpression* MultiplicativeExpression;
 	UnaryExpression* UnaryExpression;
-	UnaryExpressionNotPlusMinus* UnaryExpressionNotPlusMinus;
 	PostfixExpression* PostfixExpression;
 	Assignment* Assignment;
 	Primary* Primary;
@@ -175,11 +171,7 @@ yydebug=1;
 %type <ConditionalOrExpression> ConditionalOrExpression
 %type <ConditionalAndExpression> ConditionalAndExpression
 %type <EqualityExpression> EqualityExpression
-%type <RelationalExpression> RelationalExpression
-%type <AdditiveExpression> AdditiveExpression
-%type <MultiplicativeExpression> MultiplicativeExpression
 %type <UnaryExpression> UnaryExpression
-%type <UnaryExpressionNotPlusMinus> UnaryExpressionNotPlusMinus
 %type <PostfixExpression> PostfixExpression
 %type <Assignment> Assignment
 %type <Primary> Primary
@@ -350,37 +342,25 @@ ConditionalAndExpression: EqualityExpression														{ $$ = NULL; }
 	| ConditionalAndExpression JAVA_AND EqualityExpression														{ $$ = NULL; }
 	;
 
-EqualityExpression: RelationalExpression														{ $$ = NULL; }
-	| EqualityExpression JAVA_EXACT_COMPARISON RelationalExpression														{ $$ = NULL; }
+EqualityExpression: UnaryExpression														{ $$ = NULL; }
+	| EqualityExpression JAVA_EXACT_COMPARISON UnaryExpression														{ $$ = NULL; }
 	;
 
-RelationalExpression: AdditiveExpression														{ $$ = NULL; }
-	| RelationalExpression NumericComparison AdditiveExpression														{ $$ = NULL; }
-	;
-
-AdditiveExpression: MultiplicativeExpression														{ $$ = NULL; }
-	| AdditiveExpression PLUS MultiplicativeExpression														{ $$ = NULL; }
-	| AdditiveExpression MINUS MultiplicativeExpression														{ $$ = NULL; }
-	;
-
-MultiplicativeExpression: UnaryExpression														{ $$ = NULL; }
-	| MultiplicativeExpression STAR UnaryExpression														{ $$ = NULL; }
-	| MultiplicativeExpression DIV UnaryExpression														{ $$ = NULL; }
-	| MultiplicativeExpression MOD UnaryExpression														{ $$ = NULL; }
-	;
-
-UnaryExpression: MINUS MINUS UnaryExpression														{ $$ = NULL; }
+UnaryExpression:  UnaryExpression NumericComparison UnaryExpression						{ $$ = NULL; }
+	| UnaryExpression STAR UnaryExpression														{ $$ = NULL; }
+	| UnaryExpression DIV UnaryExpression														{ $$ = NULL; }
+	| UnaryExpression MOD UnaryExpression													{ $$ = NULL; }
+	| UnaryExpression PLUS UnaryExpression														{ $$ = NULL; }
+	| UnaryExpression MINUS UnaryExpression														{ $$ = NULL; }
+	| PostfixExpression														{ $$ = NULL; }
+	| JAVA_NOT UnaryExpression														{ $$ = NULL; }
+	| OPEN_PARENTHESES param CLOSE_PARENTHESES														{ $$ = NULL; }
+	| MINUS MINUS UnaryExpression														{ $$ = NULL; }
 	| MINUS UnaryExpression														{ $$ = NULL; }
 	| PLUS PLUS UnaryExpression														{ $$ = NULL; }
 	| PLUS UnaryExpression														{ $$ = NULL; }
-	| UnaryExpressionNotPlusMinus														{ $$ = NULL; }
 	;
 
-UnaryExpressionNotPlusMinus: PostfixExpression														{ $$ = NULL; }
-	| JAVA_NOT UnaryExpression														{ $$ = NULL; }
-	| OPEN_PARENTHESES param CLOSE_PARENTHESES														{ $$ = NULL; }
-	| AdditiveExpression														{ $$ = NULL; }
-	;
 
 PostfixExpression: Primary														{ $$ = NULL; }
 	| VarAccess														{ $$ = NULL; }
