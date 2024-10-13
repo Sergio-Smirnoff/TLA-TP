@@ -70,6 +70,23 @@ void EndLineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext)
 	}
 }
 
+// Basic utility:
+Token SimpleTokenInsert(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token){
+	if (_logIgnoredLexemes) {
+		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	}
+	lexicalAnalyzerContext->semanticValue->token = token;
+	return token;
+}
+
+Token SimpleStringInsert(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token) {
+	if (_logIgnoredLexemes) {
+		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	}
+	lexicalAnalyzerContext->semanticValue->string = lexicalAnalyzerContext->lexeme;
+	return token;
+}
+
 // Regex class names functions:
 void BeginRegexLine(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	if (_logIgnoredLexemes) {
@@ -83,7 +100,7 @@ void BeginRegexNameLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	}
 }
 
-Token RegexClassNameLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+Token VarNameLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	lexicalAnalyzerContext->semanticValue->string = lexicalAnalyzerContext->lexeme;
 	return VAR_NAME;
@@ -169,25 +186,9 @@ void BeginFunctionParamLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	}
 }
 
-// Simple actions functions:
-Token ActionNameLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->string = lexicalAnalyzerContext->lexeme;
-	return ACTION;
-}
-
 // Function param functions:
 Token FunctionParamLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext, Token param){
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->token = param;
-	return param;
-}
-
-// Function body functions:
-Token FunctionBodyContentLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->string = lexicalAnalyzerContext->lexeme;
-	return FUNCTION_BODY;
+	return SimpleTokenInsert(lexicalAnalyzerContext, param);
 }
 
 void EndFunctionBodyLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
@@ -198,11 +199,7 @@ void EndFunctionBodyLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
 
 // Endline functions:
 Token EndLineLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
-	if (_logIgnoredLexemes) {
-		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	}
-	lexicalAnalyzerContext->semanticValue->token = ENDLINE;
-	return ENDLINE;
+	return SimpleTokenInsert(lexicalAnalyzerContext, ENDLINE);
 }
 
 Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
@@ -211,35 +208,23 @@ Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 }
 
 Token OpenParenthesesLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
-	if (_logIgnoredLexemes) {
-		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	}
-	lexicalAnalyzerContext->semanticValue->token = OPEN_PARENTHESES;
-	return OPEN_PARENTHESES;
+	return SimpleTokenInsert(lexicalAnalyzerContext, OPEN_PARENTHESES);
+}
+
+Token CloseParenthesesLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
+	return SimpleTokenInsert(lexicalAnalyzerContext, CLOSE_PARENTHESES);
 }
 
 Token OpenBracesLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
-	if (_logIgnoredLexemes) {
-		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	}
-	lexicalAnalyzerContext->semanticValue->token = OPEN_BRACES;
-	return OPEN_BRACES;
+	return SimpleTokenInsert(lexicalAnalyzerContext, OPEN_BRACES);
 }
 
 Token CloseBracesLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
-	if (_logIgnoredLexemes) {
-		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	}
-	lexicalAnalyzerContext->semanticValue->token = CLOSE_BRACES;
-	return CLOSE_BRACES;
+	return SimpleTokenInsert(lexicalAnalyzerContext, CLOSE_BRACES);
 }
 
  Token ArrowLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
-	if (_logIgnoredLexemes) {
-		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	}
-	lexicalAnalyzerContext->semanticValue->token = ARROW;
-	return ARROW;
+	return SimpleTokenInsert(lexicalAnalyzerContext, ARROW);
  }
 
 // old

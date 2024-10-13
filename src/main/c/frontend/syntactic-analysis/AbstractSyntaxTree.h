@@ -26,6 +26,7 @@ typedef struct Ruleset Ruleset;
 typedef struct Rule Rule;
 typedef struct Function_body Function_body;
 typedef struct Regex_class Regex_class;
+typedef struct Java_function_body Java_function_body;
 /**
  * Node types for the Abstract Syntax Tree (AST).
  */
@@ -84,6 +85,15 @@ struct Action {
 		};
 	};
 	Action_type type;
+};
+
+typedef enum java_function_body_type{
+	TODO
+} java_function_body_type;
+
+struct Java_function_body {
+	char * TODO;
+	java_function_body_type type;
 };
 
 typedef enum Lexeme_type {
