@@ -51,6 +51,7 @@ typedef struct RelationalExpression RelationalExpression;
 typedef struct AdditiveExpression AdditiveExpression;
 typedef struct MultiplicativeExpression MultiplicativeExpression;
 typedef struct UnaryExpression UnaryExpression;
+typedef struct BinaryExpression BinaryExpression;
 typedef struct UnaryExpressionNotPlusMinus UnaryExpressionNotPlusMinus;
 typedef struct PostfixExpression PostfixExpression;
 typedef struct Assignment Assignment;
@@ -171,6 +172,10 @@ struct UnaryExpression{
 	char * TODO;
 };
 
+
+struct BinaryExpression{
+	char * TODO;
+};
 
 struct UnaryExpressionNotPlusMinus{
 	char * TODO;
