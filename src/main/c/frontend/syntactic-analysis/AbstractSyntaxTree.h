@@ -40,7 +40,6 @@ typedef struct ForInit ForInit;
 typedef struct StatementExpressionList StatementExpressionList;
 typedef struct IfThenStatement IfThenStatement;
 typedef struct IfThenElseStatement IfThenElseStatement;
-typedef struct IfThenElseStatementNoShortIf IfThenElseStatementNoShortIf;
 typedef struct StatementWithoutTrailingSubstatement StatementWithoutTrailingSubstatement;
 typedef struct StatementExpression StatementExpression;
 typedef struct VarAccess VarAccess;
@@ -63,6 +62,7 @@ typedef struct Primary Primary;
 typedef struct ClassInstanceCreationExpression ClassInstanceCreationExpression;
 typedef struct UnqualifiedClassInstanceCreationExpression UnqualifiedClassInstanceCreationExpression;
 typedef struct Literal Literal;
+
 /**
  * Node types for the Abstract Syntax Tree (AST).
  */
@@ -70,85 +70,144 @@ typedef struct Literal Literal;
 
 
 struct NumericComparison{
-	char * TODO;
+	Token token;
 };
 
 struct Block{
-	char * TODO;
+	Statement * statement;
+	Block * block;
 };
 
 struct Statement{
-	char * TODO;
+	StatementWithoutTrailingSubstatement* inline; 
+	IfThenStatement* ifThen; 
+	ifThenElseStatement* ifelse;
 };
 
+typedef enum ForInitType{
+	statelist,
+	withparams
+} ForInitType;
 
 struct ForInit{
-	char * TODO;
+	union{
+		StatementExpresionList* sel;
+		struct{
+			Param* param;
+			char* var_name;
+		};
+	};
+	ForInitType type;
+
 };
 
 
 struct StatementExpressionList{
-	char * TODO;
+	StatementExpression* exp;
+	StatementExpressionList* list;
 };
 
 
 struct IfThenStatement{
-	char * TODO;
+	Expression* exp;
+	Statement* state;
 };
 
 
 struct IfThenElseStatement{
-	char * TODO;
+	Expression* exp;
+	Statement* ifThen;
+	Statement* elseThen;
 };
 
-
-struct IfThenElseStatementNoShortIf{
-	char * TODO;
-};
-
+typedef enum StatementExpressionType{
+	sexp,
+	exp
+}StatementExpressionType;
 
 struct StatementWithoutTrailingSubstatement{
-	char * TODO;
+	union{
+		StatementExpression* sexp;
+		Expression* expression;
+	};
+	StatementExpressionType type;
 };
+
+typedef enum StatementExpressionType{
+	post,
+	pre
+}StatementExpressionType;
 
 
 struct StatementExpression{
-	char * TODO;
+	union{
+		Assignment* assignment;
+		struct{
+			StatementExpressionType type;
+			Token token;
+			UnaryExpression* exp;
+		};
+		MethodInvocation* method_invocation;
+		struct{
+			Param* param;
+			char* var_name;
+			Token java_assignment;
+			Expression* exp;
+		};
+	};
+	StatementExpressionType type;
 };
 
 
 struct VarAccess{
-	char * TODO;
+	char* var_name;
+	VarAccess* vaccess;
+	Param* param;
+	MethodInvocation* method_invocation;
 };
 
 
 struct MethodInvocation{
-	char * TODO;
+	VarAccess* vaccess;
+	ArgumentList* arglist;
 };
 
 
 struct ArgumentList{
-	char * TODO;
+	Expression* expression;
+	ArgumentList* arglist;
 };
 
+typedef enum Expression_type{
+	xexp,
+	assignment
+} Expression_type;
 
 struct Expression{
-	char * TODO;
+	union{
+		ConditionalExpression* xexp;
+		Assignment* assignment;
+	};
+	Expression_type type;
 };
 
 
 struct ConditionalExpression{
-	char * TODO;
+	ConditionalOrExpression* corexp;
+	Expression* exp;
+	ConditionalExpression* cexp;
 };
 
 
 struct ConditionalOrExpression{
-	char * TODO;
+	ConditionalAndExpression* candexp;
+	ConditionalOrExpression* corexp;
 };
 
 
 struct ConditionalAndExpression{
-	char * TODO;
+	EqualityExpression* eqexp;
+	
 };
 
 

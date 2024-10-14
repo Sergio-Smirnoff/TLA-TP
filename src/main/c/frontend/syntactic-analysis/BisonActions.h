@@ -52,13 +52,88 @@ Regex_class* RegexClassRangeSemanticAction( Range* range, Regex_class* regex_cla
 Lexeme_precursor* LexemePrecursorSemanticAction( Lexeme *lex, Lexeme_precursor *lex_prec );
 
 
-// old
-/*
-Constant * IntegerConstantSemanticAction(const int value);
-Expression * ArithmeticExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, ExpressionType type);
-Expression * FactorExpressionSemanticAction(Factor * factor);
-Factor * ConstantFactorSemanticAction(Constant * constant);
-Factor * ExpressionFactorSemanticAction(Expression * expression);
-Program * ExpressionProgramSemanticAction(CompilerState * compilerState, Expression * expression);
-*/
+NumericComparison* JavaNumericComparisonSemanticAction(Token token);
+
+
+Block* JavaBlockSemanticAction( Statement* statment, Block* block );
+
+
+Statement* InlineStatementSemanticAction(StatementWithoutTrailingSubstatement* inline);
+Statement* IfStatementSemanticAction ( IfThenStatement* if );
+Statement* IfElseStatement ( ifThenElseStatement* ifelse );
+Statement* WhileStatementSemanticAction(Expression* exp, Statement* state);
+Statement* ForStatementSemanticAction(ForInit* for, Expression* exp, StatementExpresionList* list, Statement* state);
+
+ForInit* StatementExpressionListSemanticAction(StatementExpresionList* list)
+ForInit* JavaVarTypeDefinitionSemantictAction(Param* param, char* var_name)
+
+
+StatementExpressionList* StatementExpressionListSemanticAction( StatementExpression* exp, StatementExpressionList* list );
+
+IfThenStatement* JavaIfThenStructureSemanticAction( Expression* exp, Statement* if, Statement* else );
+IfThenElseStatement* JavaIfThenElseStructureSemanticAction( Expression* exp, Statement* if, Statement* else );
+
+
+StatementWithoutTrailingSubstatement* JavaStatementExpressionSemanticAction ( StatementExpression* sexp );
+StatementWithoutTrailingSubstatement* JavaReturnExpressionSemanticAction( Expression* exp );
+StatementWithoutTrailingSubstatement* JavaThrowExpressionSemanticAction( Expression* exp );
+
+
+StatementExpression* JavaAsignmentSemanticAction(Assignment* assignment);
+StatementExpression* JavaModifyingStatementExpressionSemanticAction( StateExpressionType type, Token token, UnaryExpression* exp );
+StatementExpression* JavaMethodInvocationSemanticAction(MethodInvocation* method_invocation);
+StatementExpression* JavaAsignmentParamSemanticAction( Param* param, char* var_name, Token java_assignment, Expression* exp );
+
+
+VarAccess* VarAccessMethodInvocationSemanticAction( MethodInvocation* method_invocation );
+VarAccess* VarAccessVarSemanticAction( char* var_name );
+VarAccess* VarAccessVarOperatorSemanticAction( char* var_name, VarAccess* vaccess );
+VarAccess* VarAccessParamOperatorSemanticAction( Param* param, VarAccess* vaccess );
+
+
+MethodInvocation* InvocationSemanticAction( VarAccess* vaccess, ArgumentList* arglist );
+
+ArgumentList* ArgListSemanticExpression( Expression* exp; ArgumentList* arglist );
+
+
+Expression* expressionSematicAction( ConditionalExpression* cexp, Assignment* assignment );
+
+ConditionalExpression* JavaConditionalExpSemanticAction( ConditionalOrExpression* corexp, Expression* exp, ConditionalExpression* cexp );
+
+
+ConditionalOrExpression* JavaConditionalOrExpressionSemanticAction( ConditionalAndExpression* candexp, ConditionalOrExpression* corexp );
+
+
+ConditionalAndExpression* JavaConditionalAndExpressionSemanticAction( ConditionalAndExpression* andexp, EqualityExpression* eqexp );
+
+EqualityExpression* EqualityExpressionSemanticAction( UnaryExpression * uexp, EqualityExpression* eqexp );
+
+UnaryExpression* UnaryExpressionNumericComparisonSintaticAction( UnaryExpression* uexp1, NumericComparison* numcomp, UnaryExpression* uexp2 );
+UnaryExpression* UnaryExpressionDoubleTokenSintaticAction( UnaryExpression* uexp1, UnaryExpressionType type, UnaryExpression* uexp2 );
+UnaryExpression* UnaryExpressionPostfixExpressionSintaticAction( PostfixExpression* pexp );
+UnaryExpression* UnaryExpressionParamSintaticAction( Param* param);
+UnaryExpression* UnaryExpressionSingleTokenSintaticAction( UnaryExpression* uexp, Token token);
+
+PostfixExpression* PostfixExpressionPrimarySemanticAction( Primary* primary );
+PostfixExpression* PostfixExpressionVAccessSemanticAction( VarAccess* vaccess );
+PostfixExpression* PostfixExpressionSemanticAction( VarAccess* vaccess, Token token );
+
+
+Assignment* AssignmentSemanticAction( VarAccess* vaccess, Expression* exp );
+
+
+Primary* PrimaryLiteralSemanticAction( Literal* literal );
+Primary* PrimaryExpressionSemanticAction( Expression* exp );
+Primary* PrimaryCExpSemanticAction( ClassInstanceCreationExpression* cexp );
+
+
+ClassInstanceCreationExpression* InstanceCreationExpressionSemanticAction( UnqualifiedClassInstanceCreationExpression* exp );
+ClassInstanceCreationExpression* VAccessInstanceCreationExpressionSemanticAction( VarAccess* vaccess, UnqualifiedClassInstanceCreationExpression* exp );
+ClassInstanceCreationExpression* PrimaryInstanceCreationExpressionSemanticAction( Primary* primary, UnqualifiedClassInstanceCreationExpression* exp );
+
+UnqualifiedClassInstanceCreationExpression* UnqualifiedClassSemanticAction( Param* param, ArgumentList* list )
+
+Literal* JavaLiteralStrSemanticAction( char* str );
+Literal* JavaLiteralTokenSemanticAction( Token token  );
+
 #endif

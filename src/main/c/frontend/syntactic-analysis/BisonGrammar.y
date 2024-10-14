@@ -284,8 +284,8 @@ Statement: StatementWithoutTrailingSubstatement ENDLINE																									
 	| JAVA_FOR OPEN_PARENTHESES ForInit[init] ENDLINE Expression[exp] ENDLINE StatementExpressionList[stlist] CLOSE_PARENTHESES OPEN_BRACES Statement[state] CLOSE_BRACES			{ $$ = ForStatementSemanticAction($init, $exp, $stlist, $state); }
 	;
 
-ForInit: StatementExpressionList																														{ $$ = JavaStatementExpressionListSemanticAction($1); }
-	| param VAR_NAME																																	{ $$ = JavaVarTypeDefinitionSemantictAction($1, $2); }
+ForInit: StatementExpressionList																														{ $$ = JavaStatementExpressionListSemanticAction($1, statelist); }
+	| param VAR_NAME																																	{ $$ = JavaVarTypeDefinitionSemantictAction($1, $2, withparams); }
 	;
 
 StatementExpressionList: %empty																															{ $$ = NULL; }
@@ -293,10 +293,10 @@ StatementExpressionList: %empty																															{ $$ = NULL; }
 	| StatementExpression COMMA StatementExpressionList																									{ $$ = StatementExpressionListSemanticAction($1, $2); }
 	;
 
-IfThenStatement: JAVA_IF OPEN_PARENTHESES Expression[expression] CLOSE_PARENTHESES Statement[ifstatement]												{ $$ = JavaIfThenStructureSemanticAction($expression, $ifstatement, NULL); }
+IfThenStatement: JAVA_IF OPEN_PARENTHESES Expression[expression] CLOSE_PARENTHESES Statement[ifstatement]												{ $$ = JavaIfThenStructureSemanticAction($expression, $ifstatement); }
 	;
 
-IfThenElseStatement: JAVA_IF OPEN_PARENTHESES Expression[expression] CLOSE_PARENTHESES Statement[ifstatement] JAVA_ELSE Statement[elsestatement]		{ $$ = JavaIfThenStructureSemanticAction($expression, $ifstatement, $elsestatement); }
+IfThenElseStatement: JAVA_IF OPEN_PARENTHESES Expression[expression] CLOSE_PARENTHESES Statement[ifstatement] JAVA_ELSE Statement[elsestatement]		{ $$ = JavaIfThenElseStructureSemanticAction($expression, $ifstatement, $elsestatement); }
 	;
 
 StatementWithoutTrailingSubstatement: %empty																											{ $$ = NULL; }
@@ -336,7 +336,8 @@ ConditionalOrExpression: ConditionalAndExpression																										{ $$ 
 	| ConditionalOrExpression JAVA_OR ConditionalAndExpression																							{ $$ = JavaConditionalOrExpressionSemanticAction( $3, $1 ); }
 	;
 
-ConditionalAndExpression: EqualityExpression																											{ $$ = JavaConditionalAndExpressionSemanticAction($1); }
+ConditionalAndExpression: EqualityExpression																											{ $$ = JavaConditionalAndExpressionSemanticAction(NULL, $1); }
+	| ConditionalAndExpression JAVA_AND EqualityExpression                                                        										{ $$ = JavaConditionalAndExpressionSemanticAction($1,$2); }
 	;
 
 EqualityExpression: UnaryExpression																														{ $$ = EqualityExpressionSemanticAction( $1 ); }
