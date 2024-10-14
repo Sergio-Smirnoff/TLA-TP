@@ -1,7 +1,6 @@
 %{
 
 #include "BisonActions.h"
-//yydebug=1;
 
 %}
 
