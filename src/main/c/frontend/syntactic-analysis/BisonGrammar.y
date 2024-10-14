@@ -20,7 +20,6 @@
 	Lexeme_precursor* lexeme_precursor;
 	Regex_class* regex_class;
 	Regexes *regexes;
-	Symbols *symbols;
 	Symbol *symbol;
 	Action* action;
 	Closure* closure;
@@ -220,8 +219,8 @@ lexeme_precursor: lexeme lexeme_precursor																												{ $$ = Lexe
 	| STR[string]																																		{ $$ = LexemeSemanticAction( $string, NULL, NULL, string); }
 	;
 
-lexeme: OPEN_BRACKET regex_class[regex] CLOSE_BRACKET closure																							{ $$ = LexemeSemanticAction( NULL, $regex, $closure, regex_class); }
-	| OPEN_BRACES VAR_NAME[id] CLOSE_BRACES closure																										{ $$ = LexemeSemanticAction( $id, NULL, $closure, reg); }
+lexeme: OPEN_BRACKET regexes[regex] CLOSE_BRACKET closure[closure]																					{ $$ = LexemeSemanticAction( NULL, $regex, $closure, regex_class); }
+	| OPEN_BRACES VAR_NAME[id] CLOSE_BRACES closure[closure]																							{ $$ = LexemeSemanticAction( $id, NULL, $closure, reg); }
 	;
 
 closure: %empty 																																		{ $$ = NULL; }
@@ -233,8 +232,9 @@ regexes: regex_class { $$ = NULL; }
 	| regex_class regexes { $$ = NULL; }
 	;
 
-regex_class: symbol																																		{ $$ = RegexClassStringSemanticAction($1, NULL); }
-    | symbol RANGER symbol																																{ $$ = RangeSemanticAction($1, $3); }
+regex_class: symbol												{ $$ = RegexClassStringSemanticAction($1, NULL); }
+    | symbol RANGER symbol															{ $$ = RangeSemanticAction($1, $3); }
+	| OPEN_BRACES VAR_NAME[id] CLOSE_BRACES closure					{ $$ = LexemeSemanticAction( $id, NULL, $4, reg); }
 	;
 
 symbol: LOWERCASE 																																		{ $$ = RegexClassStringSemanticAction($1, NULL); }

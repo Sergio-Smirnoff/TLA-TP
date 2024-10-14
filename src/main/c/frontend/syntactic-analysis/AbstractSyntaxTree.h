@@ -31,7 +31,6 @@ typedef struct Java_function_body Java_function_body;
 
 typedef struct Regexes Regexes;
 typedef struct Symbol Symbol;
-typedef struct Symbols Symbols;
 
 typedef struct NumericComparison NumericComparison;
 typedef struct Statement Statement;
@@ -296,9 +295,6 @@ struct Regexes{
 	char *TODO;
 };
 struct Symbol{
-	char *TODO;
-};
-struct Symbols{
 	char *TODO;
 };
 

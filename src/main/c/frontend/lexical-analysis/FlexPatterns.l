@@ -16,6 +16,7 @@
 %x MULTILINE_COMMENT
 %x LINE_COMMENT
 %x REGEX_CONTENT
+%x REGEX_CONTENT_VARNAME
 %x STRING
 /**
  * Reusable patterns.
@@ -97,6 +98,11 @@
 [0-9]+"."[0-9]+                                 { return SimpleTokenInsert(createLexicalAnalyzerContext(), FLOAT); }
 
 "["                                             { BEGIN(REGEX_CONTENT); return SimpleTokenInsert(createLexicalAnalyzerContext(), OPEN_BRACKET); }
+<REGEX_CONTENT>"{"                              { Token token = OpenBracesLexeme(createLexicalAnalyzerContext()); BEGIN(REGEX_CONTENT_VARNAME); return token; }
+<REGEX_CONTENT_VARNAME>[a-zA-Z_$][a-zA-Z0-9_$]* { return VarNameLexeme(createLexicalAnalyzerContext()); }
+<REGEX_CONTENT_VARNAME>"}"                      { Token token = CloseBracesLexeme(createLexicalAnalyzerContext()); BEGIN(REGEX_CONTENT); return token; }
+<REGEX_CONTENT_VARNAME>.                        { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
+
 <REGEX_CONTENT>[a-z]                            { return RegexContentLexeme(createLexicalAnalyzerContext(), LOWERCASE); }
 <REGEX_CONTENT>[A-Z]                            { return RegexContentLexeme(createLexicalAnalyzerContext(), UPPERCASE); }
 <REGEX_CONTENT>[0-9]                            { return RegexContentLexeme(createLexicalAnalyzerContext(), DIGIT); }
