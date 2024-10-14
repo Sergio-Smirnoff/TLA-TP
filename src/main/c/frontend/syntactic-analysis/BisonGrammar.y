@@ -146,7 +146,6 @@
 %type <lexeme_precursor> lexeme_precursor
 %type <regex_class> regex_class
 %type <symbol> symbol
-%type <symbols> symbols
 %type <regexes> regexes
 %type <action> action
 %type <param> param
@@ -188,7 +187,6 @@
  * %left ADD SUB %left MUL DIV
  */
 
-%left ','
 %precedence INCREMENT DECREMENT CLOSE_PARENTHESES
 %left JAVA_DOT_OPERATOR JAVA_DOTS_OPERATOR
 %left PLUS MINUS              
@@ -235,12 +233,8 @@ regexes: regex_class { $$ = NULL; }
 	| regex_class regexes { $$ = NULL; }
 	;
 
-regex_class: symbols												{ $$ = RegexClassStringSemanticAction($1, NULL); }
+regex_class: symbol																	{ $$ = RegexClassStringSemanticAction($1, NULL); }
     | symbol RANGER symbol															{ $$ = RangeSemanticAction($1, $3); }
-	;
-
-symbols: symbol { $$ = NULL; }
-	| symbol symbols { $$ = NULL; }
 	;
 
 symbol: LOWERCASE 																																		{ $$ = RegexClassStringSemanticAction($1, NULL); }
@@ -312,10 +306,6 @@ StatementWithoutTrailingSubstatement: %empty																											{ $$ = NU
 	;
 
 StatementExpression: Assignment																															{ $$ = JavaAsignmentSemanticAction($1); }
-	| INCREMENT UnaryExpression																															{ $$ = JavaModifyingStatementExpressionSemanticAction(pre, $1, $2); }
-	| DECREMENT UnaryExpression																											     			{ $$ = JavaModifyingStatementExpressionSemanticAction(pre, $1, $2); }
-	| UnaryExpression INCREMENT 																														{ $$ = JavaModifyingStatementExpressionSemanticAction(post, $2, $1); }
-	| UnaryExpression DECREMENT																															{ $$ = JavaModifyingStatementExpressionSemanticAction(post, $2, $1); } 
 	| MethodInvocation																																	{ $$ = JavaMethodInvocationSemanticAction($1); }
 	| param VAR_NAME JAVA_ASSIGNMENT Expression																											{ $$ = JavaAsignmentParamSemanticAction($1, $2, $3, $4); }
 	;
