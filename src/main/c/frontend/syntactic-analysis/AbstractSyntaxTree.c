@@ -16,7 +16,7 @@ void shutdownAbstractSyntaxTreeModule() {
 
 /** PUBLIC FUNCTIONS */
 
-
+/*
 void releaseProgram(Program * program) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (program != NULL) {
@@ -126,3 +126,4 @@ void releaseFunctionBody(Function_body * functionBody) {
 		free(functionBody);
 	}
 }
+*/
