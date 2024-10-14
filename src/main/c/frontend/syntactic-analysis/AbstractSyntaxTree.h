@@ -239,12 +239,12 @@ struct UnaryExpression{
 		struct{
 			UnaryExpression* uexp1_num;
 			NumericComparison* numcomp;
-			UnaryExpression* uexp2_num;
+			PostfixExpression* uexp2_num;
 		};
 		struct{
 			UnaryExpression* uexp1_exp;
 			UnaryExpressionType type;
-			UnaryExpression* uexp2_exp;
+			PostfixExpression* uexp2_exp;
 		};
 		PostfixExpression* pexp;
 		Param* param;

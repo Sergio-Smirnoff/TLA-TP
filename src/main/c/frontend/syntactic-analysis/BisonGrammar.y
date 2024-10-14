@@ -221,8 +221,8 @@ lexeme_precursor: lexeme lexeme_precursor																																			{ $$
 	| STR[string]																																									{ $$ = LexemeStringSemanticAction($string, string_lexeme); }
 	;
 
-lexeme: OPEN_BRACKET regexes[regex] CLOSE_BRACKET closure[closure]																													{ $$ = LexemeSemanticAction(NULL, $regex, $closure, regexes); }
-	| OPEN_BRACES VAR_NAME[id] CLOSE_BRACES closure[closure]																														{ $$ = LexemeSemanticAction($id, NULL, $closure, name); }
+lexeme: OPEN_BRACKET regexes[regex] CLOSE_BRACKET closure[closure_p]																												{ $$ = LexemeSemanticAction(NULL, $regex, $closure_p, regexes); }
+	| OPEN_BRACES VAR_NAME[id] CLOSE_BRACES closure[closure_p]																														{ $$ = LexemeSemanticAction($id, NULL, $closure_p, name); }
 	;
 
 closure: %empty 																																									{ $$ = NULL; }
@@ -247,7 +247,7 @@ symbol: LOWERCASE 																																									{ $$ = RegexSymbolSem
 	;
 
 action: VAR_NAME																																									{ $$ = ActionSemanticAction($1); }
-	| OPEN_PARENTHESES param[param] CLOSE_PARENTHESES OPEN_BRACES Block[block] CLOSE_BRACES																							{ $$ = ActionJavaSemanticAction($param, $block); }
+	| OPEN_PARENTHESES param[param_p] CLOSE_PARENTHESES OPEN_BRACES Block[block] CLOSE_BRACES																							{ $$ = ActionJavaSemanticAction($param_p, $block); }
 	| OPEN_PARENTHESES CLOSE_PARENTHESES OPEN_BRACES Block[block] CLOSE_BRACES																										{ $$ = ActionJavaSemanticAction(NULL, $block); }
 	;
 

@@ -282,7 +282,7 @@ Assignment* AssignmentSemanticAction(VarAccess* vaccess, Expression* exp){
 	return assignment;	
 }
 
-UnaryExpression* UnaryExpressionNumericComparisonSintaticAction(UnaryExpression* uexp1, NumericComparison* numcomp, UnaryExpression* uexp2){
+UnaryExpression* UnaryExpressionNumericComparisonSintaticAction(UnaryExpression* uexp1, NumericComparison* numcomp, PostfixExpression* uexp2){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	UnaryExpression * unaryExpression = calloc(1, sizeof(UnaryExpression));
 	unaryExpression->uexp1_num = uexp1;
@@ -292,7 +292,7 @@ UnaryExpression* UnaryExpressionNumericComparisonSintaticAction(UnaryExpression*
 	return unaryExpression;
 }
 
-UnaryExpression* UnaryExpressionDoubleTokenSintaticAction(UnaryExpression* uexp1, UnaryExpressionType type, UnaryExpression* uexp2){
+UnaryExpression* UnaryExpressionDoubleTokenSintaticAction(UnaryExpression* uexp1, UnaryExpressionType type, PostfixExpression* uexp2){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	UnaryExpression * unaryExpression = calloc(1, sizeof(UnaryExpression));
 	unaryExpression->uexp1_exp = uexp1;

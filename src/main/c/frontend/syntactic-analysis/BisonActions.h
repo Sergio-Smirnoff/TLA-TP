@@ -114,8 +114,8 @@ ConditionalAndExpression* JavaConditionalAndExpressionSemanticAction(Conditional
 EqualityExpression* EqualityExpressionSemanticAction(UnaryExpression * uexp, EqualityExpression* eqexp);
 
 // UnaryExpression
-UnaryExpression* UnaryExpressionNumericComparisonSintaticAction(UnaryExpression* uexp1, NumericComparison* numcomp, UnaryExpression* uexp2);
-UnaryExpression* UnaryExpressionDoubleTokenSintaticAction(UnaryExpression* uexp1, UnaryExpressionType type, UnaryExpression* uexp2);
+UnaryExpression* UnaryExpressionNumericComparisonSintaticAction(UnaryExpression* uexp1, NumericComparison* numcomp, PostfixExpression* uexp2);
+UnaryExpression* UnaryExpressionDoubleTokenSintaticAction(UnaryExpression* uexp1, UnaryExpressionType type, PostfixExpression* uexp2);
 UnaryExpression* UnaryExpressionPostfixExpressionSintaticAction(PostfixExpression* pexp);
 UnaryExpression* UnaryExpressionParamSintaticAction(Param* param);
 UnaryExpression* UnaryExpressionSingleTokenSintaticAction(UnaryExpression* uexp, Token token);
