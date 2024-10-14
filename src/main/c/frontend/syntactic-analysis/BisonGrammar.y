@@ -148,7 +148,6 @@
 %type <lexeme_precursor> lexeme_precursor
 %type <regex_class> regex_class
 %type <symbol> symbol
-%type <symbols> symbols
 %type <regexes> regexes
 %type <action> action
 %type <param> param
@@ -190,7 +189,6 @@
  * %left ADD SUB %left MUL DIV
  */
 
-%left ','
 %precedence INCREMENT DECREMENT CLOSE_PARENTHESES
 %left JAVA_DOT_OPERATOR JAVA_DOTS_OPERATOR
 %left PLUS MINUS              
@@ -237,12 +235,8 @@ regexes: regex_class { $$ = NULL; }
 	| regex_class regexes { $$ = NULL; }
 	;
 
-regex_class: symbols												{ $$ = RegexClassStringSemanticAction($1, NULL); }
+regex_class: symbol																	{ $$ = RegexClassStringSemanticAction($1, NULL); }
     | symbol RANGER symbol															{ $$ = RangeSemanticAction($1, $3); }
-	;
-
-symbols: symbol { $$ = NULL; }
-	| symbol symbols { $$ = NULL; }
 	;
 
 symbol: LOWERCASE { $$ = NULL; }
@@ -314,10 +308,6 @@ StatementWithoutTrailingSubstatement: ENDLINE														{ $$ = NULL; }
 	;
 
 StatementExpression: Assignment														{ $$ = NULL; }
-	| INCREMENT UnaryExpression														{ $$ = NULL; }
-	| DECREMENT UnaryExpression														{ $$ = NULL; }
-	| UnaryExpression INCREMENT 														{ $$ = NULL; }
-	| UnaryExpression DECREMENT														{ $$ = NULL; } 
 	| MethodInvocation														{ $$ = NULL; }
 	| param VAR_NAME JAVA_ASSIGNMENT Expression								{ $$ = NULL; }
 	;

@@ -87,7 +87,6 @@
 "-> "                                           { return ArrowLexeme(createLexicalAnalyzerContext()); }
 [[:space:]]+                                    { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 ";"                                             { return EndLineLexeme(createLexicalAnalyzerContext()); }
-"|"                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), PIPE); }
 
 
 "("                                             { return OpenParenthesesLexeme(createLexicalAnalyzerContext()); }
