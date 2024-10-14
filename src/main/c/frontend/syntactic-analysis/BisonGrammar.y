@@ -338,12 +338,12 @@ EqualityExpression: UnaryExpression												{ $$ = EqualityExpressionSemantic
 	| EqualityExpression JAVA_EXACT_COMPARISON UnaryExpression																														{ $$ = EqualityExpressionSemanticAction($3,$1); }
 	;
 
-UnaryExpression:  UnaryExpression NumericComparison UnaryExpression																													{ $$ = UnaryExpressionNumericComparisonSintaticAction($1,$2,$3); }
-	| UnaryExpression STAR UnaryExpression																																			{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,star_t ,$3); }
-	| UnaryExpression DIV UnaryExpression																																			{ $$ = UnaryExpressionDoubleTokenSintaticAction($1, div_type,$3); }
-	| UnaryExpression MOD UnaryExpression																																			{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,mod_t ,$3); }
-	| UnaryExpression PLUS UnaryExpression																																			{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,plus_t ,$3); }
-	| UnaryExpression MINUS UnaryExpression																																			{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,minus_t ,$3); }
+UnaryExpression:  UnaryExpression NumericComparison PostfixExpression																													{ $$ = UnaryExpressionNumericComparisonSintaticAction($1,$2,$3); }
+	| UnaryExpression STAR PostfixExpression																																		{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,star_t ,$3); }
+	| UnaryExpression DIV PostfixExpression																																		{ $$ = UnaryExpressionDoubleTokenSintaticAction($1, div_type,$3); }
+	| UnaryExpression MOD PostfixExpression																																		{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,mod_t ,$3); }
+	| UnaryExpression PLUS PostfixExpression																																		{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,plus_t ,$3); }
+	| UnaryExpression MINUS PostfixExpression																																		{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,minus_t ,$3); }
 	| PostfixExpression																																								{ $$ = UnaryExpressionPostfixExpressionSintaticAction($1); }
 	| JAVA_NOT UnaryExpression																																						{ $$ = UnaryExpressionSingleTokenSintaticAction($2,$1); }
 	| OPEN_PARENTHESES param CLOSE_PARENTHESES																																		{ $$ = UnaryExpressionParamSintaticAction($2); }
