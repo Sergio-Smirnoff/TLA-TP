@@ -2,55 +2,55 @@
 #include <stdlib.h>
 #define BLOCK 32
 
-void resize_automaton(automaton *automaton)
+void resize_automaton(automaton *a)
 {
-    automaton->states_dim *= 2;
-    automaton->states = realloc(automaton->states, automaton->states_dim);
+    a->states_dim *= 2;
+    a->states = realloc(a->states, a->states_dim);
 }
 
-void check_resize_automaton(automaton *automaton)
+void check_resize_automaton(automaton *a)
 {
-    if (automaton->states_dim == automaton->states_size)
-        resize_automaton(automaton);
+    if (a->states_dim == a->states_size)
+        resize_automaton(a);
 }
 
-state *new_state(automaton *automaton, uint8_t throws_token, uint64_t token)
+state *new_state(automaton *a, uint8_t throws_token, uint64_t token)
 {
-    state *state = malloc(sizeof(state));
-    state->delta = calloc(BLOCK, sizeof(rule));
-    state->delta_dim = BLOCK;
-    state->delta_size = 0;
-    state->throws_token = throws_token;
-    state->token = token;
-    check_resize_automaton(automaton);
-    automaton->states[automaton->states_size++] = state;
-    return state;
+    state *n_state = malloc(sizeof(state));
+    n_state->delta = calloc(BLOCK, sizeof(rule));
+    n_state->delta_dim = BLOCK;
+    n_state->delta_size = 0;
+    n_state->throws_token = throws_token;
+    n_state->token = token;
+    check_resize_automaton(a);
+    a->states[a->states_size++] = n_state;
+    return n_state;
 }
 
-void set_initial_state(automaton *automaton, state *initial_state)
+void set_initial_state(automaton *a, state *initial_state)
 {
-    automaton->initial_state = initial_state;
+    a->initial_state = initial_state;
 }
 
 automaton *new_automaton()
 {
-    automaton *automaton = malloc(sizeof(automaton));
-    automaton->states = malloc(sizeof(state *) * BLOCK);
-    automaton->states_dim = BLOCK;
-    automaton->states_size = 0;
-    return automaton;
+    automaton *n_automaton = malloc(sizeof(automaton));
+    n_automaton->states = malloc(sizeof(state *) * BLOCK);
+    n_automaton->states_dim = BLOCK;
+    n_automaton->states_size = 0;
+    return n_automaton;
 }
 
-void resize_state(state *state)
+void resize_state(state *s)
 {
-    state->delta_dim *= 2;
-    state->delta = realloc(state->delta, state->delta_dim);
+    s->delta_dim *= 2;
+    s->delta = realloc(s->delta, s->delta_dim);
 }
 
-void check_resize_state(state *state)
+void check_resize_state(state *s)
 {
-    if (state->delta_dim == state->delta_size)
-        resize_state(state);
+    if (s->delta_dim == s->delta_size)
+        resize_state(s);
 }
 
 char set_transition(state *from, state *to, char matcher)
@@ -60,13 +60,13 @@ char set_transition(state *from, state *to, char matcher)
     from->delta[from->delta_size++].next = to;
 }
 
-rule find_rule(state *state, char symbol)
+rule find_rule(state *s, char symbol)
 {
-    uint64_t size = state->delta_size;
+    uint64_t size = s->delta_size;
     for (uint64_t i = 0; i < size; i++)
-        if (state->delta[i].matcher == symbol)
+        if (s->delta[i].matcher == symbol)
         {
-            return state->delta[i];
+            return s->delta[i];
         }
     rule to_return;
     to_return.matcher = 0;
@@ -74,15 +74,15 @@ rule find_rule(state *state, char symbol)
     return to_return;
 }
 
-state *next_state(state *state, char symbol)
+state *next_state(state *s, char symbol)
 {
-    rule rule = find_rule(state, symbol);
+    rule rule = find_rule(s, symbol);
     return rule.next;
 }
 
-uint64_t get_next_token(automaton *automaton, const char **string_p)
+uint64_t get_next_token(automaton *a, const char **string_p)
 {
-    state *current = automaton->initial_state;
+    state *current = a->initial_state;
     while (current != NULL && *string_p[0])
     {
         if (current->throws_token)
@@ -95,12 +95,12 @@ uint64_t get_next_token(automaton *automaton, const char **string_p)
     return -1;
 }
 
-uint64_t *get_token_stream(automaton *automaton, const char *string, uint64_t *buffer, uint64_t buffer_size)
+uint64_t *get_token_stream(automaton *a, const char *string, uint64_t *buffer, uint64_t buffer_size)
 {
     uint64_t token, i;
     for (i = 0; i < buffer_size && string[0]; i++)
     {
-        token = get_next_token(automaton, &string);
+        token = get_next_token(a, &string);
         buffer[i] = token;
         if (token == -1)
         {
@@ -113,21 +113,21 @@ uint64_t *get_token_stream(automaton *automaton, const char *string, uint64_t *b
     return buffer;
 }
 
-automaton *get_deterministic_equivalent(automaton *automaton)
+automaton *get_deterministic_equivalent(automaton *a)
 {
     // haha no
-    return automaton;
+    return a;
 }
 
-void free_state(state *state)
+void free_state(state *s)
 {
-    free(state->delta);
-    free(state);
+    free(s->delta);
+    free(s);
 }
-void free_automaton(automaton *automaton)
+void free_automaton(automaton *a)
 {
-    for (int i = 0; i < automaton->states_size; i++)
-        free_state(automaton->states[i]);
-    free(automaton->states);
-    free(automaton);
+    for (int i = 0; i < a->states_size; i++)
+        free_state(a->states[i]);
+    free(a->states);
+    free(a);
 }
