@@ -6,7 +6,7 @@
 
 typedef struct rule
 {
-    struct state *next;
+    uint64_t next_index;
     char matcher;
 } rule;
 
@@ -33,7 +33,11 @@ typedef struct automaton
     uint64_t states_dim;
 } automaton;
 
-state *new_state(automaton *automaton, uint8_t throws_token, uint64_t token);
+uint64_t new_state(automaton *automaton, uint8_t throws_token, uint64_t token);
+
+uint64_t new_state_get_index(automaton *automaton, uint8_t throws_token, uint64_t token);
+
+state *get_state(automaton *automaton, uint64_t index);
 
 void set_initial_state(automaton *automaton, state *initial_state);
 automaton *new_automaton();
@@ -41,21 +45,23 @@ automaton *new_automaton();
 /**
  * @brief set the transition of a state to another state given a matching symbol
  *
+ * @param a
  * @param from
  * @param to
  * @param matcher
  * @return char 1 if succesful, 0 otherwise
  */
-char set_transition(state *from, state *to, char matcher);
+char set_transition(automaton *a, uint64_t from_index, uint64_t to_index, char matcher);
 
 /**
  * @brief get the next state given a state and a symbol
  *
+ * @param a
  * @param state
  * @param symbol
  * @return state* NULL if no transition for the given symbol exists
  */
-state *next_state(state *state, char symbol);
+state *next_state(automaton *a, state *state, char symbol);
 
 /**
  * @brief returns a number representing the next token obtained from a string

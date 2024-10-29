@@ -14,7 +14,7 @@ void check_resize_automaton(automaton *a)
         resize_automaton(a);
 }
 
-state *new_state(automaton *a, uint8_t throws_token, uint64_t token)
+uint64_t new_state(automaton *a, uint8_t throws_token, uint64_t token)
 {
     state *n_state = malloc(sizeof(state));
     n_state->delta = calloc(BLOCK, sizeof(rule));
@@ -23,8 +23,8 @@ state *new_state(automaton *a, uint8_t throws_token, uint64_t token)
     n_state->throws_token = throws_token;
     n_state->token = token;
     check_resize_automaton(a);
-    a->states[a->states_size++] = n_state;
-    return n_state;
+    a->states[a->states_size] = n_state;
+    return a->states_size++;
 }
 
 void set_initial_state(automaton *a, state *initial_state)
@@ -53,11 +53,15 @@ void check_resize_state(state *s)
         resize_state(s);
 }
 
-char set_transition(state *from, state *to, char matcher)
+char set_transition(automaton *a, uint64_t from_index, uint64_t to_index, char matcher)
 {
+    if(from_index >= a->states_size || to_index >= a->states_size)
+        return 0;
+    state *from = get_state(a, from_index);
     check_resize_state(from);
     from->delta[from->delta_size].matcher = matcher;
-    from->delta[from->delta_size++].next = to;
+    from->delta[from->delta_size++].next_index = to_index;
+    return 1;
 }
 
 rule find_rule(state *s, char symbol)
@@ -70,14 +74,14 @@ rule find_rule(state *s, char symbol)
         }
     rule to_return;
     to_return.matcher = 0;
-    to_return.next = NULL;
+    to_return.next_index = -1;
     return to_return;
 }
 
-state *next_state(state *s, char symbol)
+state *next_state(automaton *a, state *s, char symbol)
 {
     rule rule = find_rule(s, symbol);
-    return rule.next;
+    return get_state(a, rule.next_index);
 }
 
 uint64_t get_next_token(automaton *a, const char **string_p)
@@ -87,7 +91,7 @@ uint64_t get_next_token(automaton *a, const char **string_p)
     {
         if (current->throws_token)
             return current->token;
-        current = next_state(current, *string_p[0]);
+        current = next_state(a, current, *string_p[0]);
         (*string_p)++;
     }
     if (current->throws_token)
@@ -119,11 +123,19 @@ automaton *get_deterministic_equivalent(automaton *a)
     return a;
 }
 
+state *get_state(automaton *a, uint64_t index)
+{
+    if (a->states_size > index)
+        return a->states[index];
+    return NULL;
+}
+
 void free_state(state *s)
 {
     free(s->delta);
     free(s);
 }
+
 void free_automaton(automaton *a)
 {
     for (int i = 0; i < a->states_size; i++)
