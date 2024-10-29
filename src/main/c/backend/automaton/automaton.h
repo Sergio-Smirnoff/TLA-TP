@@ -6,7 +6,9 @@
 
 typedef struct rule
 {
-    uint64_t next_index;
+    uint64_t *next_indices;
+    uint64_t next_indices_size;
+    uint64_t next_indices_dim;
     char matcher;
 } rule;
 
@@ -37,7 +39,7 @@ uint64_t new_state(automaton *automaton, uint8_t throws_token, uint64_t token);
 
 uint64_t new_state_get_index(automaton *automaton, uint8_t throws_token, uint64_t token);
 
-state *get_state(automaton *automaton, uint64_t index);
+state *get_state(const automaton *automaton, uint64_t index);
 
 void set_initial_state(automaton *automaton, state *initial_state);
 automaton *new_automaton();
@@ -51,7 +53,7 @@ automaton *new_automaton();
  * @param matcher
  * @return char 1 if succesful, 0 otherwise
  */
-char set_transition(automaton *a, uint64_t from_index, uint64_t to_index, char matcher);
+char set_transition(const automaton *a, uint64_t from_index, uint64_t to_index, char matcher);
 
 /**
  * @brief get the next state given a state and a symbol
@@ -61,7 +63,7 @@ char set_transition(automaton *a, uint64_t from_index, uint64_t to_index, char m
  * @param symbol
  * @return state* NULL if no transition for the given symbol exists
  */
-state *next_state(automaton *a, state *state, char symbol);
+state *next_state(const automaton *a, const state *state, char symbol);
 
 /**
  * @brief returns a number representing the next token obtained from a string
@@ -70,7 +72,7 @@ state *next_state(automaton *a, state *state, char symbol);
  * @param string_p pointer to a string, will be advanced to the index where the next token matching occurs
  * @return uint64_t*
  */
-uint64_t get_next_token(automaton *automaton, const char **string_p);
+uint64_t get_next_token(const automaton *automaton, const char **string_p);
 
 /**
  * @brief produces a 0 terminated array of tokens in the buffer given. If not 0 terminated, ran out of space
@@ -79,7 +81,7 @@ uint64_t get_next_token(automaton *automaton, const char **string_p);
  * @param string
  * @return uint64_t* the buffer given
  */
-uint64_t *get_token_stream(automaton *automaton, const char *string, uint64_t *buffer, uint64_t buffer_size);
+uint64_t *get_token_stream(const automaton *automaton, const char *string, uint64_t *buffer, uint64_t buffer_size);
 
 /**
  * @brief produces an equivalent deterministic automaton
@@ -87,7 +89,7 @@ uint64_t *get_token_stream(automaton *automaton, const char *string, uint64_t *b
  * @param automaton
  * @return automaton
  */
-automaton *get_deterministic_equivalent(automaton *automaton);
+automaton *get_deterministic_equivalent(const automaton *automaton);
 
 void free_state(state *state);
 void free_automaton(automaton *automaton);
