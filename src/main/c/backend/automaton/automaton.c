@@ -177,7 +177,6 @@ typedef struct delta_table_entry
 {
     uint64_t *state_indices;
     uint64_t state_indices_size;
-    state *state_equivalent;
 } delta_table_entry;
 
 typedef struct delta_table
@@ -202,7 +201,6 @@ void check_delta_table_resize(delta_table *table)
 void free_delta_table_entry(delta_table_entry *entry)
 {
     free(entry->state_indices);
-    free_state(entry->state_equivalent);
     free(entry);
 }
 
@@ -277,7 +275,6 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
     }
     uint64_t state_equivalent_index = new_state(dfa, throws_token, token);
     state *state_equivalent = get_state(dfa, state_equivalent_index);
-    entry->state_equivalent = state_equivalent;
     for (char matcher = 0; matcher <= 127; matcher++)
     {
         uint64_t *state_indices = malloc(sizeof(a->states_size));
@@ -321,7 +318,6 @@ delta_table *new_delta_table()
 delta_table_entry *new_delta_table_entry(uint64_t *state_indices, uint64_t state_indices_size)
 {
     delta_table_entry *entry = malloc(sizeof(entry));
-    entry->state_equivalent = NULL;
     entry->state_indices;
     return NULL;
 }
@@ -336,7 +332,7 @@ automaton *get_deterministic_equivalent(const automaton *a)
         *index = state_index;
         load_entry_column(table, index, 1);
     }
-    for (uint64_t state_index = 0; table->entries_size < dfa->states_size; state_index++)
+    for (uint64_t state_index = 0; table->entries_size > dfa->states_size; state_index++)
     {
         populate_entry(a, dfa, table, state_index);
     }
