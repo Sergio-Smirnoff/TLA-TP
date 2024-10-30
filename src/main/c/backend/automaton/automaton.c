@@ -239,9 +239,11 @@ uint64_t find_entry_index(const delta_table *table, const uint64_t *state_indice
         printf("i:%ld\n", i);
         printf("entry:%p\n", table->entries[i]);
         printf("entry indices:%p\n", table->entries[i]->state_indices[0]);
+        printf("entry size:%ld\n", table->entries_size);
         if (are_equal_entries(table->entries[i]->state_indices, table->entries[i]->state_indices_size, state_indices, state_indices_size))
             return i;
     }
+    printf("Here\n");
     return -1;
 }
 
