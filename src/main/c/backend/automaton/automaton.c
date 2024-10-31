@@ -233,7 +233,7 @@ uint64_t find_entry_index(const delta_table *table, const uint64_t *state_indice
 {
     // Table search is from end to beginning because the table is used in such a way that searches are more likely to be at the ends. Hence, this might be slightly faster
     // This implementation is like O(n⁴), this change barely matters, but it kinda makes me feel better knowing that it's there.
-    for (uint64_t i = 0; i < table->entries_size ; i++)
+    for (uint64_t i = 0; i < table->entries_size; i++)
     {
         if (are_equal_entries(table->entries[i]->state_indices, table->entries[i]->state_indices_size, state_indices, state_indices_size))
             return i;
@@ -270,10 +270,11 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
     }
     uint64_t state_equivalent_index = new_state(dfa, throws_token, token);
     state *state_equivalent = get_state(dfa, state_equivalent_index);
-    for (char matcher = 0; matcher <= 127; matcher++)
+    for (unsigned char matcher = 0; matcher <= 127; matcher++)
     {
         uint64_t *state_indices = malloc(sizeof(a->states_size));
         uint64_t state_indices_size = 0;
+
         for (uint64_t state_index = 0; state_index < entry->state_indices_size; state_index++)
         {
             state *current_state = get_state(a, state_index);
