@@ -96,12 +96,19 @@ char set_state_transition(state *from, uint64_t to_index, char matcher)
     return 1;
 }
 
-char set_transition(const automaton *a, uint64_t from_index, uint64_t to_index, char matcher)
+char force_set_transition(const automaton *a, uint64_t from_index, uint64_t to_index, char matcher)
 {
-    if (from_index >= a->states_size || to_index >= a->states_size)
+    if (from_index >= a->states_size)
         return 0;
     state *from = get_state(a, from_index);
     return set_state_transition(from, to_index, matcher);
+}
+
+char set_transition(const automaton *a, uint64_t from_index, uint64_t to_index, char matcher)
+{
+    if (to_index >= a->states_size)
+        return 0;
+    return force_set_transition(a, from_index, to_index, matcher);
 }
 
 state *next_state(const automaton *a, const state *s, char symbol)
@@ -208,6 +215,7 @@ void free_delta_table(delta_table *table)
 {
     for (int i = 0; i < table->entries_size; i++)
         free_delta_table_entry(table->entries[i]);
+    free(table->entries);
     free(table);
 }
 
@@ -294,9 +302,7 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
                     for (uint64_t transition_index = 0; transition_index < current_rule.next_indices_size; transition_index++)
                     {
                         if (!array_contains(state_indices, state_indices_size, current_rule.next_indices[transition_index]))
-                        {
                             state_indices[state_indices_size++] = current_rule.next_indices[transition_index];
-                        }
                     }
                 }
             }
@@ -306,11 +312,14 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
         else
         {
             uint64_t entry_index = find_entry_index(table, state_indices, state_indices_size);
+
             if (entry_index == -1)
             {
                 entry_index = load_entry_column(table, state_indices, state_indices_size);
+            }else{
+                free(state_indices);
             }
-            set_transition(dfa, state_equivalent_index, entry_index, matcher);
+            force_set_transition(dfa, state_equivalent_index, entry_index, matcher);
         }
     }
     return 1;
