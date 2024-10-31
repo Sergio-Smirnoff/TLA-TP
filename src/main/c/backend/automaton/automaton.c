@@ -298,7 +298,6 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
         }
     }
     uint64_t state_equivalent_index = new_state(dfa, throws_token, token);
-    state *state_equivalent = get_state(dfa, state_equivalent_index);
     for (unsigned char matcher = 0; matcher <= 127; matcher++)
     {
         uint64_t *state_indices = malloc(a->states_size * sizeof(uint64_t));
@@ -347,13 +346,6 @@ delta_table *new_delta_table()
     table->entries_size = 0;
     table->entries_dim = BLOCK;
     return table;
-}
-
-delta_table_entry *new_delta_table_entry(uint64_t *state_indices, uint64_t state_indices_size)
-{
-    delta_table_entry *entry = malloc(sizeof(entry));
-    entry->state_indices;
-    return NULL;
 }
 
 automaton *get_deterministic_equivalent(const automaton *a)
