@@ -264,6 +264,7 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
         state *state_in_column = get_state(a, table->entries[i]->state_indices[i]);
         if (state_in_column->throws_token)
         {
+          printf("Here\n");
             throws_token = 1;
             token = state_in_column->token;
         }
@@ -332,6 +333,8 @@ automaton *get_deterministic_equivalent(const automaton *a)
     {
         populate_entry(a, dfa, table, state_index);
     }
+
+    set_initial_state(dfa, dfa->states[0]);
 
     free_delta_table(table);
 
