@@ -251,6 +251,14 @@ uint64_t load_entry_column(delta_table *table, uint64_t *state_indices, uint64_t
     return table->entries_size++;
 }
 
+char array_contains(const uint64_t *array, uint64_t array_size, uint64_t value)
+{
+    for (uint64_t i = 0; i < array_size; i++)
+        if (array[i] == value)
+            return 1;
+    return 0;
+}
+
 char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint64_t index)
 {
     if (index >= table->entries_size || table->entries[index]->state_indices == NULL || !table->entries[index]->state_indices_size)
@@ -259,7 +267,7 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
     delta_table_entry *entry = table->entries[index];
     char throws_token = 0;
     uint64_t token = 0;
-    for (int i = 0; i < entry->state_indices_size; i++)
+    for (uint64_t i = 0; i < entry->state_indices_size; i++)
     {
         state *state_in_column = get_state(a, entry->state_indices[i]);
         if (state_in_column->throws_token)
@@ -277,13 +285,19 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
 
         for (uint64_t state_index = 0; state_index < entry->state_indices_size; state_index++)
         {
-            state *current_state = get_state(a, state_index);
+            state *current_state = get_state(a, entry->state_indices[state_index]);
             for (uint64_t rule_index = 0; rule_index < current_state->delta_size; rule_index++)
             {
                 rule current_rule = current_state->delta[rule_index];
                 if (current_rule.matcher == matcher)
                 {
-                    state_indices[state_indices_size++] = state_index;
+                    for (uint64_t transition_index = 0; transition_index < current_rule.next_indices_size; transition_index++)
+                    {
+                        if (!array_contains(state_indices, state_indices_size, current_rule.next_indices[transition_index]))
+                        {
+                            state_indices[state_indices_size++] = current_rule.next_indices[transition_index];
+                        }
+                    }
                 }
             }
         }
