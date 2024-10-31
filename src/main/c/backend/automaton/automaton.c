@@ -57,7 +57,7 @@ void check_resize_state(state *s)
 void resize_rule(rule *r)
 {
     r->next_indices_dim *= 2;
-    r->next_indices = realloc(r->next_indices, r->next_indices_dim);
+    r->next_indices = realloc(r->next_indices, sizeof(uint64_t) * r->next_indices_dim);
 }
 
 void check_resize_rule(rule *r)
@@ -265,7 +265,7 @@ uint64_t find_entry_index(const delta_table *table, const uint64_t *state_indice
 uint64_t load_entry_column(delta_table *table, uint64_t *state_indices, uint64_t state_indices_size)
 {
     check_delta_table_resize(table);
-    delta_table_entry *new_entry = malloc(sizeof(uint64_t) * state_indices_size);
+    delta_table_entry *new_entry = malloc(sizeof(delta_table_entry));
     table->entries[table->entries_size] = new_entry;
     new_entry->state_indices = state_indices;
     new_entry->state_indices_size = state_indices_size;
@@ -301,7 +301,7 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
     state *state_equivalent = get_state(dfa, state_equivalent_index);
     for (unsigned char matcher = 0; matcher <= 127; matcher++)
     {
-        uint64_t *state_indices = malloc(sizeof(a->states_size));
+        uint64_t *state_indices = malloc(a->states_size * sizeof(uint64_t));
         uint64_t state_indices_size = 0;
 
         for (uint64_t state_index = 0; state_index < entry->state_indices_size; state_index++)
