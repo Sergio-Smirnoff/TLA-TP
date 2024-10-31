@@ -172,7 +172,7 @@ state *get_state(const automaton *a, uint64_t index)
 
 void free_state(state *s)
 {
-    for (int i = 0; i < s->delta_size; i++)
+    for (uint64_t i = 0; i < s->delta_size; i++)
         free(s->delta[i].next_indices);
     free(s->delta);
     free(s);
@@ -180,7 +180,7 @@ void free_state(state *s)
 
 void free_automaton(automaton *a)
 {
-    for (int i = 0; i < a->states_size; i++)
+    for (uint64_t i = 0; i < a->states_size; i++)
         free_state(a->states[i]);
     free(a->states);
     free(a);
@@ -188,8 +188,8 @@ void free_automaton(automaton *a)
 
 void add_all_transitions(state *from, state *to)
 {
-    for (int i = 0; i < from->delta_size; i++)
-        for (int j = 0; j < to->delta[i].next_indices_size; j++)
+    for (uint64_t i = 0; i < from->delta_size; i++)
+        for (uint64_t j = 0; j < to->delta[i].next_indices_size; j++)
             set_state_transition(from, to->delta[i].next_indices[j], to->delta->matcher);
 }
 
@@ -226,7 +226,7 @@ void free_delta_table_entry(delta_table_entry *entry)
 
 void free_delta_table(delta_table *table)
 {
-    for (int i = 0; i < table->entries_size; i++)
+    for (uint64_t i = 0; i < table->entries_size; i++)
         free_delta_table_entry(table->entries[i]);
     free(table->entries);
     free(table);
