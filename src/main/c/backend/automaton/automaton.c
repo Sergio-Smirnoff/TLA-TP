@@ -259,12 +259,11 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
     delta_table_entry *entry = table->entries[index];
     char throws_token = 0;
     uint64_t token = 0;
-    for (int i = 0; i < table->entries[i]->state_indices_size; i++)
+    for (int i = 0; i < entry->state_indices_size; i++)
     {
-        state *state_in_column = get_state(a, table->entries[i]->state_indices[i]);
+        state *state_in_column = get_state(a, entry->state_indices[i]);
         if (state_in_column->throws_token)
         {
-          printf("Here\n");
             throws_token = 1;
             token = state_in_column->token;
         }
