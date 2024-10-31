@@ -114,22 +114,35 @@ char set_transition(const automaton *a, uint64_t from_index, uint64_t to_index, 
 state *next_state(const automaton *a, const state *s, char symbol)
 {
     rule *rule = find_rule(s, symbol);
+    if (rule == NULL)
+        return NULL;
     return get_state(a, rule->next_indices[0]);
 }
 
 uint64_t get_next_token(const automaton *a, const char **string_p)
 {
     state *current = a->initial_state;
-    while (current != NULL && *string_p[0])
+    const char *s = *string_p;
+    uint64_t found_token = -1;
+    while (current != NULL && *s)
     {
         if (current->throws_token)
-            return current->token;
-        current = next_state(a, current, *string_p[0]);
-        (*string_p)++;
+        {
+            // store the most recent token found
+            found_token = current->token;
+            // consume the string up to that token
+            *string_p = s;
+        }
+        current = next_state(a, current, *s);
+        s++;
     }
-    if (current->throws_token)
-        return current->token;
-    return -1;
+    if (current != NULL && current->throws_token)
+    {
+        found_token = current->token;
+        // consume the string up to that token
+        *string_p = s;
+    }
+    return found_token;
 }
 
 uint64_t *get_token_stream(const automaton *a, const char *string, uint64_t *buffer, uint64_t buffer_size)
@@ -316,7 +329,9 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
             if (entry_index == -1)
             {
                 entry_index = load_entry_column(table, state_indices, state_indices_size);
-            }else{
+            }
+            else
+            {
                 free(state_indices);
             }
             force_set_transition(dfa, state_equivalent_index, entry_index, matcher);
@@ -355,6 +370,7 @@ automaton *get_deterministic_equivalent(const automaton *a)
     {
         populate_entry(a, dfa, table, state_index);
     }
+
 
     set_initial_state(dfa, dfa->states[0]);
 
