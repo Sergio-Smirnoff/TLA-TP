@@ -5,46 +5,36 @@ import java.util.Map;
 
 public class DeterministicFiniteAutomaton {
 
-    private State initialState;
-    private final List<State> states;
+    private static State initialState;
+    private static final List<State> states = new ArrayList<>();
 
-    public DeterministicFiniteAutomaton() {
-        this.states = new ArrayList<>();
-    }
+    private DeterministicFiniteAutomaton() {}
 
-    public State newStateGetState(Token token) {
+    public static State newStateGetState(Token token) {
         State state = new State(token);
         states.add(state);
         return state;
     }
 
-    public int newStateGetIndex(Token token) {
+    public static int newState(Token token) {
         State state = new State(token);
         states.add(state);
         return states.size() - 1;
     }
 
-    public DeterministicFiniteAutomaton newState(Token token) {
-        newStateGetState(token);
-        return this;
+    public static void setInitialState(State state) {
+        initialState = state;
     }
 
-    public DeterministicFiniteAutomaton setInitialState(State state) {
-        this.initialState = state;
-        return this;
+    public static void setInitialState(int index) {
+        initialState = states.get(index);
     }
 
-    public DeterministicFiniteAutomaton setInitialState(int index) {
-        this.initialState = states.get(index);
-        return this;
-    }
-
-    public DeterministicFiniteAutomaton setTransition(int from, int to, char symbol) {
+    public static void setTransition(int from, int to, char symbol) {
         states.get(from).setTransition(states.get(to), symbol);
-        return this;
     }
 
-    public List<Token> getTokenList(String s) {
+    public static List<Token> getTokenList(String s) {
         char[] chars = s.toCharArray();
         List<Token> tokens = new ArrayList<>();
         State currentState = initialState;

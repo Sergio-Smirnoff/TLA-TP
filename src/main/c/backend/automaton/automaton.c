@@ -440,11 +440,8 @@ int itoa(uint64_t v, char *sp)
 
 void write_java_initialization(const automaton *a, int file_descriptor)
 {
-    char initialization[] = "DeterministicFiniteAutomaton automaton = new DeterministicFiniteAutomaton()\n";
 
-    write(file_descriptor, initialization, sizeof(initialization) - 1);
-
-    char new_state_start[] = ".newState(";
+    char new_state_start[] = "Automaton.newState(";
     char new_token_start[] = "new Token(";
     char new_token_end[] = ")"; // temporary, lexemes will be managed in the future
     char new_state_end[] = ")\n";
@@ -469,7 +466,7 @@ void write_java_initialization(const automaton *a, int file_descriptor)
 
     write(file_descriptor, "\n\n", 2);
 
-    char set_transition_start[] = ".setTransition(";
+    char set_transition_start[] = "Automaton.setTransition(";
     char set_transition_end[] = ")\n";
 
     for (uint64_t state_index = 0; state_index < a->states_size; state_index++)
