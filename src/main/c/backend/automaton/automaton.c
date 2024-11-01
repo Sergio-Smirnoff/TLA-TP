@@ -440,13 +440,110 @@ int itoa(uint64_t v, char *sp)
 
 void write_java_initialization(const automaton *a, int file_descriptor)
 {
-
+    char automaton_class_start[] = "import java.util.ArrayList;\n\
+import java.util.HashMap;\n\
+import java.util.List;\n\
+import java.util.Map;\n\
+\n\
+public class Automaton {\n\
+\n\
+    private static State initialState;\n\
+    private static final List<State> states = new ArrayList<>();\n\
+\n\
+    private Automaton() {}\n\
+\n\
+    public static State newStateGetState(Token token) {\n\
+        State state = new State(token);\n\
+        states.add(state);\n\
+        return state;\n\
+    }\n\
+\n\
+    public static int newState(Token token) {\n\
+        State state = new State(token);\n\
+        states.add(state);\n\
+        return states.size() - 1;\n\
+    }\n\
+\n\
+    public static void setInitialState(State state) {\n\
+        initialState = state;\n\
+    }\n\
+\n\
+    public static void setInitialState(int index) {\n\
+        initialState = states.get(index);\n\
+    }\n\
+\n\
+    public static void setTransition(int from, int to, char symbol) {\n\
+        states.get(from).setTransition(states.get(to), symbol);\n\
+    }\n\
+\n\
+    public static List<Token> getTokenList(String s) {\n\
+        char[] chars = s.toCharArray();\n\
+        List<Token> tokens = new ArrayList<>();\n\
+        State currentState = initialState;\n\
+\n\
+        for (char c : chars) {\n\
+            if (currentState == null) break;\n\
+            currentState = currentState.getTransition(c);\n\
+            if (currentState.token != null) {\n\
+                tokens.add(currentState.token);\n\
+            }\n\
+        }\n\
+\n\
+        return tokens;\n\
+    }\n\
+\n\
+    public static class State {\n\
+        private final Map<Character, State> transitions;\n\
+        private final Token token;\n\
+\n\
+        private State(Token token) {\n\
+            this.token = token;\n\
+            this.transitions = new HashMap<>();\n\
+        }\n\
+\n\
+        public void setTransition(State to, char symbol) {\n\
+            transitions.put(symbol, to);\n\
+        }\n\
+\n\
+        public State getTransition(char symbol) {\n\
+            return transitions.get(symbol);\n\
+        }\n\
+    }\n\
+\n\
+    public static class Token {\n\
+\n\
+        private String lexeme;\n\
+        private final int tokenType;\n\
+\n\
+        public Token(int tokenType) {\n\
+            this.tokenType = tokenType;\n\
+        }\n\
+\n\
+        public String getLexeme() {\n\
+            return lexeme;\n\
+        }\n\
+\n\
+        public void setLexeme(String lexeme) {\n\
+            this.lexeme = lexeme;\n\
+        }\n\
+\n\
+        public int getTokenType() {\n\
+            return tokenType;\n\
+        }\n\
+    }\n\
+    \n\
+    public void initialize(){\n\
+        ";
+    char automaton_class_end[] = "    }\n\
+}";
     char new_state_start[] = "Automaton.newState(";
     char new_token_start[] = "new Token(";
     char new_token_end[] = ")"; // temporary, lexemes will be managed in the future
     char new_state_end[] = ")\n";
     char null[] = "null";
     char buffer[BLOCK]; // this is big enough to hold an uint64_t in decimal notation
+
+    write(file_descriptor, automaton_class_start, sizeof(automaton_class_start)-1);
     for (uint64_t state_index = 0; state_index < a->states_size; state_index++)
     {
         write(file_descriptor, new_state_start, sizeof(new_state_start) - 1);
@@ -481,11 +578,13 @@ void write_java_initialization(const automaton *a, int file_descriptor)
             write(file_descriptor, state_index_buffer, state_index_buffer_length);
             write(file_descriptor, ", ", 2);
             write(file_descriptor, buffer, itoa(r.next_indices[0], buffer)); // automaton should be dfa, only first transition for each matcher for each state is read
-            write(file_descriptor, ", ", 2);
+            write(file_descriptor, ", '", 3);
             write(file_descriptor, &(r.matcher), 1);
+            write(file_descriptor, "'", 1);
             write(file_descriptor, set_transition_end, sizeof(set_transition_end) - 1);
         }
     }
 
     write(file_descriptor, ";\n", 2);
+    write(file_descriptor, automaton_class_end, sizeof(automaton_class_end)-1);
 }
