@@ -263,13 +263,23 @@ char are_equal_entries(const uint64_t *state_indices_1, uint64_t state_indices_s
     return 1;
 }
 
+char are_equal_sorted_entries(const uint64_t *state_indices_1, uint64_t state_indices_size_1, const uint64_t *state_indices_2, uint64_t state_indices_size_2)
+{
+    if (state_indices_size_1 != state_indices_size_2)
+        return 0;
+    for (uint64_t i = 0; i < state_indices_size_1; i++)
+        if (state_indices_1[i] != state_indices_2[i])
+            return 0;
+    return 1;
+}
+
 uint64_t find_entry_index(const delta_table *table, const uint64_t *state_indices, uint64_t state_indices_size)
 {
     // Table search is from end to beginning because the table is used in such a way that searches are more likely to be at the ends. Hence, this might be slightly faster
     // This implementation is like O(n⁴), this change barely matters, but it kinda makes me feel better knowing that it's there.
     for (uint64_t i = 0; i < table->entries_size; i++)
     {
-        if (are_equal_entries(table->entries[i]->state_indices, table->entries[i]->state_indices_size, state_indices, state_indices_size))
+        if (are_equal_sorted_entries(table->entries[i]->state_indices, table->entries[i]->state_indices_size, state_indices, state_indices_size))
             return i;
     }
     return -1;
@@ -291,6 +301,21 @@ char array_contains(const uint64_t *array, uint64_t array_size, uint64_t value)
         if (array[i] == value)
             return 1;
     return 0;
+}
+
+void bubble_sort(uint64_t *arr, uint64_t size){
+    char sorted = 0;
+    while(!sorted){
+        sorted = 1;
+        for(uint64_t i = 0; i < size - 1; i++){
+            if(arr[i] > arr[i+1]){
+                uint64_t aux = arr[i+1];
+                arr[i+1] = arr[i];
+                arr[i] = aux;
+                sorted = 0;
+            }
+        }
+    }
 }
 
 char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint64_t index)
@@ -340,6 +365,7 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
 
             if (entry_index == -1)
             {
+                bubble_sort(state_indices, state_indices_size);
                 entry_index = load_entry_column(table, state_indices, state_indices_size);
             }
             else
