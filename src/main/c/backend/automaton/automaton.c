@@ -532,18 +532,22 @@ public class Automaton {\n\
         }\n\
     }\n\
     \n\
+    private static boolean initialized = false;\n\
     public void initialize(){\n\
+        if(initialized)\n\
+            throw new IllegalStateException();\n\
+        initialized = true;\n\
         ";
     char automaton_class_end[] = "    }\n\
 }";
     char new_state_start[] = "Automaton.newState(";
     char new_token_start[] = "new Token(";
     char new_token_end[] = ")"; // temporary, lexemes will be managed in the future
-    char new_state_end[] = ")\n";
+    char new_state_end[] = ");\n";
     char null[] = "null";
     char buffer[BLOCK]; // this is big enough to hold an uint64_t in decimal notation
 
-    write(file_descriptor, automaton_class_start, sizeof(automaton_class_start)-1);
+    write(file_descriptor, automaton_class_start, sizeof(automaton_class_start) - 1);
     for (uint64_t state_index = 0; state_index < a->states_size; state_index++)
     {
         write(file_descriptor, new_state_start, sizeof(new_state_start) - 1);
@@ -564,7 +568,7 @@ public class Automaton {\n\
     write(file_descriptor, "\n\n", 2);
 
     char set_transition_start[] = "Automaton.setTransition(";
-    char set_transition_end[] = ")\n";
+    char set_transition_end[] = ");\n";
 
     for (uint64_t state_index = 0; state_index < a->states_size; state_index++)
     {
@@ -586,5 +590,5 @@ public class Automaton {\n\
     }
 
     write(file_descriptor, ";\n", 2);
-    write(file_descriptor, automaton_class_end, sizeof(automaton_class_end)-1);
+    write(file_descriptor, automaton_class_end, sizeof(automaton_class_end) - 1);
 }
