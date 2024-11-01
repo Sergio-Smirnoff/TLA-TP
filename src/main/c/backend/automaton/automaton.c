@@ -145,6 +145,19 @@ uint64_t get_next_token(const automaton *a, const char **string_p)
     return found_token;
 }
 
+char accepts(const automaton *a, const char *string)
+{
+    state *current = a->initial_state;
+    while (*string)
+    {
+        if(current==NULL)
+            return 0;
+        current = next_state(a, current, *string);
+        string++;
+    }
+    return current != NULL && current->throws_token;
+}
+
 uint64_t *get_token_stream(const automaton *a, const char *string, uint64_t *buffer, uint64_t buffer_size)
 {
     uint64_t token, i;
@@ -362,7 +375,6 @@ automaton *get_deterministic_equivalent(const automaton *a)
     {
         populate_entry(a, dfa, table, state_index);
     }
-
 
     set_initial_state(dfa, dfa->states[0]);
 

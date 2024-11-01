@@ -84,6 +84,15 @@ uint64_t get_next_token(const automaton *automaton, const char **string_p);
 uint64_t *get_token_stream(const automaton *automaton, const char *string, uint64_t *buffer, uint64_t buffer_size);
 
 /**
+ * @brief whether an automaton accepts the given string
+ * 
+ * @param a 
+ * @param string 
+ * @return char 
+ */
+char accepts(const automaton *a, const char *string);
+
+/**
  * @brief produces an equivalent deterministic automaton
  *
  * @param automaton
