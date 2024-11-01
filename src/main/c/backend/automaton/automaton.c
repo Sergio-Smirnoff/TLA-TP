@@ -1,4 +1,5 @@
 #include "automaton.h"
+#include "closed_hashing.h"
 #include <stdlib.h>
 #include <stdio.h>
 #define BLOCK 32
@@ -275,8 +276,6 @@ char are_equal_sorted_entries(const uint64_t *state_indices_1, uint64_t state_in
 
 uint64_t find_entry_index(const delta_table *table, const uint64_t *state_indices, uint64_t state_indices_size)
 {
-    // Table search is from end to beginning because the table is used in such a way that searches are more likely to be at the ends. Hence, this might be slightly faster
-    // This implementation is like O(n⁴), this change barely matters, but it kinda makes me feel better knowing that it's there.
     for (uint64_t i = 0; i < table->entries_size; i++)
     {
         if (are_equal_sorted_entries(table->entries[i]->state_indices, table->entries[i]->state_indices_size, state_indices, state_indices_size))
