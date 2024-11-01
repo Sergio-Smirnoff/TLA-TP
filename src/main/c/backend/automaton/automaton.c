@@ -201,13 +201,6 @@ void free_automaton(automaton *a)
     free(a);
 }
 
-void add_all_transitions(state *from, state *to)
-{
-    for (uint64_t i = 0; i < from->delta_size; i++)
-        for (uint64_t j = 0; j < to->delta[i].next_indices_size; j++)
-            set_state_transition(from, to->delta[i].next_indices[j], to->delta->matcher);
-}
-
 typedef struct delta_table_entry
 {
     uint64_t *state_indices;
@@ -250,24 +243,6 @@ void free_delta_table(delta_table *table)
     free(table);
 }
 
-uint64_t find_state_index(const uint64_t *state_indices, uint64_t state_indices_size, const uint64_t index)
-{
-    for (uint64_t i = 0; i < state_indices_size; i++)
-        if (state_indices[i] == index)
-            return i;
-    return -1;
-}
-
-char are_equal_entries(const uint64_t *state_indices_1, uint64_t state_indices_size_1, const uint64_t *state_indices_2, uint64_t state_indices_size_2)
-{
-    if (state_indices_size_1 != state_indices_size_2)
-        return 0;
-    for (uint64_t i = 0; i < state_indices_size_1; i++)
-        if (find_state_index(state_indices_2, state_indices_size_2, state_indices_1[i]) == -1)
-            return 0;
-    return 1;
-}
-
 char are_equal_sorted_entries(const uint64_t *state_indices_1, uint64_t state_indices_size_1, const uint64_t *state_indices_2, uint64_t state_indices_size_2)
 {
     if (state_indices_size_1 != state_indices_size_2)
@@ -276,16 +251,6 @@ char are_equal_sorted_entries(const uint64_t *state_indices_1, uint64_t state_in
         if (state_indices_1[i] != state_indices_2[i])
             return 0;
     return 1;
-}
-
-uint64_t find_entry_index(const delta_table *table, const uint64_t *state_indices, uint64_t state_indices_size)
-{
-    for (uint64_t i = 0; i < table->entries_size; i++)
-    {
-        if (are_equal_sorted_entries(table->entries[i]->state_indices, table->entries[i]->state_indices_size, state_indices, state_indices_size))
-            return i;
-    }
-    return -1;
 }
 
 uint64_t load_entry_column(delta_table *table, uint64_t *state_indices, uint64_t state_indices_size)
