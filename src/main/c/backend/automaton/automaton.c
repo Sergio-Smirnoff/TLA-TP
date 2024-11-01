@@ -6,7 +6,7 @@
 void resize_automaton(automaton *a)
 {
     a->states_dim *= 2;
-    a->states = realloc(a->states, a->states_dim);
+    a->states = realloc(a->states, a->states_dim * sizeof(state *));
 }
 
 void check_resize_automaton(automaton *a)
@@ -45,7 +45,7 @@ automaton *new_automaton()
 void resize_state(state *s)
 {
     s->delta_dim *= 2;
-    s->delta = realloc(s->delta, s->delta_dim);
+    s->delta = realloc(s->delta, s->delta_dim * sizeof(rule));
 }
 
 void check_resize_state(state *s)
@@ -222,7 +222,7 @@ typedef struct delta_table
 void resize_delta_table(delta_table *table)
 {
     table->entries_dim *= 2;
-    table->entries = realloc(table->entries, table->entries_dim);
+    table->entries = realloc(table->entries, table->entries_dim * sizeof(delta_table_entry));
 }
 
 void check_delta_table_resize(delta_table *table)
