@@ -2,6 +2,8 @@
 #include "closed_hashing.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
+
 #define BLOCK 32
 #define DTE(x) ((delta_table_entry *)(x))
 #define BIG_PRIME 1000000007
@@ -411,4 +413,82 @@ automaton *get_deterministic_equivalent(const automaton *a)
     free_delta_table(table);
 
     return dfa;
+}
+
+// modified from https://stackoverflow.com/questions/3440726/what-is-the-proper-way-of-implementing-a-good-itoa-function
+int itoa(uint64_t v, char *sp)
+{
+
+    char tmp[BLOCK]; // be careful with the length of the buffer
+    char *tp = tmp;
+    int i;
+
+    while (v || tp == tmp)
+    {
+        i = v % 10;
+        v /= 10;
+        *tp++ = i + '0';
+    }
+
+    int len = tp - tmp;
+
+    while (tp > tmp)
+        *sp++ = *--tp;
+
+    return len;
+}
+
+void write_java_initialization(const automaton *a, int file_descriptor)
+{
+    char initialization[] = "DeterministicFiniteAutomaton automaton = new DeterministicFiniteAutomaton()\n";
+
+    write(file_descriptor, initialization, sizeof(initialization) - 1);
+
+    char new_state_start[] = ".newState(";
+    char new_token_start[] = "new Token(";
+    char new_token_end[] = ")"; // temporary, lexemes will be managed in the future
+    char new_state_end[] = ")\n";
+    char null[] = "null";
+    char buffer[BLOCK]; // this is big enough to hold an uint64_t in decimal notation
+    for (uint64_t state_index = 0; state_index < a->states_size; state_index++)
+    {
+        write(file_descriptor, new_state_start, sizeof(new_state_start) - 1);
+        state *s = get_state(a, state_index);
+        if (s->throws_token)
+        {
+            write(file_descriptor, new_token_start, sizeof(new_token_start) - 1);
+            write(file_descriptor, buffer, itoa(s->token, buffer));
+            write(file_descriptor, new_token_end, sizeof(new_token_end) - 1);
+        }
+        else
+        {
+            write(file_descriptor, null, sizeof(null) - 1);
+        }
+        write(file_descriptor, new_state_end, sizeof(new_state_end) - 1);
+    }
+
+    write(file_descriptor, "\n\n", 2);
+
+    char set_transition_start[] = ".setTransition(";
+    char set_transition_end[] = ")\n";
+
+    for (uint64_t state_index = 0; state_index < a->states_size; state_index++)
+    {
+        state *s = get_state(a, state_index);
+        char state_index_buffer[BLOCK];
+        char state_index_buffer_length = itoa(state_index, state_index_buffer);
+        for (uint64_t rule_index = 0; rule_index < s->delta_size; rule_index++)
+        {
+            rule r = s->delta[rule_index];
+            write(file_descriptor, set_transition_start, sizeof(set_transition_start) - 1);
+            write(file_descriptor, state_index_buffer, state_index_buffer_length);
+            write(file_descriptor, ", ", 2);
+            write(file_descriptor, buffer, itoa(r.next_indices[0], buffer)); // automaton should be dfa, only first transition for each matcher for each state is read
+            write(file_descriptor, ", ", 2);
+            write(file_descriptor, &(r.matcher), 1);
+            write(file_descriptor, set_transition_end, sizeof(set_transition_end) - 1);
+        }
+    }
+
+    write(file_descriptor, ";\n", 2);
 }

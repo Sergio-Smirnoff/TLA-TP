@@ -12,7 +12,7 @@ public class DeterministicFiniteAutomaton {
         this.states = new ArrayList<>();
     }
 
-    public State newState(Token token) {
+    public State newStateGetState(Token token) {
         State state = new State(token);
         states.add(state);
         return state;
@@ -22,6 +22,11 @@ public class DeterministicFiniteAutomaton {
         State state = new State(token);
         states.add(state);
         return states.size() - 1;
+    }
+
+    public DeterministicFiniteAutomaton newState(Token token) {
+        newStateGetState(token);
+        return this;
     }
 
     public DeterministicFiniteAutomaton setInitialState(State state) {
@@ -45,8 +50,7 @@ public class DeterministicFiniteAutomaton {
         State currentState = initialState;
 
         for (char c : chars) {
-            if (currentState == null)
-                break;
+            if (currentState == null) break;
             currentState = currentState.getTransition(c);
             if (currentState.token != null) {
                 tokens.add(currentState.token);
@@ -76,23 +80,19 @@ public class DeterministicFiniteAutomaton {
 
     public static class Token {
 
-        private final String lexeme;
+        private String lexeme;
         private final int tokenType;
-        private static final Map<Integer, Token> TOKEN_CACHE = new HashMap<>();
 
-        private Token(int tokenType, String lexeme) {
+        public Token(int tokenType) {
             this.tokenType = tokenType;
-            this.lexeme = lexeme;
-        }
-
-        public Token newToken(int tokenType, String lexeme) {
-            if (lexeme == null)
-                return TOKEN_CACHE.computeIfAbsent(tokenType, (token) -> new Token(tokenType, null));
-            return new Token(tokenType, lexeme);
         }
 
         public String getLexeme() {
             return lexeme;
+        }
+
+        public void setLexeme(String lexeme) {
+            this.lexeme = lexeme;
         }
 
         public int getTokenType() {

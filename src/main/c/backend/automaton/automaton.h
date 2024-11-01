@@ -100,6 +100,14 @@ char accepts(const automaton *a, const char *string);
  */
 automaton *get_deterministic_equivalent(const automaton *automaton);
 
+/**
+ * @brief Writes to a file descriptor Java syntax code for initializing a clone of an automaton
+ * 
+ * @param a 
+ * @param file_descriptor 
+ */
+void write_java_initialization(const automaton *a, int file_descriptor);
+
 void free_state(state *state);
 void free_automaton(automaton *automaton);
 
