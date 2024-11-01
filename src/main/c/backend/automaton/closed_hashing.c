@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #define RESIZE_FACTOR 4
-#define THRESHOLD 0.75
+#define THRESHOLD 0.5
 #define DUMMY ((void *)1)
 
 char hashset_insert(hashset *set, void *element);
@@ -30,7 +30,7 @@ void resize_hashset(hashset *set)
 {
     void **old_elements = set->elements;
     uint64_t old_elements_dim = set->elements_dim;
-    set->elements_dim *= RESIZE_FACTOR;
+    set->elements_dim = set->elements_dim * RESIZE_FACTOR + 1;
     set->elements = malloc(sizeof(void *) * set->elements_dim);
 
     for (uint64_t i = 0; i < set->elements_dim; i++)

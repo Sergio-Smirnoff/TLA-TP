@@ -4,6 +4,7 @@
 #include <stdio.h>
 #define BLOCK 32
 #define DTE(x) ((delta_table_entry *)(x))
+#define BIG_PRIME 1000000007
 
 void resize_automaton(automaton *a)
 {
@@ -336,7 +337,7 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
         else
         {
             delta_table_entry mock_entry;
-            mock_entry.state_indices=state_indices;
+            mock_entry.state_indices = state_indices;
             mock_entry.state_indices_size = state_indices_size;
             mock_entry.state_index = 0;
 
@@ -364,8 +365,8 @@ uint64_t hash_entries(const void *element)
     // This hashing function is terrible
     uint64_t sum = 0;
     for (int i = 0; i < DTE(element)->state_indices_size; i++)
-        sum += DTE(element)->state_indices[i];
-    return sum;
+        sum = sum * 31 + DTE(element)->state_indices[i];
+    return sum % BIG_PRIME;
 }
 
 char compare_entries(const void *elem1, const void *elem2)
