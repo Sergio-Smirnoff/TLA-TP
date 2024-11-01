@@ -220,8 +220,8 @@ lexeme_precursor: lexeme lexeme_precursor																																			{ $$
 	| STR[string]																																									{ $$ = LexemeStringSemanticAction($string, string_lexeme); }
 	;
 
-lexeme: OPEN_BRACKET regexes[regex] CLOSE_BRACKET closure[closure_p]																												{ $$ = LexemeSemanticAction(NULL, $regex, $closure_p, regexes); }
-	| OPEN_BRACES VAR_NAME[id] CLOSE_BRACES closure[closure_p]																														{ $$ = LexemeSemanticAction($id, NULL, $closure_p, name); }
+lexeme: OPEN_BRACKET regexes[regex] CLOSE_BRACKET closure[closure_p]																												{ $$ = LexemeSemanticAction(NULL, $regex, $closure_p, regexes, NULL); }
+	| OPEN_BRACES VAR_NAME[id] CLOSE_BRACES closure[closure_p]																														{ $$ = LexemeSemanticAction($id, NULL, $closure_p, name, currentCompilerState()); }
 	;
 
 closure: %empty 																																									{ $$ = NULL; }

@@ -55,6 +55,7 @@ SyntacticAnalysisStatus parse(CompilerState * compilerState) {
 	switch (code) {
 		case 0:
 			if (compilerState->succeed == true && compilerState->invalidRegexList->size == 0) {
+				
 				return ACCEPT;
 			}
 			else {

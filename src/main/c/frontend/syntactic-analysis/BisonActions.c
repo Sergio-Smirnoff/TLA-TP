@@ -110,8 +110,37 @@ Lexeme_precursor* LexemeStringSemanticAction(char* string, Lexeme_type type){
 	return new_lexeme_precursor;
 }
 
-Lexeme* LexemeSemanticAction( char* string, Regexes* regex_class, Closure* closure, Lexeme_type type ) {
+Lexeme* LexemeSemanticAction( char* string, Regexes* regex_class, Closure* closure, Lexeme_type type, CompilerState * compilerState ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
+
+	if(compilerState != NULL) {
+    Valid_Regex_List_Node* current = compilerState->validRegexList->head;
+    unsigned char found = 0;
+    while (current != NULL) {
+        if (strcmp(current->regex, string) == 0) {
+            found = 1;
+            break;
+        }
+        current = current->next;
+    }
+
+    if (!found) {
+        Invalid_Regex_List_Node* newInvalidNode = calloc(1, sizeof(Invalid_Regex_List_Node));
+        newInvalidNode->regex = string;
+        newInvalidNode->next = NULL;
+
+        if (compilerState->invalidRegexList->head == NULL) {
+            compilerState->invalidRegexList->head = newInvalidNode;
+        } else {
+            Invalid_Regex_List_Node* invalidCurrent = compilerState->invalidRegexList->head;
+            while (invalidCurrent->next != NULL) {
+                invalidCurrent = invalidCurrent->next;
+            }
+            invalidCurrent->next = newInvalidNode;
+        }
+        compilerState->invalidRegexList->size++;
+    }
+	}
 	Lexeme * lexeme = calloc(1, sizeof(Lexeme));
 	lexeme->our_regex_id = string;
 	lexeme->regexes = regex_class;
