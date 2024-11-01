@@ -2,7 +2,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 public class DeterministicFiniteAutomaton {
 
@@ -10,13 +9,29 @@ public class DeterministicFiniteAutomaton {
     private final List<State> states;
 
     public DeterministicFiniteAutomaton() {
-        this.states = new ArrayList<State>();
+        this.states = new ArrayList<>();
     }
 
     public State newState(Token token) {
         State state = new State(token);
         states.add(state);
         return state;
+    }
+
+    public int newStateGetIndex(Token token) {
+        State state = new State(token);
+        states.add(state);
+        return states.size() - 1;
+    }
+
+    public DeterministicFiniteAutomaton setInitialState(State state) {
+        this.initialState = state;
+        return this;
+    }
+
+    public DeterministicFiniteAutomaton setInitialState(int index) {
+        this.initialState = states.get(index);
+        return this;
     }
 
     public DeterministicFiniteAutomaton setTransition(int from, int to, char symbol) {
@@ -47,7 +62,7 @@ public class DeterministicFiniteAutomaton {
 
         private State(Token token) {
             this.token = token;
-            this.transitions = new HashMap<Character, State>();
+            this.transitions = new HashMap<>();
         }
 
         public void setTransition(State to, char symbol) {
@@ -60,8 +75,28 @@ public class DeterministicFiniteAutomaton {
     }
 
     public static class Token {
-        public enum TokenType {
 
+        private final String lexeme;
+        private final int tokenType;
+        private static final Map<Integer, Token> TOKEN_CACHE = new HashMap<>();
+
+        private Token(int tokenType, String lexeme) {
+            this.tokenType = tokenType;
+            this.lexeme = lexeme;
+        }
+
+        public Token newToken(int tokenType, String lexeme) {
+            if (lexeme == null)
+                return TOKEN_CACHE.computeIfAbsent(tokenType, (token) -> new Token(tokenType, null));
+            return new Token(tokenType, lexeme);
+        }
+
+        public String getLexeme() {
+            return lexeme;
+        }
+
+        public int getTokenType() {
+            return tokenType;
         }
     }
 }
