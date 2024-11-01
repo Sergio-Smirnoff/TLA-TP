@@ -1,7 +1,10 @@
 #include "automaton.h"
+#include "closed_hashing.h"
 #include <stdlib.h>
 #include <stdio.h>
 #define BLOCK 32
+#define DTE(x) ((delta_table_entry *)(x))
+#define BIG_PRIME 1000000007
 
 void resize_automaton(automaton *a)
 {
@@ -150,7 +153,7 @@ char accepts(const automaton *a, const char *string)
     state *current = a->initial_state;
     while (*string)
     {
-        if(current==NULL)
+        if (current == NULL)
             return 0;
         current = next_state(a, current, *string);
         string++;
@@ -199,22 +202,17 @@ void free_automaton(automaton *a)
     free(a);
 }
 
-void add_all_transitions(state *from, state *to)
-{
-    for (uint64_t i = 0; i < from->delta_size; i++)
-        for (uint64_t j = 0; j < to->delta[i].next_indices_size; j++)
-            set_state_transition(from, to->delta[i].next_indices[j], to->delta->matcher);
-}
-
 typedef struct delta_table_entry
 {
     uint64_t *state_indices;
     uint64_t state_indices_size;
+    uint64_t state_index;
 } delta_table_entry;
 
 typedef struct delta_table
 {
     delta_table_entry **entries;
+    hashset *entries_set;
     uint64_t entries_size;
     uint64_t entries_dim;
 } delta_table;
@@ -242,25 +240,8 @@ void free_delta_table(delta_table *table)
     for (uint64_t i = 0; i < table->entries_size; i++)
         free_delta_table_entry(table->entries[i]);
     free(table->entries);
+    free_hashset(table->entries_set);
     free(table);
-}
-
-uint64_t find_state_index(const uint64_t *state_indices, uint64_t state_indices_size, const uint64_t index)
-{
-    for (uint64_t i = 0; i < state_indices_size; i++)
-        if (state_indices[i] == index)
-            return i;
-    return -1;
-}
-
-char are_equal_entries(const uint64_t *state_indices_1, uint64_t state_indices_size_1, const uint64_t *state_indices_2, uint64_t state_indices_size_2)
-{
-    if (state_indices_size_1 != state_indices_size_2)
-        return 0;
-    for (uint64_t i = 0; i < state_indices_size_1; i++)
-        if (find_state_index(state_indices_2, state_indices_size_2, state_indices_1[i]) == -1)
-            return 0;
-    return 1;
 }
 
 char are_equal_sorted_entries(const uint64_t *state_indices_1, uint64_t state_indices_size_1, const uint64_t *state_indices_2, uint64_t state_indices_size_2)
@@ -273,18 +254,6 @@ char are_equal_sorted_entries(const uint64_t *state_indices_1, uint64_t state_in
     return 1;
 }
 
-uint64_t find_entry_index(const delta_table *table, const uint64_t *state_indices, uint64_t state_indices_size)
-{
-    // Table search is from end to beginning because the table is used in such a way that searches are more likely to be at the ends. Hence, this might be slightly faster
-    // This implementation is like O(n⁴), this change barely matters, but it kinda makes me feel better knowing that it's there.
-    for (uint64_t i = 0; i < table->entries_size; i++)
-    {
-        if (are_equal_sorted_entries(table->entries[i]->state_indices, table->entries[i]->state_indices_size, state_indices, state_indices_size))
-            return i;
-    }
-    return -1;
-}
-
 uint64_t load_entry_column(delta_table *table, uint64_t *state_indices, uint64_t state_indices_size)
 {
     check_delta_table_resize(table);
@@ -292,6 +261,8 @@ uint64_t load_entry_column(delta_table *table, uint64_t *state_indices, uint64_t
     table->entries[table->entries_size] = new_entry;
     new_entry->state_indices = state_indices;
     new_entry->state_indices_size = state_indices_size;
+    new_entry->state_index = table->entries_size;
+    hashset_add(table->entries_set, new_entry);
     return table->entries_size++;
 }
 
@@ -303,14 +274,18 @@ char array_contains(const uint64_t *array, uint64_t array_size, uint64_t value)
     return 0;
 }
 
-void bubble_sort(uint64_t *arr, uint64_t size){
+void bubble_sort(uint64_t *arr, uint64_t size)
+{
     char sorted = 0;
-    while(!sorted){
+    while (!sorted)
+    {
         sorted = 1;
-        for(uint64_t i = 0; i < size - 1; i++){
-            if(arr[i] > arr[i+1]){
-                uint64_t aux = arr[i+1];
-                arr[i+1] = arr[i];
+        for (uint64_t i = 0; i < size - 1; i++)
+        {
+            if (arr[i] > arr[i + 1])
+            {
+                uint64_t aux = arr[i + 1];
+                arr[i + 1] = arr[i];
                 arr[i] = aux;
                 sorted = 0;
             }
@@ -333,6 +308,7 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
         {
             throws_token = 1;
             token = state_in_column->token;
+            break;
         }
     }
     uint64_t state_equivalent_index = new_state(dfa, throws_token, token);
@@ -361,15 +337,22 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
             free(state_indices);
         else
         {
-            uint64_t entry_index = find_entry_index(table, state_indices, state_indices_size);
+            delta_table_entry mock_entry;
+            mock_entry.state_indices = state_indices;
+            mock_entry.state_indices_size = state_indices_size;
+            mock_entry.state_index = 0;
 
-            if (entry_index == -1)
+            void *entry = hashset_get(table->entries_set, &mock_entry);
+            uint64_t entry_index;
+
+            if (entry == NULL)
             {
                 bubble_sort(state_indices, state_indices_size);
                 entry_index = load_entry_column(table, state_indices, state_indices_size);
             }
             else
             {
+                entry_index = DTE(entry)->state_index;
                 free(state_indices);
             }
             force_set_transition(dfa, state_equivalent_index, entry_index, matcher);
@@ -378,12 +361,33 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
     return 1;
 }
 
+uint64_t hash_entries(const void *element)
+{
+    // This hashing function is terrible
+    uint64_t sum = 0;
+    for (int i = 0; i < DTE(element)->state_indices_size; i++)
+        sum = sum * 31 + DTE(element)->state_indices[i];
+    return sum % BIG_PRIME;
+}
+
+char compare_entries(const void *elem1, const void *elem2)
+{
+    return are_equal_sorted_entries(DTE(elem1)->state_indices, DTE(elem1)->state_indices_size, DTE(elem2)->state_indices, DTE(elem2)->state_indices_size);
+}
+
+void free_entries(void *elem)
+{
+    // The hashset is used in parallel to an array, the elements are freed from that array
+    return;
+}
+
 delta_table *new_delta_table()
 {
     delta_table *table = malloc(sizeof(delta_table));
     table->entries = malloc(sizeof(delta_table_entry) * BLOCK);
     table->entries_size = 0;
     table->entries_dim = BLOCK;
+    table->entries_set = new_hashset(hash_entries, compare_entries, free_entries, BLOCK);
     return table;
 }
 
