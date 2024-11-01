@@ -308,6 +308,7 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
         {
             throws_token = 1;
             token = state_in_column->token;
+            break;
         }
     }
     uint64_t state_equivalent_index = new_state(dfa, throws_token, token);
