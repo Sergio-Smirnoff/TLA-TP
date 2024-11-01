@@ -26,7 +26,7 @@ typedef struct return_struct {
 
 typedef struct transformer_list {
     char* lexeme;
-    return_struct returner;
+    return_struct* returner;
     struct transformer_list* next;
 }transformer_list;
 

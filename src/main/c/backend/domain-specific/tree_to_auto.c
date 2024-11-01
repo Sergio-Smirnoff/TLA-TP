@@ -5,7 +5,7 @@
 static transformer_list* list = (struct transformer_list*)calloc(sizeof(struct transformer_list));
 static transformer_list* current = list;
 
-add_to_list(char* lexeme, return_struct returner ){
+add_to_list(char* lexeme, return_struct* returner ){
     if ( lexeme != NULL && returner != NULL ){
         current->next = (transformer_list*)calloc(sizeof(transformer_list));
         if ( errno != 0 ){
@@ -42,44 +42,60 @@ void ruleset( Ruleset* ruleset ){
 }
 
 void rule( Rule* rule ){
-    switch ( rule->type )
+    switch ( rule->type ){
         case lexeme_action:
             char *lexeme = lexeme_precursor( rule->lexeme_precursor );
-            return_struct returner = action( rule->action );
+            return_struct* returner = action( rule->action );
             add_to_list( lexeme, returner );
             break;
         case ignore_lexeme:
             char *lexeme = lexeme_precursor( rule->lexeme_precursor );
-            return_struct returner = NULL;
+            return_struct* returner = NULL;
             add_to_list( lexeme, returner );
             break;
+    }
 }
 
 char* lexeme_precursor( LexemePrecursor* lexeme_precursor ){
     // check if it is a string
-    switch ( lexeme_precursor->type )
+    switch ( lexeme_precursor->type ){
         case literal:
             return lexeme_precursor->string;
         case nonliteral:
-            char* aux;
+            char* aux = malloc( 256 * sizeof(char) );
             strcat( aux, lexeme( lexeme_precursor->lexeme ) );
             aux = strcat( aux, lexeme_precursor( lexeme_precursor->lexeme_precursor ) );
             return aux;
+    }
 }
 
-return_struct action( Action* action ){
-    switch ( action->type )
+char* lexeme( Lexeme* lexeme ){
+    switch( lexeme->type )
+    {
+        case regexes:
+            char* aux = malloc( 256 * sizeof(char) );
+            strcat(aux, regexes( lexeme->regexes ) );
+            strcat(aux, lexeme->closure->closure) // chequear por token
+            return aux;
+        case name:
+            return search_in_table( lexeme->our_regex_id );
+    }
+}
+
+return_struct* action( Action* action ){
+    switch ( action->type ){
         case action:
-            return_struct returner;
-            returner.type = RETURN_STRING;
-            returner.string = action->varName;
+            return_struct* returner = calloc( sizeof(return_struct) );
+            returner->type = RETURN_STRING;
+            returner->string = action->varName;
             return returner;
         case java_block:
-            return_struct returner;
-            returner.type = JAVA_BLOCK;
-            returner.parameters = action->parameters;
-            returner.java_block = action->java_block;
+            return_struct* returner = calloc( sizeof(return_struct) );
+            returner->type = JAVA_BLOCK;
+            returner->parameters = action->parameters;
+            returner->java_block = action->java_block;
             return returner;
+    }       
 }
 
 
