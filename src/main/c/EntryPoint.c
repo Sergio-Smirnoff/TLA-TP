@@ -27,15 +27,28 @@ const int main(const int count, const char ** arguments) {
 		logDebugging(logger, "Argument %d: \"%s\"", k, arguments[k]);
 	}
 
-	// Begin compilation process.
+
 	CompilerState compilerState = {
-		.abstractSyntaxtTree = NULL,
-		.succeed = false,
-		.value = 0
+    	.abstractSyntaxTree = NULL,
+    	.succeed = false,
+    	.validRegexList = malloc(sizeof(Valid_Regex_List)),
+    	.invalidRegexList = malloc(sizeof(Invalid_Regex_List)),
+    	.value = 0
 	};
+
+
+	if (compilerState.validRegexList != NULL) {
+		compilerState.validRegexList->size = 0;
+		compilerState.validRegexList->head = NULL;
+	}
+	if (compilerState.invalidRegexList != NULL) {
+		compilerState.invalidRegexList->size = 0;
+		compilerState.invalidRegexList->head = NULL;
+	}
+	
 	const SyntacticAnalysisStatus syntacticAnalysisStatus = parse(&compilerState);
 	CompilationStatus compilationStatus = SUCCEED;
-	if (syntacticAnalysisStatus == ACCEPT) {
+	if (syntacticAnalysisStatus == ACCEPT && compilerState.invalidRegexList->size == 0) {
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... ------------------------------------------------------------
 		/*
@@ -55,9 +68,18 @@ const int main(const int count, const char ** arguments) {
 		// ----------------------------------------------------------------------------------------
 		logDebugging(logger, "Releasing AST resources...");
 		//releaseProgram(program);
-	}
-	else {
+	} else {
+		if (compilerState.invalidRegexList->size > 0) {
+			Invalid_Regex_List_Node* current = compilerState.invalidRegexList->head;
+
+			while (current != NULL) {
+				logError(logger, "Invalid regex: %s\n", current->regex);
+				current = current->next;
+			}
+		}
+
 		logError(logger, "The syntactic-analysis phase rejects the input program.");
+	
 		compilationStatus = FAILED;
 	}
 
@@ -70,5 +92,7 @@ const int main(const int count, const char ** arguments) {
 	shutdownFlexActionsModule();
 	logDebugging(logger, "Compilation is done.");
 	destroyLogger(logger);
+
+	printf("Compilation %s.\n", compilationStatus == SUCCEED ? "succeeds" : "fails");
 	return compilationStatus;
 }

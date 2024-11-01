@@ -27,7 +27,7 @@ Ruleset* RulesetSemanticAction(Rule* rule, Ruleset* ruleset);
 
 //Rule
 Rule* RuleDefinitionSemanticAction(Lexeme_precursor* lexeme, Action* action, Rule_type type);
-Rule* RuleNewRegexSemanticAction(char* our_regex_id, Regexes* regex_class);
+Rule* RuleNewRegexSemanticAction(char* our_regex_id, Regexes* regex_class, CompilerState * compilerState);
 
 // lexeme precursor
 Lexeme_precursor* LexemePrecursorSemanticAction(Lexeme* lex, Lexeme_precursor* lex_prec);
@@ -45,7 +45,7 @@ Regexes* RegexesSemanticAction(Regex_class* regex_class, Regexes* regexes);
 //Regex_class
 Regex_class* SymbolRegexSemanticAction(Symbol* symbol);
 Regex_class* RegexClassRangeSemanticAction(Symbol* left_symbol, Symbol* right_symbol);
-Regex_class* CreatedClassSemanticAction(char* class_name, Closure* closure);
+Regex_class* CreatedClassSemanticAction(char* class_name, Closure* closure, CompilerState * compilerState);
 
 Symbol* RegexSymbolSemanticAction(char* string);
 

@@ -38,7 +38,7 @@ Program * ProgramSemanticAction(CompilerState * compilerState, Ruleset * ruleset
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Program * program = calloc(1, sizeof(Program));
 	program->ruleset = ruleset;
-	compilerState->abstractSyntaxtTree = program;
+	compilerState->abstractSyntaxTree = program;
 	if (0 < flexCurrentContext()) {
 		logError(_logger, "The final context is not the default (0): %d", flexCurrentContext());
 		compilerState->succeed = false;
@@ -66,13 +66,30 @@ Rule* RuleDefinitionSemanticAction( Lexeme_precursor* lexeme, Action* action, Ru
 	return rule;
 }
 
-Rule* RuleNewRegexSemanticAction( char* our_regex_id, Regexes* regexes) {
+Rule* RuleNewRegexSemanticAction( char* our_regex_id, Regexes* regexes, CompilerState * compilerState) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Rule * rule = calloc(1, sizeof(Rule));
 	rule->our_regex_id = our_regex_id;
 	rule->regexes = regexes;
 	rule->type = regex;
-	return rule;
+
+	Valid_Regex_List_Node* newNode = calloc(1, sizeof(Valid_Regex_List_Node));
+    newNode->regex = our_regex_id;
+    newNode->next = NULL;
+
+    if (compilerState->validRegexList->head == NULL) {
+        compilerState->validRegexList->head = newNode;
+    } else {
+        Valid_Regex_List_Node* current = compilerState->validRegexList->head;
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        current->next = newNode;
+    }
+
+    compilerState->validRegexList->size++;
+
+    return rule;
 }
 
 Lexeme_precursor* LexemePrecursorSemanticAction( Lexeme *lex, Lexeme_precursor *lex_prec ){
@@ -126,8 +143,36 @@ Regex_class* RegexClassRangeSemanticAction(Symbol* startSymbol, Symbol* endSymbo
 	return new_regex_class;
 }
 
-Regex_class* CreatedClassSemanticAction(char* string, Closure* closure) {
+Regex_class* CreatedClassSemanticAction(char* string, Closure* closure, CompilerState * compilerState) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
+
+    Valid_Regex_List_Node* current = compilerState->validRegexList->head;
+    unsigned char found = 0;
+    while (current != NULL) {
+        if (strcmp(current->regex, string) == 0) {
+            found = 1;
+            break;
+        }
+        current = current->next;
+    }
+
+    if (!found) {
+        Invalid_Regex_List_Node* newInvalidNode = calloc(1, sizeof(Invalid_Regex_List_Node));
+        newInvalidNode->regex = string;
+        newInvalidNode->next = NULL;
+
+        if (compilerState->invalidRegexList->head == NULL) {
+            compilerState->invalidRegexList->head = newInvalidNode;
+        } else {
+            Invalid_Regex_List_Node* invalidCurrent = compilerState->invalidRegexList->head;
+            while (invalidCurrent->next != NULL) {
+                invalidCurrent = invalidCurrent->next;
+            }
+            invalidCurrent->next = newInvalidNode;
+        }
+        compilerState->invalidRegexList->size++;
+    }
+
 	Regex_class * new_regex_class = calloc(1, sizeof(Regex_class));
 	new_regex_class->varName = string;
 	new_regex_class->closure = closure;

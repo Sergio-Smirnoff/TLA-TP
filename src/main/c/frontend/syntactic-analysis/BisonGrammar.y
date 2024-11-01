@@ -209,7 +209,7 @@ ruleset: rule ruleset																																								{ $$ = RulesetSeman
 	| rule																																											{ $$ = RulesetSemanticAction($1, NULL); }
 	;
 
-rule: VAR_NAME[def] OPEN_BRACKET regexes[regex] CLOSE_BRACKET ENDLINE	    																										{ $$ = RuleNewRegexSemanticAction($def, $regex); }
+rule: VAR_NAME[def] OPEN_BRACKET regexes[regex] CLOSE_BRACKET ENDLINE	    																										{ $$ = RuleNewRegexSemanticAction($def, $regex, currentCompilerState()); }
 	| lexeme_precursor[lex] ARROW action ENDLINE																																	{ $$ = RuleDefinitionSemanticAction($lex, $action, lexeme_action); }
 	| lexeme_precursor[lex] ENDLINE																																					{ $$ = RuleDefinitionSemanticAction($lex, NULL, ignore_lexeme); }
 	;
@@ -235,7 +235,7 @@ regexes: regex_class 																																								{ $$ = RegexesSeman
 
 regex_class: symbol																																									{ $$ = SymbolRegexSemanticAction($1); }
     | symbol RANGER symbol																																							{ $$ = RegexClassRangeSemanticAction($1, $3); }
-	| OPEN_BRACES VAR_NAME[id] CLOSE_BRACES closure[clousure]																														{ $$ = CreatedClassSemanticAction($id, $clousure); }
+	| OPEN_BRACES VAR_NAME[id] CLOSE_BRACES closure[clousure]																														{ $$ = CreatedClassSemanticAction($id, $clousure, currentCompilerState()); }
 	;
 
 symbol: LOWERCASE 																																									{ $$ = RegexSymbolSemanticAction($1); }
