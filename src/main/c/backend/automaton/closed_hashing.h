@@ -62,4 +62,6 @@ void *hashset_get(const hashset *set, const void *element);
  */
 void free_hashset(hashset *set);
 
+uint64_t hashset_size(hashset *set);
+
 #endif
