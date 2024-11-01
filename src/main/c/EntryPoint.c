@@ -48,7 +48,7 @@ const int main(const int count, const char ** arguments) {
 	
 	const SyntacticAnalysisStatus syntacticAnalysisStatus = parse(&compilerState);
 	CompilationStatus compilationStatus = SUCCEED;
-	if (syntacticAnalysisStatus == ACCEPT && compilerState.invalidRegexList->size == 0) {
+	if (syntacticAnalysisStatus == ACCEPT) {
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... ------------------------------------------------------------
 		/*

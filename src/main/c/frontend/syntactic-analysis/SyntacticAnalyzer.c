@@ -54,7 +54,7 @@ SyntacticAnalysisStatus parse(CompilerState * compilerState) {
 	logDebugging(_logger, "Parsing is done.");
 	switch (code) {
 		case 0:
-			if (compilerState->succeed == true) {
+			if (compilerState->succeed == true && compilerState->invalidRegexList->size == 0) {
 				return ACCEPT;
 			}
 			else {
