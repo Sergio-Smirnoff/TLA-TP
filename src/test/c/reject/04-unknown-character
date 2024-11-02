@@ -1,0 +1,3 @@
+Regex di~git      [0-9];
+
+[digit] -> NUMBER;

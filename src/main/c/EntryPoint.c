@@ -1,5 +1,4 @@
 #include "backend/code-generation/Generator.h"
-#include "backend/domain-specific/Calculator.h"
 #include "frontend/lexical-analysis/FlexActions.h"
 #include "frontend/syntactic-analysis/AbstractSyntaxTree.h"
 #include "frontend/syntactic-analysis/BisonActions.h"
@@ -20,26 +19,40 @@ const int main(const int count, const char ** arguments) {
 	initializeBisonActionsModule();
 	initializeSyntacticAnalyzerModule();
 	initializeAbstractSyntaxTreeModule();
-	initializeCalculatorModule();
-	initializeGeneratorModule();
+	//initializeCalculatorModule();
+	//initializeGeneratorModule();
 
 	// Logs the arguments of the application.
 	for (int k = 0; k < count; ++k) {
 		logDebugging(logger, "Argument %d: \"%s\"", k, arguments[k]);
 	}
 
-	// Begin compilation process.
+
 	CompilerState compilerState = {
-		.abstractSyntaxtTree = NULL,
-		.succeed = false,
-		.value = 0
+    	.abstractSyntaxTree = NULL,
+    	.succeed = false,
+    	.validRegexList = malloc(sizeof(Valid_Regex_List)),
+    	.invalidRegexList = malloc(sizeof(Invalid_Regex_List)),
+    	.value = 0
 	};
+
+
+	if (compilerState.validRegexList != NULL) {
+		compilerState.validRegexList->size = 0;
+		compilerState.validRegexList->head = NULL;
+	}
+	if (compilerState.invalidRegexList != NULL) {
+		compilerState.invalidRegexList->size = 0;
+		compilerState.invalidRegexList->head = NULL;
+	}
+	
 	const SyntacticAnalysisStatus syntacticAnalysisStatus = parse(&compilerState);
 	CompilationStatus compilationStatus = SUCCEED;
 	Program * program = compilerState.abstractSyntaxtTree;
 	if (syntacticAnalysisStatus == ACCEPT) {
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... ------------------------------------------------------------
+		/*
 		logDebugging(logger, "Computing expression value...");
 		ComputationResult computationResult = computeExpression(program->expression);
 		if (computationResult.succeed) {
@@ -50,23 +63,37 @@ const int main(const int count, const char ** arguments) {
 			logError(logger, "The computation phase rejects the input program.");
 			compilationStatus = FAILED;
 		}
+		*/
 		// ...end of the Backend. -----------------------------------------------------------------
 		// ----------------------------------------------------------------------------------------
-	}
-	else {
+		logDebugging(logger, "Releasing AST resources...");
+		//releaseProgram(program);
+	} else {
+		if (compilerState.invalidRegexList->size > 0) {
+			Invalid_Regex_List_Node* current = compilerState.invalidRegexList->head;
+
+			while (current != NULL) {
+				logError(logger, "Invalid regex: %s\n", current->regex);
+				current = current->next;
+			}
+		}
+
 		logError(logger, "The syntactic-analysis phase rejects the input program.");
+	
 		compilationStatus = FAILED;
 	}
 	logDebugging(logger, "Releasing AST resources...");
 	releaseProgram(program);
 	logDebugging(logger, "Releasing modules resources...");
-	shutdownGeneratorModule();
-	shutdownCalculatorModule();
+	//shutdownGeneratorModule();
+	//shutdownCalculatorModule();
 	shutdownAbstractSyntaxTreeModule();
 	shutdownSyntacticAnalyzerModule();
 	shutdownBisonActionsModule();
 	shutdownFlexActionsModule();
 	logDebugging(logger, "Compilation is done.");
 	destroyLogger(logger);
+
+	printf("Compilation %s.\n", compilationStatus == SUCCEED ? "succeeds" : "fails");
 	return compilationStatus;
 }
