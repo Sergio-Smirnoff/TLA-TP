@@ -33,6 +33,8 @@ typedef struct automaton
     state **states;
     uint64_t states_size;
     uint64_t states_dim;
+    char min_symbol;
+    char max_symbol;
 } automaton;
 
 uint64_t new_state(automaton *automaton, uint8_t throws_token, uint64_t token);
@@ -53,7 +55,7 @@ automaton *new_automaton();
  * @param matcher
  * @return char 1 if succesful, 0 otherwise
  */
-char set_transition(const automaton *a, uint64_t from_index, uint64_t to_index, char matcher);
+char set_transition(automaton *a, uint64_t from_index, uint64_t to_index, char matcher);
 
 /**
  * @brief get the next state given a state and a symbol
@@ -85,10 +87,10 @@ uint64_t *get_token_stream(const automaton *automaton, const char *string, uint6
 
 /**
  * @brief whether an automaton accepts the given string
- * 
- * @param a 
- * @param string 
- * @return char 
+ *
+ * @param a
+ * @param string
+ * @return char
  */
 char accepts(const automaton *a, const char *string);
 
@@ -102,9 +104,9 @@ automaton *get_deterministic_equivalent(const automaton *automaton);
 
 /**
  * @brief Writes to a file descriptor Java syntax code for initializing a clone of an automaton
- * 
- * @param a 
- * @param file_descriptor 
+ *
+ * @param a
+ * @param file_descriptor
  */
 void write_java_initialization(const automaton *a, int file_descriptor);
 

@@ -101,15 +101,32 @@ char set_state_transition(state *from, uint64_t to_index, char matcher)
     return 1;
 }
 
-char force_set_transition(const automaton *a, uint64_t from_index, uint64_t to_index, char matcher)
+void check_matcher_bounds(automaton *a, char matcher)
+{
+    if (a->min_symbol == -1)
+    {
+        a->min_symbol = matcher;
+        a->max_symbol = matcher;
+    }
+    else
+    {
+        if (a->min_symbol > matcher)
+            a->min_symbol = matcher;
+        else if (a->max_symbol < matcher)
+            a->max_symbol = matcher;
+    }
+}
+
+char force_set_transition(automaton *a, uint64_t from_index, uint64_t to_index, char matcher)
 {
     if (from_index >= a->states_size)
         return 0;
+    check_matcher_bounds(a, matcher);
     state *from = get_state(a, from_index);
     return set_state_transition(from, to_index, matcher);
 }
 
-char set_transition(const automaton *a, uint64_t from_index, uint64_t to_index, char matcher)
+char set_transition(automaton *a, uint64_t from_index, uint64_t to_index, char matcher)
 {
     if (to_index >= a->states_size)
         return 0;
@@ -314,7 +331,7 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
         }
     }
     uint64_t state_equivalent_index = new_state(dfa, throws_token, token);
-    for (unsigned char matcher = 0; matcher <= 127; matcher++)
+    for (unsigned char matcher = a->min_symbol; matcher <= a->max_symbol; matcher++)
     {
         uint64_t *state_indices = malloc(a->states_size * sizeof(uint64_t));
         uint64_t state_indices_size = 0;
