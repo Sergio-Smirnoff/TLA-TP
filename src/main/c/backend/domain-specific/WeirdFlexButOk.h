@@ -1,0 +1,59 @@
+#ifndef WEIRD_FLEX_HEADER
+#define WEIRD_FLEX_HEADER
+
+/**
+ * We reuse the types from the AST for convenience, but you should separate
+ * the layers of the backend and frontend using another group of
+ * domain-specific models or DTOs (Data Transfer Objects).
+ */
+#include "../../frontend/syntactic-analysis/AbstractSyntaxTree.h"
+#include "../../shared/CompilerState.h"
+#include "../../shared/Logger.h"
+#include "../../shared/Type.h"
+#include <limits.h>
+
+#include "../automaton/automaton.h"
+
+/** Initialize module's internal state. */
+void initializeWeirdFlexModule();
+
+/** Shutdown module's internal state. */
+void shutdownWeirdFlexModule();
+
+typedef enum return_type {
+    RETURN_TOKEN,
+    RETURN_STRING,
+    JAVA_BLOCK
+} return_type;
+
+typedef struct return_struct {
+    union{
+        Token* token;
+        char* string;
+        struct{
+            Token* parameters;
+            Block* java_block;
+        };
+    };
+    return_type type;
+} return_struct;
+
+typedef struct transformer_list {
+    char* lexeme;
+    return_struct* returner;
+    struct transformer_list* next;
+}transformer_list;
+
+/**
+ * The result of a computation. It's considered valid only if "succeed" is
+ * true.
+ */
+typedef struct {
+	boolean succeed;
+	transformer_list* value;
+} ComputationResult;
+
+// Checks the tree and builds lexemes table
+struct transformer_list* computeRuleset(Program * tree, Valid_Regex_List* regexList);
+
+#endif

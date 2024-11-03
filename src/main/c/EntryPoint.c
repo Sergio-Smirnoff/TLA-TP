@@ -1,4 +1,5 @@
 #include "backend/code-generation/Generator.h"
+#include "backend/domain-specific/WeirdFlexButOk.h"
 #include "frontend/lexical-analysis/FlexActions.h"
 #include "frontend/syntactic-analysis/AbstractSyntaxTree.h"
 #include "frontend/syntactic-analysis/BisonActions.h"
@@ -52,18 +53,15 @@ const int main(const int count, const char ** arguments) {
 	if (syntacticAnalysisStatus == ACCEPT) {
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... ------------------------------------------------------------
-		/*
 		logDebugging(logger, "Computing expression value...");
-		ComputationResult computationResult = computeExpression(program->expression);
+		ComputationResult computationResult = computeRuleset(program->expression, syntacticAnalysisStatus->validRegexList);
 		if (computationResult.succeed) {
 			compilerState.value = computationResult.value;
 			generate(&compilerState);
-		}
-		else {
+		} else {
 			logError(logger, "The computation phase rejects the input program.");
 			compilationStatus = FAILED;
 		}
-		*/
 		// ...end of the Backend. -----------------------------------------------------------------
 		// ----------------------------------------------------------------------------------------
 		logDebugging(logger, "Releasing AST resources...");
@@ -73,7 +71,7 @@ const int main(const int count, const char ** arguments) {
 			Invalid_Regex_List_Node* current = compilerState.invalidRegexList->head;
 
 			while (current != NULL) {
-				logError(logger, "Invalid regex: %s\n", current->regex);
+				logError(logger, "Invalid regex class: %s\n", current->regex_id);
 				current = current->next;
 			}
 		}

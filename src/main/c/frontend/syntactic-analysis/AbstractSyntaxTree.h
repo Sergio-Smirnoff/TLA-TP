@@ -327,14 +327,13 @@ struct Lexeme{
 	union{
 		struct{
 			Regexes* regexes;
-			Closure* closure;
 		};
 		struct{
 			char* our_regex_id;
-			Closure* clre;
 		};
 	};
 	Lexeme_type type;
+	Closure* closure;
 };
 
 typedef enum Lexeme_precursor_type{
@@ -360,8 +359,16 @@ struct Param{
 	Token stuff;
 };
 
+/* Opción type comentada
+typedef enum ClosureType{
+	plus,
+	star
+} ClosureType;
+*/
+
 struct Closure{
 	Token closure;
+	// ClosureType type;
 };
 
 struct Regexes{

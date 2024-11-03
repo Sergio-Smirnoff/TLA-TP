@@ -1,6 +1,4 @@
-
 #include "tree_to_auto.h"
-
 
 static transformer_list* list = (struct transformer_list*)calloc(sizeof(struct transformer_list));
 static transformer_list* current = list;
@@ -16,7 +14,6 @@ add_to_list(char* lexeme, return_struct* returner ){
 
     current->lexeme = lexeme;
     current->return_struct = return_struct;
-    
 }
 
 // check if it is in the return list
@@ -98,4 +95,11 @@ return_struct* action( Action* action ){
     }       
 }
 
-
+void free_transformer_list(struct transformer_list* list){
+    transformer_list* aux = list;
+    while ( aux != NULL ){
+        transformer_list* to_free = aux;
+        aux = aux->next;
+        free(to_free);
+    }
+}

@@ -225,8 +225,8 @@ lexeme: OPEN_BRACKET regexes[regex] CLOSE_BRACKET closure[closure_p]												
 	;
 
 closure: %empty 																																									{ $$ = NULL; }
-	| PLUS																																											{ $$ = ClosureSemanticAction($1); }
-	| STAR																																											{ $$ = ClosureSemanticAction($1); }
+	| PLUS																																											{ $$ = ClosureSemanticAction($1/*Opción type: , plus*/); }
+	| STAR																																											{ $$ = ClosureSemanticAction($1/*Opción type: , star*/); }
 	;
 
 regexes: regex_class 																																								{ $$ = RegexesSemanticAction($1, NULL); }
@@ -246,7 +246,7 @@ symbol: LOWERCASE 																																									{ $$ = RegexSymbolSem
 	;
 
 action: VAR_NAME																																									{ $$ = ActionSemanticAction($1); }
-	| OPEN_PARENTHESES param[param_p] CLOSE_PARENTHESES OPEN_BRACES Block[block] CLOSE_BRACES																							{ $$ = ActionJavaSemanticAction($param_p, $block); }
+	| OPEN_PARENTHESES param[param_p] CLOSE_PARENTHESES OPEN_BRACES Block[block] CLOSE_BRACES																						{ $$ = ActionJavaSemanticAction($param_p, $block); }
 	| OPEN_PARENTHESES CLOSE_PARENTHESES OPEN_BRACES Block[block] CLOSE_BRACES																										{ $$ = ActionJavaSemanticAction(NULL, $block); }
 	;
 

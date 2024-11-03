@@ -37,7 +37,10 @@ Lexeme_precursor* LexemeStringSemanticAction(char* string, Lexeme_type type);
 Lexeme* LexemeSemanticAction(char* string, Regexes* regex_class, Closure* closure, Lexeme_type type, CompilerState * compilerState);
 
 // closure
-Closure* ClosureSemanticAction(Token string);
+/*Opción type:
+Closure* ClosureSemanticAction(Token token, ClosureType type);
+*/
+Closure* ClosureSemanticAction(Token token);
 
 // regexes
 Regexes* RegexesSemanticAction(Regex_class* regex_class, Regexes* regexes);
