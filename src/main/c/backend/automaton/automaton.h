@@ -19,6 +19,8 @@ typedef struct state
     uint64_t delta_dim;
     uint8_t throws_token;
     uint64_t token;
+    char min_symbol;
+    char max_symbol;
 } state;
 
 typedef struct token_mapping

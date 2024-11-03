@@ -28,6 +28,7 @@ uint64_t new_state(automaton *a, uint8_t throws_token, uint64_t token)
     n_state->delta_size = 0;
     n_state->throws_token = throws_token;
     n_state->token = token;
+    n_state->min_symbol = n_state->max_symbol = -1;
     check_resize_automaton(a);
     a->states[a->states_size] = n_state;
     return a->states_size++;
@@ -101,7 +102,7 @@ char set_state_transition(state *from, uint64_t to_index, char matcher)
     return 1;
 }
 
-void check_matcher_bounds(automaton *a, char matcher)
+void check_automaton_matcher_bounds(automaton *a, char matcher)
 {
     if (a->min_symbol == -1)
     {
@@ -117,12 +118,29 @@ void check_matcher_bounds(automaton *a, char matcher)
     }
 }
 
+void check_state_matcher_bounds(state *s, char matcher)
+{
+    if (s->min_symbol == -1)
+    {
+        s->min_symbol = matcher;
+        s->max_symbol = matcher;
+    }
+    else
+    {
+        if (s->min_symbol > matcher)
+            s->min_symbol = matcher;
+        else if (s->max_symbol < matcher)
+            s->max_symbol = matcher;
+    }
+}
+
 char force_set_transition(automaton *a, uint64_t from_index, uint64_t to_index, char matcher)
 {
     if (from_index >= a->states_size)
         return 0;
-    check_matcher_bounds(a, matcher);
+    check_automaton_matcher_bounds(a, matcher);
     state *from = get_state(a, from_index);
+    check_state_matcher_bounds(from, matcher);
     return set_state_transition(from, to_index, matcher);
 }
 
@@ -339,6 +357,8 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
         for (uint64_t state_index = 0; state_index < entry->state_indices_size; state_index++)
         {
             state *current_state = get_state(a, entry->state_indices[state_index]);
+            if(current_state->min_symbol == -1 || current_state->min_symbol > matcher || current_state->max_symbol < matcher)
+                continue;
             for (uint64_t rule_index = 0; rule_index < current_state->delta_size; rule_index++)
             {
                 rule current_rule = current_state->delta[rule_index];
