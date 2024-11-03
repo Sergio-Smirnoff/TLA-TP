@@ -45,6 +45,7 @@ automaton *new_automaton()
     n_automaton->states = malloc(sizeof(state *) * BLOCK);
     n_automaton->states_dim = BLOCK;
     n_automaton->states_size = 0;
+    n_automaton->min_symbol = n_automaton->max_symbol = -1;
     return n_automaton;
 }
 
@@ -357,7 +358,7 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
         for (uint64_t state_index = 0; state_index < entry->state_indices_size; state_index++)
         {
             state *current_state = get_state(a, entry->state_indices[state_index]);
-            if(current_state->min_symbol == -1 || current_state->min_symbol > matcher || current_state->max_symbol < matcher)
+            if (current_state->min_symbol == -1 || current_state->min_symbol > matcher || current_state->max_symbol < matcher)
                 continue;
             for (uint64_t rule_index = 0; rule_index < current_state->delta_size; rule_index++)
             {
