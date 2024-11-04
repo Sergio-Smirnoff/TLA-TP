@@ -20,7 +20,7 @@ const int main(const int count, const char ** arguments) {
 	initializeBisonActionsModule();
 	initializeSyntacticAnalyzerModule();
 	initializeAbstractSyntaxTreeModule();
-	// initializeWeirdFlexModule();
+	initializeWeirdFlexModule();
 	//initializeGeneratorModule();
 
 	// Logs the arguments of the application.
@@ -64,10 +64,11 @@ const int main(const int count, const char ** arguments) {
 			current = current->next;
 		}
 		fclose(fptr);
-		/*
+		
 		ComputationResult* computationResult = computeProgram(program, compilerState.validRegexList);
 		print_transformerlist(computationResult->value);
 		free(computationResult);
+		/*
 		if (computationResult->succeed) {
 			//compilerState.value = computationResult.value;
 			generate(&compilerState);
@@ -97,7 +98,7 @@ const int main(const int count, const char ** arguments) {
 
 	logDebugging(logger, "Releasing modules resources...");
 	//shutdownGeneratorModule();
-	// shutdownWeirdFlexModule();
+	shutdownWeirdFlexModule();
 	shutdownAbstractSyntaxTreeModule();
 	shutdownSyntacticAnalyzerModule();
 	shutdownBisonActionsModule();

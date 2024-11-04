@@ -113,6 +113,8 @@ Lexeme_precursor* LexemeStringSemanticAction(char* string, Lexeme_type type){
 Lexeme* LexemeSemanticAction( char* string, Regexes* regex_class, Closure* closure, Lexeme_type type, CompilerState * compilerState ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 
+	FILE * logFile = fopen("logFile.txt", "a");
+	fprintf(logFile, "regex_id: %s\n", string);
 	if(compilerState != NULL) {
     Valid_Regex_List_Node* current = compilerState->validRegexList->head;
     unsigned char found = 0;
@@ -141,17 +143,29 @@ Lexeme* LexemeSemanticAction( char* string, Regexes* regex_class, Closure* closu
         compilerState->invalidRegexList->size++;
     }
 	}
+
 	Lexeme * lexeme = calloc(1, sizeof(Lexeme));
-	lexeme->our_regex_id = string;
-	lexeme->regexes = regex_class;
+
+	switch (type) {
+		case regex:
+			lexeme->regexes = regex_class;
+			break;
+		case name:
+			lexeme->our_regex_id = string;
+			break;
+	}
+
 	lexeme->closure = closure;
 	lexeme->type = type;
+	fprintf(logFile, "in lexeme regex_id: %s\n", lexeme->our_regex_id);
+	fclose(logFile);
 	return lexeme;
 }
 
 Closure* ClosureSemanticAction( Token string ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Closure * closure = calloc(1, sizeof(Closure));
+	closure->closure = string;
 	return closure;
 }
 

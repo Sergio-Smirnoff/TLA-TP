@@ -7,6 +7,7 @@ static transformer_list* list;
 static transformer_list* current;
 static Valid_Regex_List* validRegexList;
 static boolean has_default = false;
+static FILE * logFile;
 
 /** PRIVATE FUNCTIONS */
 static void _addToList(char* lexeme, return_struct* returner);
@@ -23,7 +24,7 @@ char* computeLexeme(Lexeme* lexeme);
 return_struct* computeAction(Action* my_action);
 
 static void _addToList(char* lexeme, return_struct* returner){
-    while(lexeme != NULL && returner != NULL){
+    if(lexeme != NULL && returner != NULL){
         current->next = (transformer_list*)calloc(1, sizeof(transformer_list));
         if (errno != 0){
             return; // podriamos loggear el error
@@ -77,12 +78,14 @@ void initializeWeirdFlexModule() {
 	_logger = createLogger("Weird Flex");
     list = (struct transformer_list*)calloc(1, sizeof(struct transformer_list));
     current = list;
+    logFile = fopen("Backend.log","a");
 }
 
 void shutdownWeirdFlexModule() {
 	if (_logger != NULL) {
 		destroyLogger(_logger);
 	}
+    fclose(logFile);
     _freeTransformerList(list);
 }
 
@@ -113,6 +116,7 @@ void print_transformerlist(transformer_list* list){
 ComputationResult* computeProgram(Program * tree, Valid_Regex_List* regexList) {
     ComputationResult* result = (ComputationResult*)calloc(1, sizeof(ComputationResult));
     validRegexList = regexList;
+
     ruleset(tree->ruleset);
     if ( list == NULL){
         result->succeed = false;
@@ -140,8 +144,14 @@ void computeRule(Rule* my_rule){
         return_struct* returner;
         case lexeme_action:
             lexeme = computeLexemePrecursor(my_rule->lex);
+            fprintf(logFile, "Me llego un lexeme %s\n", lexeme);
+            fflush(logFile);
             returner = computeAction(my_rule->action);
+                        fprintf(logFile, "Did i compute?\n");
+            fflush(logFile);
             _addToList(lexeme, returner);
+                                    fprintf(logFile, "YES?\n");
+            fflush(logFile);
             break;
         case ignore_lexeme:
             lexeme = computeLexemePrecursor(my_rule->lexeme);
@@ -150,6 +160,7 @@ void computeRule(Rule* my_rule){
             break;
         case regex: // para mi no hace falta hacer esto
             char *regex_content = regexContent(my_rule->regexes);
+            fprintf(logFile, "Regex content: %s\n", regex_content);
             Valid_Regex_List_Node* aux = validRegexList->head;
             while (aux != NULL){
                 if (strcmp(aux->regex_id, my_rule->our_regex_id) == 0){
@@ -164,8 +175,12 @@ void computeRule(Rule* my_rule){
 
 char* regexContent(Regexes* regexes) {
     if(regexes->regexes == NULL) {
+        fprintf(logFile, "IM NULL\n");
+        fflush(logFile);
         return computeRegexClass(regexes->regexClass);
     } else {
+                fprintf(logFile, "IM CHAD NOT NULL\n");
+        fflush(logFile);
         char* regex_class = computeRegexClass(regexes->regexClass); 
         char* regex_content = regexContent(regexes->regexes);
         char* aux = _strConcat(regex_class, regex_content);// problema con mallocs, posible solucion
@@ -177,6 +192,8 @@ char* regexContent(Regexes* regexes) {
 
 char* computeRegexClass(Regex_class* regexClass) {
     if(regexClass == NULL) {
+        fprintf(logFile, "IM WEAK\n");
+        fflush(logFile);
         return "";
     }
     switch (regexClass->type) {
@@ -201,9 +218,9 @@ char* computeRegexClass(Regex_class* regexClass) {
 
 char* computeClosure(Closure* closure) {
     switch (closure->closure) {
-        case 42:
+        case 266:
             return "*";
-        case 43:
+        case 267:
             return "+";
         default:
             return "";
@@ -237,10 +254,14 @@ char* computeLexemePrecursor(Lexeme_precursor* lexeme_precursor){
             }
             return lexeme_precursor->string;
         case nonliterals:
+                            fprintf(logFile, "Not lit: l256 computeLexemePrecursor\n");
+    fflush(logFile);
             char* lexeme_prec = computeLexemePrecursor(lexeme_precursor->lex_prec);
             char* lexeme = computeLexeme(lexeme_precursor->lex);
             char* aux = _strConcat(lexeme, lexeme_prec);
-            free(lexeme_prec);
+            if (strcmp(lexeme_prec, "") != 0){
+                free(lexeme_prec);
+            }
             free(lexeme);
             return aux;
     }
@@ -264,6 +285,14 @@ char* computeLexeme(Lexeme* lexeme) {
             }
             break;
     }
+
+    aux = _strConcat("[", aux);
+    aux = _strConcat(aux, "]");
+    if (lexeme->closure != NULL){
+        char* closure = computeClosure(lexeme->closure);
+        aux = _strConcat(aux, closure);
+    }
+
     return aux;
 }
 
@@ -276,8 +305,13 @@ return_struct* computeAction(Action* my_action){
             break;
         case function_body:
             returner->type = JAVA_BLOCK;
+            if (my_action->param == NULL){
+                returner->parameters = 0;
+                returner->java_block = my_action->block;
+            } else {
             returner->parameters = my_action->param->stuff;
             returner->java_block = my_action->block;
+            }
     }       
     return returner;
 }
