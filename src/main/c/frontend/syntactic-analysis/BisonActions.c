@@ -74,7 +74,7 @@ Rule* RuleNewRegexSemanticAction( char* our_regex_id, Regexes* regexes, Compiler
 	rule->type = regex;
 
 	Valid_Regex_List_Node* newNode = calloc(1, sizeof(Valid_Regex_List_Node));
-    newNode->regex = our_regex_id;
+    newNode->regex_id = our_regex_id;
     newNode->next = NULL;
 
     if (compilerState->validRegexList->head == NULL) {
@@ -117,7 +117,7 @@ Lexeme* LexemeSemanticAction( char* string, Regexes* regex_class, Closure* closu
     Valid_Regex_List_Node* current = compilerState->validRegexList->head;
     unsigned char found = 0;
     while (current != NULL) {
-        if (strcmp(current->regex, string) == 0) {
+        if (strcmp(current->regex_id, string) == 0) {
             found = 1;
             break;
         }
@@ -178,7 +178,7 @@ Regex_class* CreatedClassSemanticAction(char* string, Closure* closure, Compiler
     Valid_Regex_List_Node* current = compilerState->validRegexList->head;
     unsigned char found = 0;
     while (current != NULL) {
-        if (strcmp(current->regex, string) == 0) {
+        if (strcmp(current->regex_id, string) == 0) {
             found = 1;
             break;
         }

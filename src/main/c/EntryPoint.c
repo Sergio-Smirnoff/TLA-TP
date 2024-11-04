@@ -46,19 +46,24 @@ const int main(const int count, const char ** arguments) {
 		compilerState.invalidRegexList->size = 0;
 		compilerState.invalidRegexList->head = NULL;
 	}
-	
+
+
+
 	const SyntacticAnalysisStatus syntacticAnalysisStatus = parse(&compilerState);
 	CompilationStatus compilationStatus = SUCCEED;
 	Program* program = compilerState.abstractSyntaxTree;
 	if (syntacticAnalysisStatus == ACCEPT) {
+			FILE *fptr;
+			fptr = fopen("ImTiredBoss.log","a");
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... ------------------------------------------------------------
 		logDebugging(logger, "Computing expression value...");
 		Valid_Regex_List_Node* current = compilerState.validRegexList->head;
 		while (current != NULL) {
-			logDebugging(logger, "Valid regex: %s\n", current->regex_id);
+			fprintf(fptr,"Valid regex: %s\n", current->regex_id);
 			current = current->next;
 		}
+		fclose(fptr);
 		/*
 		ComputationResult* computationResult = computeProgram(program, compilerState.validRegexList);
 		print_transformerlist(computationResult->value);
