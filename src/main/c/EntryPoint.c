@@ -1,4 +1,5 @@
 #include "backend/code-generation/Generator.h"
+#include "backend/domain-specific/WeirdFlexButOk.h"
 #include "frontend/lexical-analysis/FlexActions.h"
 #include "frontend/syntactic-analysis/AbstractSyntaxTree.h"
 #include "frontend/syntactic-analysis/BisonActions.h"
@@ -19,7 +20,7 @@ const int main(const int count, const char ** arguments) {
 	initializeBisonActionsModule();
 	initializeSyntacticAnalyzerModule();
 	initializeAbstractSyntaxTreeModule();
-	//initializeCalculatorModule();
+	// initializeWeirdFlexModule();
 	//initializeGeneratorModule();
 
 	// Logs the arguments of the application.
@@ -48,18 +49,24 @@ const int main(const int count, const char ** arguments) {
 	
 	const SyntacticAnalysisStatus syntacticAnalysisStatus = parse(&compilerState);
 	CompilationStatus compilationStatus = SUCCEED;
+	Program* program = compilerState.abstractSyntaxTree;
 	if (syntacticAnalysisStatus == ACCEPT) {
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... ------------------------------------------------------------
-		/*
 		logDebugging(logger, "Computing expression value...");
-		Program * program = compilerState.abstractSyntaxtTree;
-		ComputationResult computationResult = computeExpression(program->expression);
-		if (computationResult.succeed) {
-			compilerState.value = computationResult.value;
-			generate(&compilerState);
+		Valid_Regex_List_Node* current = compilerState.validRegexList->head;
+		while (current != NULL) {
+			logDebugging(logger, "Valid regex: %s\n", current->regex);
+			current = current->next;
 		}
-		else {
+		/*
+		ComputationResult* computationResult = computeProgram(program, compilerState.validRegexList);
+		print_transformerlist(computationResult->value);
+		free(computationResult);
+		if (computationResult->succeed) {
+			//compilerState.value = computationResult.value;
+			generate(&compilerState);
+		} else {
 			logError(logger, "The computation phase rejects the input program.");
 			compilationStatus = FAILED;
 		}
@@ -85,7 +92,7 @@ const int main(const int count, const char ** arguments) {
 
 	logDebugging(logger, "Releasing modules resources...");
 	//shutdownGeneratorModule();
-	//shutdownCalculatorModule();
+	// shutdownWeirdFlexModule();
 	shutdownAbstractSyntaxTreeModule();
 	shutdownSyntacticAnalyzerModule();
 	shutdownBisonActionsModule();
