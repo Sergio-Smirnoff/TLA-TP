@@ -65,7 +65,7 @@ static void _freeTransformerList(struct transformer_list* list){
 }
 
 static char* _strConcat(char* str1, char* str2){
-    char* aux = calloc((strlen(str1) + strlen(str2)), sizeof(char));
+    char* aux = calloc((strlen(str1) + strlen(str2) + 1), sizeof(char));
     sprintf(aux, "%s%s", str1, str2);
     return aux;
 }

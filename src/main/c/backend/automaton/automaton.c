@@ -31,7 +31,7 @@ uint64_t new_state(automaton *a, uint8_t throws_token, uint64_t token)
     n_state->min_symbol = n_state->max_symbol = -1;
     check_resize_automaton(a);
     a->states[a->states_size] = n_state;
-    if(a->initial_state == NULL)
+    if (a->initial_state == NULL)
         a->initial_state = n_state;
     return a->states_size++;
 }
