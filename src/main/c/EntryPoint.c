@@ -49,19 +49,22 @@ const int main(const int count, const char ** arguments) {
 	
 	const SyntacticAnalysisStatus syntacticAnalysisStatus = parse(&compilerState);
 	CompilationStatus compilationStatus = SUCCEED;
-	Program * program = compilerState.abstractSyntaxtTree;
+	Program * program = compilerState.abstractSyntaxTree;
 	if (syntacticAnalysisStatus == ACCEPT) {
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... ------------------------------------------------------------
 		logDebugging(logger, "Computing expression value...");
-		ComputationResult computationResult = computeRuleset(program->expression, syntacticAnalysisStatus->validRegexList);
-		if (computationResult.succeed) {
-			compilerState.value = computationResult.value;
+		ComputationResult* computationResult = computeProgram(program, compilerState.validRegexList);
+		print_transformerlist(computationResult->value);
+		free(computationResult);
+		/*
+		if (computationResult->succeed) {
+			//compilerState.value = computationResult.value;
 			generate(&compilerState);
 		} else {
 			logError(logger, "The computation phase rejects the input program.");
 			compilationStatus = FAILED;
-		}
+		}*/
 		// ...end of the Backend. -----------------------------------------------------------------
 		// ----------------------------------------------------------------------------------------
 		logDebugging(logger, "Releasing AST resources...");
@@ -81,7 +84,7 @@ const int main(const int count, const char ** arguments) {
 		compilationStatus = FAILED;
 	}
 	logDebugging(logger, "Releasing AST resources...");
-	releaseProgram(program);
+	//releaseProgram(program);
 	logDebugging(logger, "Releasing modules resources...");
 	//shutdownGeneratorModule();
 	//shutdownCalculatorModule();

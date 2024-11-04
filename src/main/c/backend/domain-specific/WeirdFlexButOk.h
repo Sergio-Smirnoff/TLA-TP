@@ -11,6 +11,7 @@
 #include "../../shared/Logger.h"
 #include "../../shared/Type.h"
 #include <limits.h>
+#include <errno.h>
 
 #include "../automaton/automaton.h"
 
@@ -31,7 +32,7 @@ typedef struct return_struct {
         Token* token;
         char* string;
         struct{
-            Token* parameters;
+            Token parameters;
             Block* java_block;
         };
     };
@@ -54,6 +55,7 @@ typedef struct {
 } ComputationResult;
 
 // Checks the tree and builds lexemes table
-struct transformer_list* computeRuleset(Program * tree, Valid_Regex_List* regexList);
+ComputationResult* computeProgram(Program * tree, Valid_Regex_List* regexList);
+void print_transformerlist(transformer_list* list);
 
 #endif
