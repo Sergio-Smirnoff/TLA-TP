@@ -12,14 +12,16 @@ typedef struct rule
     char matcher;
 } rule;
 
-typedef struct State
+typedef struct state
 {
     rule *delta;
     uint64_t delta_size;
     uint64_t delta_dim;
     uint8_t throws_token;
     uint64_t token;
-} State;
+    char min_symbol;
+    char max_symbol;
+} state;
 
 typedef struct token_mapping
 {
@@ -29,8 +31,8 @@ typedef struct token_mapping
 
 typedef struct automaton
 {
-    State *initial_state;
-    State **states;
+    state *initial_state;
+    state **states;
     uint64_t states_size;
     uint64_t states_dim;
     char min_symbol;
@@ -41,13 +43,13 @@ uint64_t new_state(automaton *automaton, uint8_t throws_token, uint64_t token);
 
 uint64_t new_state_get_index(automaton *automaton, uint8_t throws_token, uint64_t token);
 
-State *get_state(const automaton *automaton, uint64_t index);
+state *get_state(const automaton *automaton, uint64_t index);
 
-void set_initial_state(automaton *automaton, State *initial_state);
+void set_initial_state(automaton *automaton, state *initial_state);
 automaton *new_automaton();
 
 /**
- * @brief set the transition of a State to another State given a matching symbol
+ * @brief set the transition of a state to another state given a matching symbol
  *
  * @param a
  * @param from
@@ -58,14 +60,14 @@ automaton *new_automaton();
 char set_transition(automaton *a, uint64_t from_index, uint64_t to_index, char matcher);
 
 /**
- * @brief get the next State given a State and a symbol
+ * @brief get the next state given a state and a symbol
  *
  * @param a
- * @param State
+ * @param state
  * @param symbol
- * @return State* NULL if no transition for the given symbol exists
+ * @return state* NULL if no transition for the given symbol exists
  */
-State *next_state(const automaton *a, const State *State, char symbol);
+state *next_state(const automaton *a, const state *state, char symbol);
 
 /**
  * @brief returns a number representing the next token obtained from a string
@@ -110,7 +112,7 @@ automaton *get_deterministic_equivalent(const automaton *automaton);
  */
 void write_java_initialization(const automaton *a, int file_descriptor);
 
-void free_state(State *State);
+void free_state(state *state);
 void free_automaton(automaton *automaton);
 
 #endif
