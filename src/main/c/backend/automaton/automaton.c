@@ -478,32 +478,31 @@ int itoa(uint64_t v, char *sp)
 
 void write_java_initialization(const automaton *a, int file_descriptor)
 {
-    char automaton_class_start[] = "import java.util.ArrayList;\n\
+    char automaton_class_start[] = "package ar.edu.itba.paw.models.abstracts;\n\
+\n\
+import java.util.ArrayList;\n\
 import java.util.HashMap;\n\
 import java.util.List;\n\
 import java.util.Map;\n\
+import java.util.function.Function;\n\
 \n\
 public class Automaton {\n\
 \n\
     private static State initialState;\n\
     private static final List<State> states = new ArrayList<>();\n\
+    private static final StateTracker stateTracker = new StateTracker();\n\
 \n\
-    private Automaton() {}\n\
-\n\
-    public static State newStateGetState(Token token) {\n\
-        State state = new State(token);\n\
-        states.add(state);\n\
-        return state;\n\
+    private Automaton() {\n\
     }\n\
 \n\
-    public static int newState(Token token) {\n\
-        State state = new State(token);\n\
+    public static int newState(Integer token) {\n\
+        return newState((s) -> token);\n\
+    }\n\
+\n\
+    public static int newState(Function<StateTracker, Integer> tokenGenerator) {\n\
+        State state = new State(tokenGenerator);\n\
         states.add(state);\n\
         return states.size() - 1;\n\
-    }\n\
-\n\
-    public static void setInitialState(State state) {\n\
-        initialState = state;\n\
     }\n\
 \n\
     public static void setInitialState(int index) {\n\
@@ -514,28 +513,78 @@ public class Automaton {\n\
         states.get(from).setTransition(states.get(to), symbol);\n\
     }\n\
 \n\
-    public static List<Token> getTokenList(String s) {\n\
+    private static void manageState(char symbol, Integer token) {\n\
+        if (token != null) {\n\
+            Automaton.stateTracker.lexeme = new StringBuilder();\n\
+            Automaton.stateTracker.token = token;\n\
+        } else {\n\
+            Automaton.stateTracker.lexeme.append(symbol);\n\
+        }\n\
+        if (symbol == '\n') {\n\
+            Automaton.stateTracker.attribute.row++;\n\
+            Automaton.stateTracker.attribute.column = 0;\n\
+        } else {\n\
+            Automaton.stateTracker.attribute.column++;\n\
+        }\n\
+    }\n\
+\n\
+    public static List<Integer> getIntegerList(String s) {\n\
         char[] chars = s.toCharArray();\n\
-        List<Token> tokens = new ArrayList<>();\n\
+        List<Integer> tokens = new ArrayList<>();\n\
         State currentState = initialState;\n\
 \n\
         for (char c : chars) {\n\
             if (currentState == null) break;\n\
             currentState = currentState.getTransition(c);\n\
-            if (currentState.token != null) {\n\
-                tokens.add(currentState.token);\n\
+            Integer token = currentState.tokenGenerator.apply(stateTracker);\n\
+            if (token != null) {\n\
+                tokens.add(token);\n\
             }\n\
+            manageState(c, token);\n\
         }\n\
 \n\
         return tokens;\n\
     }\n\
 \n\
-    public static class State {\n\
-        private final Map<Character, State> transitions;\n\
-        private final Token token;\n\
+    public static class StateTracker {\n\
+        private StringBuilder lexeme;\n\
+        private Integer token;\n\
+        public final Attribute attribute = new Attribute();\n\
 \n\
-        private State(Token token) {\n\
-            this.token = token;\n\
+        public String getLexeme() {\n\
+            return lexeme.toString();\n\
+        }\n\
+\n\
+        public Integer getInteger() {\n\
+            return token;\n\
+        }\n\
+\n\
+        public Attribute getAttribute() {\n\
+            return attribute;\n\
+        }\n\
+\n\
+        public static class Attribute {\n\
+            // User managed\n\
+            public Integer id, num;\n\
+            // Non-user managed\n\
+            private Integer row = 0, column = 0;\n\
+\n\
+            public Integer getRow() {\n\
+                return row;\n\
+            }\n\
+\n\
+            public Integer getColumn() {\n\
+                return column;\n\
+            }\n\
+        }\n\
+    }\n\
+\n\
+    private static class State {\n\
+        private final Map<Character, State> transitions;\n\
+        private final Function<StateTracker, Integer> tokenGenerator;\n\
+\n\
+        private State(Function<StateTracker, Integer> tokenGenerator) {\n\
+            this.tokenGenerator = tokenGenerator;\n\
             this.transitions = new HashMap<>();\n\
         }\n\
 \n\
@@ -548,34 +597,12 @@ public class Automaton {\n\
         }\n\
     }\n\
 \n\
-    public static class Token {\n\
-\n\
-        private String lexeme;\n\
-        private final int tokenType;\n\
-\n\
-        public Token(int tokenType) {\n\
-            this.tokenType = tokenType;\n\
-        }\n\
-\n\
-        public String getLexeme() {\n\
-            return lexeme;\n\
-        }\n\
-\n\
-        public void setLexeme(String lexeme) {\n\
-            this.lexeme = lexeme;\n\
-        }\n\
-\n\
-        public int getTokenType() {\n\
-            return tokenType;\n\
-        }\n\
-    }\n\
-    \n\
     private static boolean initialized = false;\n\
-    public void initialize(){\n\
-        if(initialized)\n\
+\n\
+    public void initialize() {\n\
+        if (initialized)\n\
             throw new IllegalStateException();\n\
-        initialized = true;\n\
-        ";
+        initialized = true;";
     char automaton_class_end[] = "    }\n\
 }";
     char new_state_start[] = "Automaton.newState(";
