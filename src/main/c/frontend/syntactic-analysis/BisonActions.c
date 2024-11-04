@@ -126,7 +126,7 @@ Lexeme* LexemeSemanticAction( char* string, Regexes* regex_class, Closure* closu
 
     if (!found) {
         Invalid_Regex_List_Node* newInvalidNode = calloc(1, sizeof(Invalid_Regex_List_Node));
-        newInvalidNode->regex = string;
+        newInvalidNode->regex_id = string;
         newInvalidNode->next = NULL;
 
         if (compilerState->invalidRegexList->head == NULL) {
@@ -187,7 +187,7 @@ Regex_class* CreatedClassSemanticAction(char* string, Closure* closure, Compiler
 
     if (!found) {
         Invalid_Regex_List_Node* newInvalidNode = calloc(1, sizeof(Invalid_Regex_List_Node));
-        newInvalidNode->regex = string;
+        newInvalidNode->regex_id = string;
         newInvalidNode->next = NULL;
 
         if (compilerState->invalidRegexList->head == NULL) {

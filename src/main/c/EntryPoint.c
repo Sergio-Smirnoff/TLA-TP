@@ -56,7 +56,7 @@ const int main(const int count, const char ** arguments) {
 		logDebugging(logger, "Computing expression value...");
 		Valid_Regex_List_Node* current = compilerState.validRegexList->head;
 		while (current != NULL) {
-			logDebugging(logger, "Valid regex: %s\n", current->regex);
+			logDebugging(logger, "Valid regex: %s\n", current->regex_id);
 			current = current->next;
 		}
 		/*
@@ -80,7 +80,7 @@ const int main(const int count, const char ** arguments) {
 			Invalid_Regex_List_Node* current = compilerState.invalidRegexList->head;
 
 			while (current != NULL) {
-				logError(logger, "Invalid regex: %s\n", current->regex);
+				logError(logger, "Invalid regex: %s\n", current->regex_id);
 				current = current->next;
 			}
 		}

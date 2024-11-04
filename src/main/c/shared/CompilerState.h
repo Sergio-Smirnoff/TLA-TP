@@ -18,7 +18,7 @@ typedef enum {
 
 typedef struct Invalid_Regex_List_Node {
     struct Invalid_Regex_List_Node* next;
-    char* regex;
+    char* regex_id;
 } Invalid_Regex_List_Node;
 
 typedef struct Invalid_Regex_List {
@@ -28,6 +28,7 @@ typedef struct Invalid_Regex_List {
 
 typedef struct Valid_Regex_List_Node {
 	struct Valid_Regex_List_Node* next;
+	char* regex_id;
 	char* regex;
 } Valid_Regex_List_Node;
 

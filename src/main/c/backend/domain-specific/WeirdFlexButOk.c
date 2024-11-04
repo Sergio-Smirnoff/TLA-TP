@@ -135,11 +135,9 @@ void computeRule(Rule* my_rule){
     if (my_rule == NULL){
         return;
     }
-    char* lexeme;
-    return_struct* returner;
-    char *regex_content;
-    Valid_Regex_List_Node* aux;
     switch (my_rule->type){
+        char* lexeme;
+        return_struct* returner;
         case lexeme_action:
             lexeme = computeLexemePrecursor(my_rule->lex);
             returner = computeAction(my_rule->action);
@@ -151,10 +149,10 @@ void computeRule(Rule* my_rule){
             _addToList(lexeme, returner);
             break;
         case regex: // para mi no hace falta hacer esto
-            regex_content = regexContent(my_rule->regexes);
-            aux = validRegexList->head;
+            char *regex_content = regexContent(my_rule->regexes);
+            Valid_Regex_List_Node* aux = validRegexList->head;
             while (aux != NULL){
-                if (strcmp(aux->regex, my_rule->our_regex_id) == 0){
+                if (strcmp(aux->regex_id, my_rule->our_regex_id) == 0){
                     aux->regex = regex_content;
                     return;
                 }
@@ -181,12 +179,11 @@ char* computeRegexClass(Regex_class* regexClass) {
     if(regexClass == NULL) {
         return "";
     }
-    char* aux;
     switch (regexClass->type) {
         case symbol:
             return regexClass->symbol->symbol_tok;
         case range:
-            aux = malloc(4 * sizeof(char));
+            char* aux = malloc(4 * sizeof(char));
             aux[0] = regexClass->startSymbol->symbol_tok[0];
             aux[1] = '-';
             aux[2] = regexClass->endSymbol->symbol_tok[0];
@@ -196,7 +193,7 @@ char* computeRegexClass(Regex_class* regexClass) {
             if(regexClass->closure == NULL || regexClass->closure->closure == NULL/* opción type: || regexClass->closure->type == NULL*/){
                 return regexClass->varName;
             } else {
-                aux = computeClosure(regexClass->closure); // string fijo
+                char* aux = computeClosure(regexClass->closure); // string fijo
                 return _strConcat(regexClass->varName, aux);
             }
     }
@@ -227,10 +224,6 @@ char* computeLexemePrecursor(Lexeme_precursor* lexeme_precursor){
     // check if it is a string
     if ( lexeme_precursor == NULL )
         return "";
-
-    char* lexeme_prec; 
-    char* lexeme;
-    char* aux;
     switch (lexeme_precursor->precursor_type){
         case literals:
             if(lexeme_precursor->type == default_lexeme) {
@@ -244,9 +237,9 @@ char* computeLexemePrecursor(Lexeme_precursor* lexeme_precursor){
             }
             return lexeme_precursor->string;
         case nonliterals:
-            lexeme_prec = computeLexemePrecursor(lexeme_precursor->lex_prec);
-            lexeme = computeLexeme(lexeme_precursor->lex);
-            aux = _strConcat(lexeme, lexeme_prec);
+            char* lexeme_prec = computeLexemePrecursor(lexeme_precursor->lex_prec);
+            char* lexeme = computeLexeme(lexeme_precursor->lex);
+            char* aux = _strConcat(lexeme, lexeme_prec);
             free(lexeme_prec);
             free(lexeme);
             return aux;
@@ -255,16 +248,15 @@ char* computeLexemePrecursor(Lexeme_precursor* lexeme_precursor){
 
 char* computeLexeme(Lexeme* lexeme) {
     char* aux = "";
-    Valid_Regex_List_Node* aux2;
     switch(lexeme->type)
     {
         case regexes:
             aux = regexContent(lexeme->regexes);
             break;
         case name: // al pedo hacer esto
-            aux2 = validRegexList->head;
+            Valid_Regex_List_Node* aux2 = validRegexList->head;
             while (aux2 != NULL){
-                if (strcmp(aux2->regex, lexeme->our_regex_id) == 0){
+                if (strcmp(aux2->regex_id, lexeme->our_regex_id) == 0){
                     aux = aux2->regex;
                     break;
                 }
