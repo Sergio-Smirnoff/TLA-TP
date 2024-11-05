@@ -23,4 +23,4 @@ Regex digit         [0-9];
 "\n";
 "\r";
 
-"default" -> (){ return REJECT; };
+default -> (){ return REJECT; };

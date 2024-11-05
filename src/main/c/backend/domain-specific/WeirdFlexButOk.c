@@ -24,7 +24,7 @@ char* computeLexeme(Lexeme* lexeme);
 return_struct* computeAction(Action* my_action);
 
 static void _addToList(char* lexeme, return_struct* returner){
-    if(lexeme != NULL && returner != NULL){
+    if(lexeme != NULL){
         current->next = (transformer_list*)calloc(1, sizeof(transformer_list));
         if (errno != 0){
             return; // podriamos loggear el error
@@ -93,7 +93,11 @@ void print_transformerlist(transformer_list* list){
     transformer_list* aux = list;
     while (aux != NULL){
         if (aux->lexeme != NULL){
-            printf("Lexeme: %s\n", aux->lexeme);
+            if(aux->lexeme == "\n" || aux->lexeme == "\t"){
+                printf("Lexeme: %s\n", "whitespace");
+            } else {
+                printf("Lexeme: %s\n", aux->lexeme);
+            }
         }
         if (aux->returner != NULL){
             switch (aux->returner->type){
@@ -101,8 +105,10 @@ void print_transformerlist(transformer_list* list){
                     printf("Returner: %s\n", aux->returner->string);
                     break;
                 case JAVA_BLOCK:
-                    printf("Returner: %d\n", aux->returner->parameters);
-                    printf("Returner: %p\n", aux->returner->java_block);
+                    if(aux->returner->parameters != 0){
+                        printf("Returner param: %d\n", aux->returner->parameters);
+                    }
+                    printf("Returner block: %p\n", aux->returner->java_block);
                     break;
                 case RETURN_TOKEN:
                     printf("Returner: %ls\n", aux->returner->token);
@@ -179,7 +185,7 @@ char* regexContent(Regexes* regexes) {
         fflush(logFile);
         return computeRegexClass(regexes->regexClass);
     } else {
-                fprintf(logFile, "IM CHAD NOT NULL\n");
+        fprintf(logFile, "IM CHAD NOT NULL\n");
         fflush(logFile);
         char* regex_class = computeRegexClass(regexes->regexClass); 
         char* regex_content = regexContent(regexes->regexes);
@@ -206,35 +212,33 @@ char* computeRegexClass(Regex_class* regexClass) {
             aux[2] = regexClass->endSymbol->symbol_tok[0];
             aux[3] = '\0';
             return aux;
-        case variable:
-            if(regexClass->closure == NULL || regexClass->closure->closure == NULL/* opción type: || regexClass->closure->type == NULL*/){
-                return regexClass->varName;
+        case variable: // @Patrick es por acá
+            Valid_Regex_List_Node* aux2 = validRegexList->head;
+            while (aux2 != NULL){
+                if (strcmp(aux2->regex_id, regexClass->varName) == 0){
+                    aux = aux2->regex;
+                    break;
+                }
+                aux2 = aux2->next;
+            }
+            if(regexClass->closure == NULL/*dice estar de mas:  || regexClass->closure->closure == NULL*/){
+                return aux;
             } else {
-                char* aux = computeClosure(regexClass->closure); // string fijo
-                return _strConcat(regexClass->varName, aux);
+                aux = _strConcat(aux, computeClosure(regexClass->closure));
+                return aux;
             }
     }
 }
 
 char* computeClosure(Closure* closure) {
     switch (closure->closure) {
-        case 266:
+        case STAR:
             return "*";
-        case 267:
+        case PLUS:
             return "+";
         default:
             return "";
     }
-    /* esta opción va si le agregamos type a las clausuras, no se como usar el token
-    switch (closure->type) {
-        case star:
-            return "*";
-        case plus:
-            return "+";
-        default:
-            return "";
-    }
-    */
 }
 
 char* computeLexemePrecursor(Lexeme_precursor* lexeme_precursor){
@@ -244,12 +248,13 @@ char* computeLexemePrecursor(Lexeme_precursor* lexeme_precursor){
     switch (lexeme_precursor->precursor_type){
         case literals:
             if(lexeme_precursor->type == default_lexeme) {
+                fprintf(logFile, "Default lexeme\n");
                 if(has_default) {
                     perror("There can only be one default lexeme");
                     return NULL;
                 } else {
                     has_default = true;
-                    return "default";
+                    return strdup("default");
                 }
             }
             return lexeme_precursor->string;
