@@ -202,11 +202,12 @@ char* computeRegexClass(Regex_class* regexClass) {
         fflush(logFile);
         return "";
     }
+    char* aux;
     switch (regexClass->type) {
         case symbol:
             return regexClass->symbol->symbol_tok;
         case range:
-            char* aux = malloc(4 * sizeof(char));
+            aux = malloc(4 * sizeof(char));
             aux[0] = regexClass->startSymbol->symbol_tok[0];
             aux[1] = '-';
             aux[2] = regexClass->endSymbol->symbol_tok[0];
@@ -216,7 +217,7 @@ char* computeRegexClass(Regex_class* regexClass) {
             Valid_Regex_List_Node* aux2 = validRegexList->head;
             while (aux2 != NULL){
                 if (strcmp(aux2->regex_id, regexClass->varName) == 0){
-                    aux = aux2->regex;
+                    aux = strdup(aux2->regex);
                     break;
                 }
                 aux2 = aux2->next;

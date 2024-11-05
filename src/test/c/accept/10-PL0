@@ -37,7 +37,7 @@ Regex letter        [a-zA-Z];
 {digit}+ -> (){
                        var.attribute.num = Integer.parseInt(var.text.toString());
                        return NUMBER;
- };
+};
 
 /*Skipps white spaces*/ 
 "\t";
