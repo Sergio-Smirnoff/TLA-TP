@@ -481,8 +481,7 @@ int itoa(uint64_t v, char *sp)
 
 void write_java_initialization(const automaton *a, int file_descriptor)
 {
-    char automaton_class_start[] = "package ar.edu.itba.paw.models.abstracts;\n\
-\n\
+    char automaton_class_start[] = "\n\
 import java.util.ArrayList;\n\
 import java.util.HashMap;\n\
 import java.util.List;\n\
@@ -523,7 +522,7 @@ public class Automaton {\n\
         } else {\n\
             Automaton.stateTracker.lexeme.append(symbol);\n\
         }\n\
-        if (symbol == '\n') {\n\
+        if (symbol == '\\n') {\n\
             Automaton.stateTracker.attribute.row++;\n\
             Automaton.stateTracker.attribute.column = 0;\n\
         } else {\n\
@@ -609,10 +608,8 @@ public class Automaton {\n\
     char automaton_class_end[] = "    }\n\
 }";
     char new_state_start[] = "Automaton.newState(";
-    char new_token_start[] = "new Token(";
-    char new_token_end[] = ")"; // temporary, lexemes will be managed in the future
     char new_state_end[] = ");\n";
-    char null[] = "null";
+    char null[] = "s -> null";
     char buffer[BLOCK]; // this is big enough to hold an uint64_t in decimal notation
 
     write(file_descriptor, automaton_class_start, sizeof(automaton_class_start) - 1);
@@ -622,9 +619,7 @@ public class Automaton {\n\
         automaton_state *s = get_state(a, state_index);
         if (s->throws_token)
         {
-            write(file_descriptor, new_token_start, sizeof(new_token_start) - 1);
             write(file_descriptor, buffer, itoa(s->token, buffer));
-            write(file_descriptor, new_token_end, sizeof(new_token_end) - 1);
         }
         else
         {
