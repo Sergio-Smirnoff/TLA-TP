@@ -12,7 +12,7 @@ typedef struct rule
     char matcher;
 } rule;
 
-typedef struct state
+typedef struct automaton_state
 {
     rule *delta;
     uint64_t delta_size;
@@ -21,7 +21,7 @@ typedef struct state
     uint64_t token;
     char min_symbol;
     char max_symbol;
-} state;
+} automaton_state;
 
 typedef struct token_mapping
 {
@@ -31,8 +31,8 @@ typedef struct token_mapping
 
 typedef struct automaton
 {
-    state *initial_state;
-    state **states;
+    automaton_state *initial_state;
+    automaton_state **states;
     uint64_t states_size;
     uint64_t states_dim;
     char min_symbol;
@@ -43,9 +43,9 @@ uint64_t new_state(automaton *automaton, uint8_t throws_token, uint64_t token);
 
 uint64_t new_state_get_index(automaton *automaton, uint8_t throws_token, uint64_t token);
 
-state *get_state(const automaton *automaton, uint64_t index);
+automaton_state *get_state(const automaton *automaton, uint64_t index);
 
-void set_initial_state(automaton *automaton, state *initial_state);
+void set_initial_state(automaton *automaton, automaton_state *initial_state);
 automaton *new_automaton();
 
 /**
@@ -67,7 +67,7 @@ char set_transition(automaton *a, uint64_t from_index, uint64_t to_index, char m
  * @param symbol
  * @return state* NULL if no transition for the given symbol exists
  */
-state *next_state(const automaton *a, const state *state, char symbol);
+automaton_state *next_state(const automaton *a, const automaton_state *state, char symbol);
 
 /**
  * @brief returns a number representing the next token obtained from a string
@@ -112,7 +112,7 @@ automaton *get_deterministic_equivalent(const automaton *automaton);
  */
 void write_java_initialization(const automaton *a, int file_descriptor);
 
-void free_state(state *state);
+void free_state(automaton_state *state);
 void free_automaton(automaton *automaton);
 
 #endif

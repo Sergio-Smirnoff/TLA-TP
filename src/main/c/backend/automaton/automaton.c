@@ -11,7 +11,7 @@
 void resize_automaton(automaton *a)
 {
     a->states_dim *= 2;
-    a->states = realloc(a->states, a->states_dim * sizeof(state *));
+    a->states = realloc(a->states, a->states_dim * sizeof(automaton_state *));
 }
 
 void check_resize_automaton(automaton *a)
@@ -22,7 +22,7 @@ void check_resize_automaton(automaton *a)
 
 uint64_t new_state(automaton *a, uint8_t throws_token, uint64_t token)
 {
-    state *n_state = malloc(sizeof(state));
+    automaton_state *n_state = malloc(sizeof(automaton_state));
     n_state->delta = calloc(BLOCK, sizeof(rule));
     n_state->delta_dim = BLOCK;
     n_state->delta_size = 0;
@@ -31,10 +31,12 @@ uint64_t new_state(automaton *a, uint8_t throws_token, uint64_t token)
     n_state->min_symbol = n_state->max_symbol = -1;
     check_resize_automaton(a);
     a->states[a->states_size] = n_state;
+    if (a->initial_state == NULL)
+        a->initial_state = n_state;
     return a->states_size++;
 }
 
-void set_initial_state(automaton *a, state *initial_state)
+void set_initial_state(automaton *a, automaton_state *initial_state)
 {
     a->initial_state = initial_state;
 }
@@ -42,20 +44,21 @@ void set_initial_state(automaton *a, state *initial_state)
 automaton *new_automaton()
 {
     automaton *n_automaton = malloc(sizeof(automaton));
-    n_automaton->states = malloc(sizeof(state *) * BLOCK);
+    n_automaton->states = malloc(sizeof(automaton_state *) * BLOCK);
     n_automaton->states_dim = BLOCK;
     n_automaton->states_size = 0;
     n_automaton->min_symbol = n_automaton->max_symbol = -1;
+    n_automaton->initial_state = NULL;
     return n_automaton;
 }
 
-void resize_state(state *s)
+void resize_state(automaton_state *s)
 {
     s->delta_dim *= 2;
     s->delta = realloc(s->delta, s->delta_dim * sizeof(rule));
 }
 
-void check_resize_state(state *s)
+void check_resize_state(automaton_state *s)
 {
     if (s->delta_dim == s->delta_size)
         resize_state(s);
@@ -73,7 +76,7 @@ void check_resize_rule(rule *r)
         resize_rule(r);
 }
 
-rule *find_rule(const state *s, char symbol)
+rule *find_rule(const automaton_state *s, char symbol)
 {
     uint64_t size = s->delta_size;
     for (uint64_t i = 0; i < size; i++)
@@ -84,7 +87,7 @@ rule *find_rule(const state *s, char symbol)
     return NULL;
 }
 
-char set_state_transition(state *from, uint64_t to_index, char matcher)
+char set_state_transition(automaton_state *from, uint64_t to_index, char matcher)
 {
     rule *r;
     if ((r = find_rule(from, matcher)) != NULL)
@@ -119,7 +122,7 @@ void check_automaton_matcher_bounds(automaton *a, char matcher)
     }
 }
 
-void check_state_matcher_bounds(state *s, char matcher)
+void check_state_matcher_bounds(automaton_state *s, char matcher)
 {
     if (s->min_symbol == -1)
     {
@@ -140,7 +143,7 @@ char force_set_transition(automaton *a, uint64_t from_index, uint64_t to_index, 
     if (from_index >= a->states_size)
         return 0;
     check_automaton_matcher_bounds(a, matcher);
-    state *from = get_state(a, from_index);
+    automaton_state *from = get_state(a, from_index);
     check_state_matcher_bounds(from, matcher);
     return set_state_transition(from, to_index, matcher);
 }
@@ -152,7 +155,7 @@ char set_transition(automaton *a, uint64_t from_index, uint64_t to_index, char m
     return force_set_transition(a, from_index, to_index, matcher);
 }
 
-state *next_state(const automaton *a, const state *s, char symbol)
+automaton_state *next_state(const automaton *a, const automaton_state *s, char symbol)
 {
     rule *rule = find_rule(s, symbol);
     if (rule == NULL)
@@ -162,7 +165,7 @@ state *next_state(const automaton *a, const state *s, char symbol)
 
 uint64_t get_next_token(const automaton *a, const char **string_p)
 {
-    state *current = a->initial_state;
+    automaton_state *current = a->initial_state;
     const char *s = *string_p;
     uint64_t found_token = -1;
     while (current != NULL && *s)
@@ -188,7 +191,7 @@ uint64_t get_next_token(const automaton *a, const char **string_p)
 
 char accepts(const automaton *a, const char *string)
 {
-    state *current = a->initial_state;
+    automaton_state *current = a->initial_state;
     while (*string)
     {
         if (current == NULL)
@@ -217,14 +220,14 @@ uint64_t *get_token_stream(const automaton *a, const char *string, uint64_t *buf
     return buffer;
 }
 
-state *get_state(const automaton *a, uint64_t index)
+automaton_state *get_state(const automaton *a, uint64_t index)
 {
     if (a->states_size > index)
         return a->states[index];
     return NULL;
 }
 
-void free_state(state *s)
+void free_state(automaton_state *s)
 {
     for (uint64_t i = 0; i < s->delta_size; i++)
         free(s->delta[i].next_indices);
@@ -341,7 +344,7 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
     uint64_t token = 0;
     for (uint64_t i = 0; i < entry->state_indices_size; i++)
     {
-        state *state_in_column = get_state(a, entry->state_indices[i]);
+        automaton_state *state_in_column = get_state(a, entry->state_indices[i]);
         if (state_in_column->throws_token)
         {
             throws_token = 1;
@@ -357,7 +360,7 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
 
         for (uint64_t state_index = 0; state_index < entry->state_indices_size; state_index++)
         {
-            state *current_state = get_state(a, entry->state_indices[state_index]);
+            automaton_state *current_state = get_state(a, entry->state_indices[state_index]);
             if (current_state->min_symbol == -1 || current_state->min_symbol > matcher || current_state->max_symbol < matcher)
                 continue;
             for (uint64_t rule_index = 0; rule_index < current_state->delta_size; rule_index++)
@@ -478,8 +481,7 @@ int itoa(uint64_t v, char *sp)
 
 void write_java_initialization(const automaton *a, int file_descriptor)
 {
-    char automaton_class_start[] = "package ar.edu.itba.paw.models.abstracts;\n\
-\n\
+    char automaton_class_start[] = "\n\
 import java.util.ArrayList;\n\
 import java.util.HashMap;\n\
 import java.util.List;\n\
@@ -520,7 +522,7 @@ public class Automaton {\n\
         } else {\n\
             Automaton.stateTracker.lexeme.append(symbol);\n\
         }\n\
-        if (symbol == '\n') {\n\
+        if (symbol == '\\n') {\n\
             Automaton.stateTracker.attribute.row++;\n\
             Automaton.stateTracker.attribute.column = 0;\n\
         } else {\n\
@@ -606,22 +608,18 @@ public class Automaton {\n\
     char automaton_class_end[] = "    }\n\
 }";
     char new_state_start[] = "Automaton.newState(";
-    char new_token_start[] = "new Token(";
-    char new_token_end[] = ")"; // temporary, lexemes will be managed in the future
     char new_state_end[] = ");\n";
-    char null[] = "null";
+    char null[] = "s -> null";
     char buffer[BLOCK]; // this is big enough to hold an uint64_t in decimal notation
 
     write(file_descriptor, automaton_class_start, sizeof(automaton_class_start) - 1);
     for (uint64_t state_index = 0; state_index < a->states_size; state_index++)
     {
         write(file_descriptor, new_state_start, sizeof(new_state_start) - 1);
-        state *s = get_state(a, state_index);
+        automaton_state *s = get_state(a, state_index);
         if (s->throws_token)
         {
-            write(file_descriptor, new_token_start, sizeof(new_token_start) - 1);
             write(file_descriptor, buffer, itoa(s->token, buffer));
-            write(file_descriptor, new_token_end, sizeof(new_token_end) - 1);
         }
         else
         {
@@ -637,7 +635,7 @@ public class Automaton {\n\
 
     for (uint64_t state_index = 0; state_index < a->states_size; state_index++)
     {
-        state *s = get_state(a, state_index);
+        automaton_state *s = get_state(a, state_index);
         char state_index_buffer[BLOCK];
         char state_index_buffer_length = itoa(state_index, state_index_buffer);
         for (uint64_t rule_index = 0; rule_index < s->delta_size; rule_index++)

@@ -1,4 +1,5 @@
 #include "backend/code-generation/Generator.h"
+#include "backend/domain-specific/WeirdFlexButOk.h"
 #include "frontend/lexical-analysis/FlexActions.h"
 #include "frontend/syntactic-analysis/AbstractSyntaxTree.h"
 #include "frontend/syntactic-analysis/BisonActions.h"
@@ -19,7 +20,7 @@ const int main(const int count, const char ** arguments) {
 	initializeBisonActionsModule();
 	initializeSyntacticAnalyzerModule();
 	initializeAbstractSyntaxTreeModule();
-	//initializeCalculatorModule();
+	initializeWeirdFlexModule();
 	//initializeGeneratorModule();
 
 	// Logs the arguments of the application.
@@ -45,21 +46,33 @@ const int main(const int count, const char ** arguments) {
 		compilerState.invalidRegexList->size = 0;
 		compilerState.invalidRegexList->head = NULL;
 	}
-	
+
+
+
 	const SyntacticAnalysisStatus syntacticAnalysisStatus = parse(&compilerState);
 	CompilationStatus compilationStatus = SUCCEED;
-	Program * program = compilerState.abstractSyntaxtTree;
+	Program* program = compilerState.abstractSyntaxTree;
 	if (syntacticAnalysisStatus == ACCEPT) {
+			FILE *fptr;
+			fptr = fopen("ImTiredBoss.log","a");
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... ------------------------------------------------------------
-		/*
 		logDebugging(logger, "Computing expression value...");
-		ComputationResult computationResult = computeExpression(program->expression);
-		if (computationResult.succeed) {
-			compilerState.value = computationResult.value;
-			generate(&compilerState);
+		Valid_Regex_List_Node* current = compilerState.validRegexList->head;
+		while (current != NULL) {
+			fprintf(fptr,"Valid regex: %s\n", current->regex_id);
+			current = current->next;
 		}
-		else {
+		fclose(fptr);
+		
+		ComputationResult* computationResult = computeProgram(program, compilerState.validRegexList);
+		print_transformerlist(computationResult->value);
+		free(computationResult);
+		/*
+		if (computationResult->succeed) {
+			//compilerState.value = computationResult.value;
+			generate(&compilerState);
+		} else {
 			logError(logger, "The computation phase rejects the input program.");
 			compilationStatus = FAILED;
 		}
@@ -73,7 +86,7 @@ const int main(const int count, const char ** arguments) {
 			Invalid_Regex_List_Node* current = compilerState.invalidRegexList->head;
 
 			while (current != NULL) {
-				logError(logger, "Invalid regex: %s\n", current->regex);
+				logError(logger, "Invalid regex: %s\n", current->regex_id);
 				current = current->next;
 			}
 		}
@@ -83,10 +96,10 @@ const int main(const int count, const char ** arguments) {
 		compilationStatus = FAILED;
 	}
 	logDebugging(logger, "Releasing AST resources...");
-	releaseProgram(program);
+	//releaseProgram(program);
 	logDebugging(logger, "Releasing modules resources...");
 	//shutdownGeneratorModule();
-	//shutdownCalculatorModule();
+	shutdownWeirdFlexModule();
 	shutdownAbstractSyntaxTreeModule();
 	shutdownSyntacticAnalyzerModule();
 	shutdownBisonActionsModule();

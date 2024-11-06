@@ -74,7 +74,7 @@ Rule* RuleNewRegexSemanticAction( char* our_regex_id, Regexes* regexes, Compiler
 	rule->type = regex;
 
 	Valid_Regex_List_Node* newNode = calloc(1, sizeof(Valid_Regex_List_Node));
-    newNode->regex = our_regex_id;
+    newNode->regex_id = our_regex_id;
     newNode->next = NULL;
 
     if (compilerState->validRegexList->head == NULL) {
@@ -113,11 +113,13 @@ Lexeme_precursor* LexemeStringSemanticAction(char* string, Lexeme_type type){
 Lexeme* LexemeSemanticAction( char* string, Regexes* regex_class, Closure* closure, Lexeme_type type, CompilerState * compilerState ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 
+	FILE * logFile = fopen("logFile.txt", "a");
+	fprintf(logFile, "regex_id: %s\n", string);
 	if(compilerState != NULL) {
     Valid_Regex_List_Node* current = compilerState->validRegexList->head;
     unsigned char found = 0;
     while (current != NULL) {
-        if (strcmp(current->regex, string) == 0) {
+        if (strcmp(current->regex_id, string) == 0) {
             found = 1;
             break;
         }
@@ -126,7 +128,7 @@ Lexeme* LexemeSemanticAction( char* string, Regexes* regex_class, Closure* closu
 
     if (!found) {
         Invalid_Regex_List_Node* newInvalidNode = calloc(1, sizeof(Invalid_Regex_List_Node));
-        newInvalidNode->regex = string;
+        newInvalidNode->regex_id = string;
         newInvalidNode->next = NULL;
 
         if (compilerState->invalidRegexList->head == NULL) {
@@ -141,17 +143,29 @@ Lexeme* LexemeSemanticAction( char* string, Regexes* regex_class, Closure* closu
         compilerState->invalidRegexList->size++;
     }
 	}
+
 	Lexeme * lexeme = calloc(1, sizeof(Lexeme));
-	lexeme->our_regex_id = string;
-	lexeme->regexes = regex_class;
+
+	switch (type) {
+		case regex:
+			lexeme->regexes = regex_class;
+			break;
+		case name:
+			lexeme->our_regex_id = string;
+			break;
+	}
+
 	lexeme->closure = closure;
 	lexeme->type = type;
+	fprintf(logFile, "in lexeme regex_id: %s\n", lexeme->our_regex_id);
+	fclose(logFile);
 	return lexeme;
 }
 
 Closure* ClosureSemanticAction( Token string ) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Closure * closure = calloc(1, sizeof(Closure));
+	closure->closure = string;
 	return closure;
 }
 
@@ -178,7 +192,7 @@ Regex_class* CreatedClassSemanticAction(char* string, Closure* closure, Compiler
     Valid_Regex_List_Node* current = compilerState->validRegexList->head;
     unsigned char found = 0;
     while (current != NULL) {
-        if (strcmp(current->regex, string) == 0) {
+        if (strcmp(current->regex_id, string) == 0) {
             found = 1;
             break;
         }
@@ -187,7 +201,7 @@ Regex_class* CreatedClassSemanticAction(char* string, Closure* closure, Compiler
 
     if (!found) {
         Invalid_Regex_List_Node* newInvalidNode = calloc(1, sizeof(Invalid_Regex_List_Node));
-        newInvalidNode->regex = string;
+        newInvalidNode->regex_id = string;
         newInvalidNode->next = NULL;
 
         if (compilerState->invalidRegexList->head == NULL) {

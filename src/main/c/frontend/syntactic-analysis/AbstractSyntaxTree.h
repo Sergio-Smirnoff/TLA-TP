@@ -327,13 +327,12 @@ struct Lexeme{
 	union{
 		struct{
 			Regexes* regexes;
-			Closure* closure;
 		};
 		struct{
 			char* our_regex_id;
-			Closure* clre;
 		};
 	};
+	Closure* closure;
 	Lexeme_type type;
 };
 
