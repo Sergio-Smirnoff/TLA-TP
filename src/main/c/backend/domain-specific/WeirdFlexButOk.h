@@ -8,6 +8,7 @@
  */
 #include "../../frontend/syntactic-analysis/AbstractSyntaxTree.h"
 #include "../../frontend/syntactic-analysis/BisonParser.h"
+#include "../automaton/automaton.h"
 #include "../../shared/CompilerState.h"
 #include "../../shared/Logger.h"
 #include "../../shared/Type.h"
@@ -57,6 +58,6 @@ typedef struct {
 
 // Checks the tree and builds lexemes table
 ComputationResult* computeProgram(Program * tree, Valid_Regex_List* regexList);
-void print_transformerlist(transformer_list* list);
+automaton* buildAutomaton(transformer_list* list);
 
 #endif
