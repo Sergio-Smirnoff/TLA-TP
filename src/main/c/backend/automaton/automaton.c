@@ -20,7 +20,7 @@ void check_resize_automaton(automaton *a)
         resize_automaton(a);
 }
 
-uint64_t new_state(automaton *a, uint8_t throws_token, uint64_t token)
+uint64_t new_state(automaton *a, uint8_t throws_token, token_t token)
 {
     automaton_state *n_state = malloc(sizeof(automaton_state));
     n_state->delta = calloc(BLOCK, sizeof(rule));
@@ -52,7 +52,7 @@ automaton *new_automaton()
     return n_automaton;
 }
 
-char set_token(automaton *a, uint64_t state_index, uint64_t token)
+char set_token(automaton *a, uint64_t state_index, token_t token)
 {
     if (state_index >= a->states_size || a->states[state_index]->throws_token)
         return 0;
@@ -171,11 +171,11 @@ automaton_state *next_state(const automaton *a, const automaton_state *s, char s
     return get_state(a, rule->next_indices[0]);
 }
 
-uint64_t get_next_token(const automaton *a, const char **string_p)
+token_t get_next_token(const automaton *a, const char **string_p)
 {
     automaton_state *current = a->initial_state;
     const char *s = *string_p;
-    uint64_t found_token = -1;
+    token_t found_token = UNKNOWN_TOKEN;
     while (current != NULL && *s)
     {
         if (current->throws_token)
@@ -210,14 +210,15 @@ char accepts(const automaton *a, const char *string)
     return current != NULL && current->throws_token;
 }
 
-uint64_t *get_token_stream(const automaton *a, const char *string, uint64_t *buffer, uint64_t buffer_size)
+token_t *get_token_stream(const automaton *a, const char *string, token_t *buffer, uint64_t buffer_size)
 {
-    uint64_t token, i;
+    token_t token;
+    uint64_t i;
     for (i = 0; i < buffer_size && string[0]; i++)
     {
         token = get_next_token(a, &string);
         buffer[i] = token;
-        if (token == -1)
+        if (token == UNKNOWN_TOKEN)
         {
             i++;
             break;
@@ -349,7 +350,7 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
 
     delta_table_entry *entry = table->entries[index];
     char throws_token = 0;
-    uint64_t token = 0;
+    token_t token = 0;
     for (uint64_t i = 0; i < entry->state_indices_size; i++)
     {
         automaton_state *state_in_column = get_state(a, entry->state_indices[i]);
