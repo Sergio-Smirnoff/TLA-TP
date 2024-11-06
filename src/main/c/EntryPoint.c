@@ -33,8 +33,7 @@ const int main(const int count, const char ** arguments) {
     	.abstractSyntaxTree = NULL,
     	.succeed = false,
     	.validRegexList = malloc(sizeof(Valid_Regex_List)),
-    	.invalidRegexList = malloc(sizeof(Invalid_Regex_List)),
-    	.value = 0
+    	.invalidRegexList = malloc(sizeof(Invalid_Regex_List))
 	};
 
 
@@ -66,7 +65,20 @@ const int main(const int count, const char ** arguments) {
 		fclose(fptr);
 		
 		ComputationResult* computationResult = computeProgram(program, compilerState.validRegexList);
-		print_transformerlist(computationResult->value);
+		if(!computationResult->succeed) {
+			logError(logger, "The computation phase rejects the input program.");
+			logError(logger, "Error: %s", computationResult->errorMessage);
+			free(computationResult->errorMessage);
+			compilationStatus = FAILED;
+		} else {
+			buildAutomaton(computationResult);
+			if(!computationResult->succeed) {
+				logError(logger, "The computation phase rejects the input program.");
+				logError(logger, "Error: %s", computationResult->errorMessage);
+				free(computationResult->errorMessage);
+				compilationStatus = FAILED;
+			}
+		}
 		free(computationResult);
 		/*
 		if (computationResult->succeed) {

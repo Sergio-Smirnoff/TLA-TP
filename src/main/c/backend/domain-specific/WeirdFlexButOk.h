@@ -56,14 +56,16 @@ typedef struct transformer_list
  * The result of a computation. It's considered valid only if "succeed" is
  * true.
  */
-typedef struct
+typedef struct ComputationResult
 {
     boolean succeed;
-    transformer_list *value;
+    transformer_list *list;
+    automaton *automaton;
+    char* errorMessage;
 } ComputationResult;
 
 // Checks the tree and builds lexemes table
 ComputationResult *computeProgram(Program *tree, Valid_Regex_List *regexList);
-automaton *buildAutomaton(transformer_list *list);
+void buildAutomaton(ComputationResult *computationResult);
 
 #endif

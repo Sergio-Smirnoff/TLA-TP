@@ -1,2 +1,4 @@
 Regex digit      [9-0];
+
+{digit} -> DIGIT;
 /*This program will fail at runtime*/
