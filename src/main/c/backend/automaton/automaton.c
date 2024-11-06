@@ -490,11 +490,11 @@ int itoa(uint64_t v, char *sp)
 void write_java_initialization(const automaton *a, int file_descriptor)
 {
     char automaton_class_start[] = "\n\
-import java.util.ArrayList;\n\
-import java.util.HashMap;\n\
-import java.util.List;\n\
-import java.util.Map;\n\
+\n\
+import java.util.*;\n\
 import java.util.function.Function;\n\
+\n\
+import static ar.edu.itba.paw.webapp.controller.Automaton.Token.*;\n\
 \n\
 public class Automaton {\n\
 \n\
@@ -505,12 +505,14 @@ public class Automaton {\n\
     private Automaton() {\n\
     }\n\
 \n\
-    public static int newState(Integer token) {\n\
+    public static int newState(Token token) {\n\
         return newState((s) -> token);\n\
     }\n\
 \n\
-    public static int newState(Function<StateTracker, Integer> tokenGenerator) {\n\
+    public static int newState(Function<StateTracker, Token> tokenGenerator) {\n\
         State state = new State(tokenGenerator);\n\
+        if (initialState == null)\n\
+            initialState = state;\n\
         states.add(state);\n\
         return states.size() - 1;\n\
     }\n\
@@ -523,14 +525,14 @@ public class Automaton {\n\
         states.get(from).setTransition(states.get(to), symbol);\n\
     }\n\
 \n\
-    private static void manageState(char symbol, Integer token) {\n\
+    private static void manageState(char symbol, Token token) {\n\
         if (token != null) {\n\
             Automaton.stateTracker.lexeme = new StringBuilder();\n\
             Automaton.stateTracker.token = token;\n\
         } else {\n\
             Automaton.stateTracker.lexeme.append(symbol);\n\
         }\n\
-        if (symbol == '\\n') {\n\
+        if (symbol == '\n') {\n\
             Automaton.stateTracker.attribute.row++;\n\
             Automaton.stateTracker.attribute.column = 0;\n\
         } else {\n\
@@ -538,34 +540,61 @@ public class Automaton {\n\
         }\n\
     }\n\
 \n\
-    public static List<Integer> getIntegerList(String s) {\n\
-        char[] chars = s.toCharArray();\n\
-        List<Integer> tokens = new ArrayList<>();\n\
-        State currentState = initialState;\n\
+    private record TokenAndConsume(Token token, int consumeIndex) {\n\
+    }\n\
 \n\
-        for (char c : chars) {\n\
-            if (currentState == null) break;\n\
-            currentState = currentState.getTransition(c);\n\
-            Integer token = currentState.tokenGenerator.apply(stateTracker);\n\
-            if (token != null) {\n\
-                tokens.add(token);\n\
+    private static TokenAndConsume getNextToken(char[] charArray, int readIndex) {\n\
+        State current = initialState;\n\
+        Token foundToken = null;\n\
+        int consumeIndex = readIndex;\n\
+        while (current != null && readIndex < charArray.length) {\n\
+            Token aux = current.tokenGenerator.apply(stateTracker);\n\
+            if (aux != null) {\n\
+                // store the most recent token found\n\
+                foundToken = aux;\n\
+                // consume the string up to that token\n\
+                consumeIndex = readIndex;\n\
             }\n\
-            manageState(c, token);\n\
+            current = current.getTransition(charArray[readIndex]);\n\
+            readIndex++;\n\
         }\n\
+        Token aux;\n\
+        if (current != null && (aux = current.tokenGenerator.apply(stateTracker)) != null) {\n\
+            foundToken = aux;\n\
+            // consume the string up to that token\n\
+            consumeIndex = readIndex;\n\
+        }\n\
+        return new TokenAndConsume(foundToken, consumeIndex);\n\
+    }\n\
 \n\
+    public static List<Token> getTokenList(String s) {\n\
+        TokenAndConsume tokenAndConsume;\n\
+        int i;\n\
+        char[] chars = s.toCharArray();\n\
+        List<Token> tokens = new ArrayList<>();\n\
+        for (i = 0; i < chars.length; ) {\n\
+            tokenAndConsume = getNextToken(chars, i);\n\
+            if (tokenAndConsume.token == null) {\n\
+                tokens.add(UNKNOWN);\n\
+                break;\n\
+            }\n\
+            tokens.add(tokenAndConsume.token);\n\
+            manageState(chars[i], tokenAndConsume.token);\n\
+            i = tokenAndConsume.consumeIndex;\n\
+        }\n\
         return tokens;\n\
     }\n\
 \n\
     public static class StateTracker {\n\
         private StringBuilder lexeme;\n\
-        private Integer token;\n\
+        private Token token;\n\
         public final Attribute attribute = new Attribute();\n\
 \n\
         public String getLexeme() {\n\
             return lexeme.toString();\n\
         }\n\
 \n\
-        public Integer getInteger() {\n\
+        public Token getToken() {\n\
             return token;\n\
         }\n\
 \n\
@@ -589,11 +618,15 @@ public class Automaton {\n\
         }\n\
     }\n\
 \n\
+    public enum Token {\n\
+        PUT_YOUR_USED_TOKENS_HERE, A, B, UNKNOWN\n\
+    }\n\
+\n\
     private static class State {\n\
         private final Map<Character, State> transitions;\n\
-        private final Function<StateTracker, Integer> tokenGenerator;\n\
+        private final Function<StateTracker, Token> tokenGenerator;\n\
 \n\
-        private State(Function<StateTracker, Integer> tokenGenerator) {\n\
+        private State(Function<StateTracker, Token> tokenGenerator) {\n\
             this.tokenGenerator = tokenGenerator;\n\
             this.transitions = new HashMap<>();\n\
         }\n\
@@ -609,10 +642,10 @@ public class Automaton {\n\
 \n\
     private static boolean initialized = false;\n\
 \n\
-    public void initialize() {\n\
+    public static void initialize() {\n\
         if (initialized)\n\
             throw new IllegalStateException();\n\
-        initialized = true;\n";
+        initialized = true;";
     char automaton_class_end[] = "    }\n\
 }";
     char new_state_start[] = "Automaton.newState(";
