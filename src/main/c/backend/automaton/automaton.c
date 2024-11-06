@@ -52,6 +52,14 @@ automaton *new_automaton()
     return n_automaton;
 }
 
+char set_token(automaton *a, uint64_t state_index, uint64_t token)
+{
+    if (state_index >= a->states_size || a->states[state_index]->throws_token)
+        return 0;
+    a->states[state_index]->throws_token = 1;
+    a->states[state_index]->token = token;
+}
+
 void resize_state(automaton_state *s)
 {
     s->delta_dim *= 2;
@@ -604,7 +612,7 @@ public class Automaton {\n\
     public void initialize() {\n\
         if (initialized)\n\
             throw new IllegalStateException();\n\
-        initialized = true;";
+        initialized = true;\n";
     char automaton_class_end[] = "    }\n\
 }";
     char new_state_start[] = "Automaton.newState(";
@@ -652,6 +660,6 @@ public class Automaton {\n\
         }
     }
 
-    write(file_descriptor, ";\n", 2);
+    write(file_descriptor, "\n", 1);
     write(file_descriptor, automaton_class_end, sizeof(automaton_class_end) - 1);
 }

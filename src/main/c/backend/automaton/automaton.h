@@ -112,6 +112,17 @@ automaton *get_deterministic_equivalent(const automaton *automaton);
  */
 void write_java_initialization(const automaton *a, int file_descriptor);
 
+/**
+ * @brief Set the token thrown by a state
+ * 
+ * @note Will not change the token thrown by a state that already throws a token
+ * @param a 
+ * @param state_index 
+ * @param token 
+ * @return char 0 if the state already threw a token, 1 otherwise
+ */
+char set_token(automaton *a, uint64_t state_index, uint64_t token);
+
 void free_state(automaton_state *state);
 void free_automaton(automaton *automaton);
 
