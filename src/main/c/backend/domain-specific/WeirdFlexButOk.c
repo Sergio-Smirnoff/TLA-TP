@@ -1,4 +1,8 @@
 #include "WeirdFlexButOk.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #define TEMP_TOKEN 1000000
 
@@ -32,23 +36,27 @@ static void _addToList(Lexeme_precursor *lexeme, return_struct *returner)
 {
     if (lexeme != NULL)
     {
-        if(current != NULL) {
+        if (current != NULL)
+        {
             current->next = (transformer_list *)calloc(1, sizeof(transformer_list));
             if (errno != 0)
             {
                 return; // podriamos loggear el error
             }
             current = current->next;
-        } else {
+        }
+        else
+        {
             current = list;
         }
         current->lexeme = lexeme;
         current->returner = returner;
         current->next = NULL;
-    } else {
+    }
+    else
+    {
         fprintf(logFile, "Error: Lexeme is NULL. Bad built table.\n");
     }
-
 }
 
 // Seems useless
@@ -109,7 +117,8 @@ void buildAutomaton(ComputationResult *computationResult)
     int i = 1;
     while (aux != NULL)
     {
-        if(result->succeed == false) {
+        if (result->succeed == false)
+        {
             return;
         }
         if (aux->lexeme != NULL)
@@ -140,8 +149,11 @@ void buildAutomaton(ComputationResult *computationResult)
         //     }
         // }
     }
-
-    computationResult->automaton = automat;
+    int fd = open("./automaton_out.Java", O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR);
+    automaton *dfa = get_deterministic_equivalent(automat);
+    free(automat);
+    write_java_initialization(dfa, fd);
+    computationResult->automaton = dfa;
     return;
 }
 
@@ -234,7 +246,8 @@ void computeRegexClass(Regex_class *regexClass, uint64_t startIndex, uint64_t en
         set_transition(automat, startIndex, endIndex, regexClass->symbol->symbol_tok[0]);
         return;
     case range:
-        if(regexClass->startSymbol->symbol_tok[0] > regexClass->endSymbol->symbol_tok[0]) {
+        if (regexClass->startSymbol->symbol_tok[0] > regexClass->endSymbol->symbol_tok[0])
+        {
             char *aux = _strConcat(regexClass->startSymbol->symbol_tok, "-");
             char *range = _strConcat(aux, regexClass->endSymbol->symbol_tok);
             char *to_print = _strConcat("Invalid range: ", range);
@@ -243,7 +256,9 @@ void computeRegexClass(Regex_class *regexClass, uint64_t startIndex, uint64_t en
             free(range);
             free(aux);
             return;
-        } else {
+        }
+        else
+        {
             for (unsigned char c = regexClass->startSymbol->symbol_tok[0]; c <= regexClass->endSymbol->symbol_tok[0]; c++)
             {
                 set_transition(automat, startIndex, endIndex, c);
