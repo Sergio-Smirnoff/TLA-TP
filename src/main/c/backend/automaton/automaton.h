@@ -4,6 +4,10 @@
 
 #include <stdint.h>
 
+typedef void *token_t;
+#define UNKNOWN_TOKEN (token_t)1
+
+
 typedef struct rule
 {
     uint64_t *next_indices;
@@ -18,16 +22,10 @@ typedef struct automaton_state
     uint64_t delta_size;
     uint64_t delta_dim;
     uint8_t throws_token;
-    uint64_t token;
+    token_t token;
     char min_symbol;
     char max_symbol;
 } automaton_state;
-
-typedef struct token_mapping
-{
-    uint64_t token_number;
-    char *token_name;
-} token_mapping;
 
 typedef struct automaton
 {
@@ -39,9 +37,10 @@ typedef struct automaton
     char max_symbol;
 } automaton;
 
-uint64_t new_state(automaton *automaton, uint8_t throws_token, uint64_t token);
 
-uint64_t new_state_get_index(automaton *automaton, uint8_t throws_token, uint64_t token);
+uint64_t new_state(automaton *automaton, uint8_t throws_token, token_t token);
+
+uint64_t new_state_get_index(automaton *automaton, uint8_t throws_token, token_t token);
 
 automaton_state *get_state(const automaton *automaton, uint64_t index);
 
@@ -76,16 +75,17 @@ automaton_state *next_state(const automaton *a, const automaton_state *state, ch
  * @param string_p pointer to a string, will be advanced to the index where the next token matching occurs
  * @return uint64_t*
  */
-uint64_t get_next_token(const automaton *automaton, const char **string_p);
+token_t get_next_token(const automaton *automaton, const char **string_p);
 
 /**
- * @brief produces a 0 terminated array of tokens in the buffer given. If not 0 terminated, ran out of space
+ * @brief produces a NULL terminated array of tokens in the buffer given. If not NULL terminated, ran out of space
  *
+ * @note if the string does not match any token, UNKNOWN_TOKEN will be returned as a token
  * @param automaton
  * @param string
  * @return uint64_t* the buffer given
  */
-uint64_t *get_token_stream(const automaton *automaton, const char *string, uint64_t *buffer, uint64_t buffer_size);
+token_t *get_token_stream(const automaton *automaton, const char *string, token_t *buffer, uint64_t buffer_size);
 
 /**
  * @brief whether an automaton accepts the given string
@@ -111,6 +111,17 @@ automaton *get_deterministic_equivalent(const automaton *automaton);
  * @param file_descriptor
  */
 void write_java_initialization(const automaton *a, int file_descriptor);
+
+/**
+ * @brief Set the token thrown by a state
+ *
+ * @note Will not change the token thrown by a state that already throws a token
+ * @param a
+ * @param state_index
+ * @param token
+ * @return char 0 if the state already threw a token, 1 otherwise
+ */
+char set_token(automaton *a, uint64_t state_index, token_t token);
 
 void free_state(automaton_state *state);
 void free_automaton(automaton *automaton);

@@ -8,6 +8,7 @@
  */
 #include "../../frontend/syntactic-analysis/AbstractSyntaxTree.h"
 #include "../../frontend/syntactic-analysis/BisonParser.h"
+#include "../automaton/automaton.h"
 #include "../../shared/CompilerState.h"
 #include "../../shared/Logger.h"
 #include "../../shared/Type.h"
@@ -22,41 +23,49 @@ void initializeWeirdFlexModule();
 /** Shutdown module's internal state. */
 void shutdownWeirdFlexModule();
 
-typedef enum return_type {
+typedef enum return_type
+{
     RETURN_TOKEN,
     RETURN_STRING,
     JAVA_BLOCK
 } return_type;
 
-typedef struct return_struct {
-    union{
-        Token* token;
-        char* string;
-        struct{
+typedef struct return_struct
+{
+    union
+    {
+        Token *token;
+        char *string;
+        struct
+        {
             Token parameters;
-            Block* java_block;
+            Block *java_block;
         };
     };
     return_type type;
 } return_struct;
 
-typedef struct transformer_list {
-    Lexeme_precursor* lexeme;
-    return_struct* returner;
-    struct transformer_list* next;
-}transformer_list;
+typedef struct transformer_list
+{
+    Lexeme_precursor *lexeme;
+    return_struct *returner;
+    struct transformer_list *next;
+} transformer_list;
 
 /**
  * The result of a computation. It's considered valid only if "succeed" is
  * true.
  */
-typedef struct {
-	boolean succeed;
-	transformer_list* value;
+typedef struct ComputationResult
+{
+    boolean succeed;
+    transformer_list *list;
+    automaton *automaton;
+    char* errorMessage;
 } ComputationResult;
 
 // Checks the tree and builds lexemes table
-ComputationResult* computeProgram(Program * tree, Valid_Regex_List* regexList);
-void print_transformerlist(transformer_list* list);
+ComputationResult *computeProgram(Program *tree, Valid_Regex_List *regexList);
+void buildAutomaton(ComputationResult *computationResult);
 
 #endif

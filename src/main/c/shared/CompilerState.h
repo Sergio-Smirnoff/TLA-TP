@@ -2,6 +2,7 @@
 #define COMPILER_STATE_HEADER
 
 #include "Type.h"
+#include "../frontend/syntactic-analysis/AbstractSyntaxTree.h"
 
 typedef struct Invalid_Regex_List Invalid_Regex_List;
 typedef struct Invalid_Regex_List_Node Invalid_Regex_List_Node;
@@ -29,7 +30,7 @@ typedef struct Invalid_Regex_List {
 typedef struct Valid_Regex_List_Node {
 	struct Valid_Regex_List_Node* next;
 	char* regex_id;
-	char* regex;
+	Regexes* regex;
 } Valid_Regex_List_Node;
 
 typedef struct Valid_Regex_List {
@@ -54,9 +55,6 @@ typedef struct {
 	// TODO: Add a symbol table.
 	// TODO: Add configuration.
 	// TODO: ...
-
-	// The computed value of the entire program (only for the calculator).
-	int value;
 } CompilerState;
 
 #endif
