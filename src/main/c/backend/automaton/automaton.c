@@ -619,7 +619,7 @@ public class Automaton {\n\
     }\n\
 \n\
     public enum Token {\n\
-        PUT_YOUR_USED_TOKENS_HERE, A, B, UNKNOWN\n\
+        PUT_YOUR_USED_TOKENS_HERE, UNKNOWN\n\
     }\n\
 \n\
     private static class State {\n\
