@@ -362,8 +362,7 @@ void computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, return_struct *r
 
 uint64_t computeLexeme(Lexeme *lexeme, uint64_t currentIndex, return_struct *returner, boolean isEndOfChain)
 {
-    uint64_t initialState = currentIndex;
-    uint64_t finalState;
+    uint64_t finalState = currentIndex;
     Regexes *node;
     switch (lexeme->type)
     {
@@ -394,15 +393,14 @@ uint64_t computeLexeme(Lexeme *lexeme, uint64_t currentIndex, return_struct *ret
     {
         if (lexeme->closure->closure == PLUS)
         {
-            initialState = new_state(automat, 0, 0);
+            finalState = new_state(automat, 0, 0);
             // Probablemente debería ser algo así: (Para esto el 2ndo param debería ser un puntero a return_struct o a void)
             // initialState = new_state(automaton, NULL, _stateCounter++);
-            regexContent(node, currentIndex, 0);
+            regexContent(node, currentIndex, finalState);
         }
-        finalState = new_state(automat, 0, 0);
         // Probablemente debería ser algo así: (Para esto el 2ndo param debería ser un puntero a return_struct o a void)
         // finalState = new_state(automaton, isEndOfChain ? returner : NULL, _stateCounter++);
-        regexContent(node, initialState, finalState);
+        regexContent(node, finalState, finalState);
     }
 
     return finalState;
