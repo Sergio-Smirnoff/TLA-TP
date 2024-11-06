@@ -41,7 +41,7 @@ typedef struct return_struct {
 } return_struct;
 
 typedef struct transformer_list {
-    char* lexeme;
+    Lexeme_precursor* lexeme;
     return_struct* returner;
     struct transformer_list* next;
 }transformer_list;

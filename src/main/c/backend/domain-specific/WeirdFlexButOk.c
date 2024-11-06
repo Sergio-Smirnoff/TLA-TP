@@ -10,8 +10,7 @@ static boolean has_default = false;
 static FILE * logFile;
 
 /** PRIVATE FUNCTIONS */
-static void _addToList(char* lexeme, return_struct* returner);
-static int _isInList(char* lexeme);
+static void _addToList(Lexeme_precursor* lexeme, return_struct* returner);
 static void _freeTransformerList(struct transformer_list* list);
 static char* _strConcat(char* str1, char* str2);
 void ruleset(Ruleset* my_ruleset);
@@ -23,7 +22,7 @@ char* computeLexemePrecursor(Lexeme_precursor* lexeme_precursor);
 char* computeLexeme(Lexeme* lexeme);
 return_struct* computeAction(Action* my_action);
 
-static void _addToList(char* lexeme, return_struct* returner){
+static void _addToList(Lexeme_precursor* lexeme, return_struct* returner){
     if(lexeme != NULL){
         current->next = (transformer_list*)calloc(1, sizeof(transformer_list));
         if (errno != 0){
@@ -35,18 +34,6 @@ static void _addToList(char* lexeme, return_struct* returner){
     current->lexeme = lexeme;
     current->returner = returner;
     current->next = NULL;
-}
-
-// check if it is in the return list
-static int _isInList(char* lexeme){
-    transformer_list* aux = list;
-    while (aux != NULL){
-        if (strcmp(aux->lexeme, lexeme) == 0){
-            return 0;
-        }
-        aux = aux->next;
-    }
-    return 1;
 }
 
 static void _freeTransformerList(struct transformer_list* list){
@@ -93,11 +80,8 @@ void print_transformerlist(transformer_list* list){
     transformer_list* aux = list;
     while (aux != NULL){
         if (aux->lexeme != NULL){
-            if(aux->lexeme == "\n" || aux->lexeme == "\t"){
-                printf("Lexeme: %s\n", "whitespace");
-            } else {
-                printf("Lexeme: %s\n", aux->lexeme);
-            }
+            printf("Lexeme pointer: %p\n", aux->lexeme);
+            printf("Lexeme string: %s\n", computeLexemePrecursor(aux->lexeme));
         }
         if (aux->returner != NULL){
             switch (aux->returner->type){
@@ -146,12 +130,10 @@ void computeRule(Rule* my_rule){
         return;
     }
     switch (my_rule->type){
-        char* lexeme;
+        Lexeme_precursor* lexeme;
         return_struct* returner;
         case lexeme_action:
-            lexeme = computeLexemePrecursor(my_rule->lex);
-            fprintf(logFile, "Me llego un lexeme %s\n", lexeme);
-            fflush(logFile);
+            lexeme = my_rule->lex;
             returner = computeAction(my_rule->action);
                         fprintf(logFile, "Did i compute?\n");
             fflush(logFile);
@@ -160,7 +142,7 @@ void computeRule(Rule* my_rule){
             fflush(logFile);
             break;
         case ignore_lexeme:
-            lexeme = computeLexemePrecursor(my_rule->lexeme);
+            lexeme = my_rule->lexeme;
             returner = NULL;
             _addToList(lexeme, returner);
             break;
