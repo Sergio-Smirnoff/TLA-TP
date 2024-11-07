@@ -26,7 +26,44 @@ void _regexContent(Regexes *regexes, uint64_t startIndex, uint64_t endIndex);
 void _computeRegexClass(Regex_class *regexClass, uint64_t startIndex, uint64_t endIndex);
 void _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, char *returner, uint64_t currentIndex);
 uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, char *returner, boolean isEndOfChain);
-char *_computeAction(Action *my_action);
+
+// Leaf-level functions
+char *_computeLiteral(Literal* literal);
+char *_computeVarAccess(VarAccess* varAccess);
+char *_computeArgumentList(ArgumentList* argumentList);
+char *_computePostfixExpression(PostfixExpression* postfixExpression);
+char *_computeUnaryExpression(UnaryExpression* unaryExpression);
+
+//----------------Unary Expression Aux functions -----------------------------------------
+char* _computeNumericComparison(char *left, char *right, NumericComparison *numcomp);
+char* _computeDoubleTokenExpression(char *left, char *right, UnaryExpressionType type);
+char* _computeSingleTokenOperator(char *operand, Token token);
+// ---------------------------------------------------------------------------------------
+
+char *_computeEqualityExpression(EqualityExpression* equalityExpression);
+char *_computeConditionalAndExpression(ConditionalAndExpression* conditionalAndExpression);
+char *_computeConditionalOrExpression(ConditionalOrExpression* conditionalOrExpression);
+char *_computeConditionalExpression(ConditionalExpression* conditionalExpression);
+char *_computeAssignment(Assignment* assignment);
+char *_computePrimary(Primary* primary);
+char *_computeClassInstanceCreationExpression(ClassInstanceCreationExpression* classInstanceCreationExpression);
+char *_computeUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstanceCreationExpression* unqualifiedClassInstanceCreationExpression);
+
+// Mid-level functions
+char *_computeExpression(Expression* expression);
+char *_computeMethodInvocation(MethodInvocation* methodInvocation);
+char *_computeStatementExpression(StatementExpression* statementExpression);
+char *_computeStatementExpressionList(StatementExpressionList* statementExpressionList);
+char *_computeIfThenStatement(IfThenStatement* ifThenStatement);
+char *_computeForInit(ForInit* forInit);
+
+// Higher-level functions
+char *_computeStatement(Statement* statement);
+char *_computeBlock(Block* block);
+
+// Top-level function
+char *_computeAction(Action* my_action);
+
 
 static void _addToList(Lexeme_precursor *lexeme, char *returner)
 {
@@ -166,8 +203,15 @@ char *_computeAction(Action *my_action)
     {
         return strdup(my_action->varName);
     }
-    else
+    else if(my_action->type == function_body)
     {
+        char *block_str = _computeBlock(my_action->block);
+        size_t totalLen = strlen(block_str) + 20;
+        char * result = malloc(totalLen);
+        snprintf(result, totalLen, "%d %s", my_action->param->stuff, block_str);
+        free(block_str);
+        return result;
+    } else {
         return strdup("IGNORE_FOR_NOW");
     }
     // Here it is the correct code:
@@ -195,6 +239,684 @@ char *_computeAction(Action *my_action)
     return returner;
     */
 }
+
+// Leaf-level functions
+char *_computeLiteral(Literal* literal){
+    if(literal == NULL){
+        return NULL;
+    }
+
+    if(literal->type == str){
+        return strdup(literal->str);
+    } else if(literal->type == token){
+        char * tok = malloc(10);
+        snprintf(tok, 10, "%d", literal->token);
+        return strdup(tok);
+    } else {
+        return NULL;
+    }
+}
+
+char* _computeVarAccess(VarAccess* varAccess) {
+    if (varAccess == NULL) {
+        return NULL;
+    }
+
+    if (varAccess->vaccess != NULL) {
+
+        // Case 3: Operator on VarAccess (e.g., var_name.VarAccess.var_name)
+
+        if(varAccess->var_name != NULL){
+            char* nestedResult = _computeVarAccess(varAccess->vaccess);
+
+            size_t len = strlen(nestedResult) + strlen(varAccess->var_name) + 2;  //2 for the dot and the null terminator
+            char* result = calloc(len, sizeof(char));
+            snprintf(result, len, "%s.%s", varAccess->var_name, nestedResult);
+            
+            free(nestedResult);
+
+            return result;
+        }
+
+    
+        // Case 4: Parameter-based access (e.g., par.VarAccess)
+
+        else if(varAccess->param != NULL){
+            char* nestedResult = _computeVarAccess(varAccess->vaccess);
+
+            size_t len = strlen(nestedResult) + 10 + 2;  //2 for the dot and the null terminator
+            char* result = calloc(len, sizeof(char));
+            snprintf(result, len, "%d.%s", varAccess->param->stuff, nestedResult);
+
+            free(nestedResult);
+
+            return result;
+
+        } else {
+            return NULL;
+        }
+    }
+
+    // Case 1: Base case - Simple var_name
+    if (varAccess->var_name != NULL) {
+        return strdup(varAccess->var_name); 
+    }
+
+    // Case 2: Method invocation (e.g., a.b.c.d.method())
+    if (varAccess->method_invocation != NULL) {
+        char* methodResult = _computeMethodInvocation(varAccess->method_invocation);
+        return methodResult;
+    }
+
+    return NULL;
+}
+
+char *_computeArgumentList(ArgumentList* argumentList){
+    // Base case: empty argument list
+    if (argumentList == NULL) {
+        return strdup("");
+    }
+
+    char *currentExpression = _computeExpression(argumentList->expression);
+
+    // Base case: no more arguments
+    if (argumentList->arglist == NULL) {
+        return currentExpression;
+    }
+
+    //Recursive case: there are more arguments
+    char *restOfList = _computeArgumentList(argumentList->arglist);
+
+    size_t len = strlen(currentExpression) + strlen(restOfList) + 2;  // 2 for the comma and null-terminator
+    char *result = malloc(len);
+
+    snprintf(result, len, "%s,%s", currentExpression, restOfList);
+
+    free(currentExpression);
+    free(restOfList);
+
+    return result;
+}
+
+char* _computePostfixExpression(PostfixExpression* postfixExpression) {
+    if (postfixExpression == NULL) {
+        return NULL;
+    }
+
+    char *result = NULL;
+
+    if (postfixExpression->primary != NULL) {
+        result = _computePrimary(postfixExpression->primary);
+    }
+
+    else if (postfixExpression->vaccess != NULL) {
+
+        result = _computeVarAccess(postfixExpression->vaccess);
+
+        if (postfixExpression->token == INCREMENT) {
+            size_t len = strlen(result) + 2;
+            result = realloc(result, len);
+            strcat(result, "++");
+        } else if (postfixExpression->token == DECREMENT) {
+            size_t len = strlen(result) + 2; 
+            result = realloc(result, len);
+            strcat(result, "--");
+        }
+    }
+
+    return result;
+}
+
+char* _computeUnaryExpression(UnaryExpression* unaryExpression) {
+    if (unaryExpression == NULL) {
+        return NULL;
+    }
+
+    char *result = NULL;
+
+    switch (unaryExpression->globaltype) {
+        case numericComparison:
+            {
+                char *left = _computeUnaryExpression(unaryExpression->uexp1_num);
+                char *right = _computePostfixExpression(unaryExpression->uexp2_num);
+
+                result = _computeNumericComparison(left, right, unaryExpression->numcomp);
+                free(left);
+                free(right);
+            }
+            break;
+
+        case doubleToken:
+            {
+                char *left = _computeUnaryExpression(unaryExpression->uexp1_exp);
+                char *right = _computePostfixExpression(unaryExpression->uexp2_exp);
+                result = _computeDoubleTokenExpression(left, right, unaryExpression->type);
+                free(left);
+                free(right);
+            }
+            break;
+
+        case postfixExpression:
+            result = _computePostfixExpression(unaryExpression->pexp);
+            break;
+
+        case param:
+            {
+                if(unaryExpression->param == NULL){
+                    result = strdup("()");
+                } else {
+                    result = malloc(12);
+                    snprintf(result, 12, "(%d)", unaryExpression->param->stuff);
+                }
+            }
+            break;
+
+        case singleToken:
+            {
+                char *operand = _computeUnaryExpression(unaryExpression->uexp);
+                result = _computeSingleTokenOperator(operand, unaryExpression->token);
+                free(operand);
+            }
+            break;
+
+        default:
+            result = NULL;
+            break;
+    }
+
+    return result;
+}
+
+char* _computeNumericComparison(char *left, char *right, NumericComparison *numcomp) {
+    char *operator = NULL;
+    switch (numcomp->token) {
+        case JAVA_EXACT_COMPARISON: operator = "=="; break;
+        case JAVA_LESSER: operator = "<"; break;
+        case JAVA_GREATER: operator = ">"; break;
+        case JAVA_LEQ: operator = "<="; break;
+        case JAVA_GEQ: operator = ">="; break;
+        default: operator = "unknown"; break;
+    }
+
+    size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
+    char *result = malloc(len);
+    snprintf(result, len, "%s %s %s", left, operator, right);
+    return result;
+}
+
+
+char* _computeDoubleTokenExpression(char *left, char *right, UnaryExpressionType type) {
+    char *operator = NULL;
+    switch (type) {
+        case star_t: operator = "*"; break;
+        case div_type: operator = "/"; break;
+        case mod_t: operator = "%"; break;
+        case plus_t: operator = "+"; break;
+        case minus_t: operator = "-"; break;
+        default: operator = "unknown"; break;
+    }
+
+    size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
+    char *result = malloc(len);
+    snprintf(result, len, "%s %s %s", left, operator, right);
+    return result;
+}
+
+
+char* _computeSingleTokenOperator(char *operand, Token token) {
+    char *operator = NULL;
+    switch (token) {
+        case JAVA_NOT: operator = "!"; break;
+        case INCREMENT: operator = "++"; break;
+        case DECREMENT: operator = "--"; break;
+        case PLUS: operator = "+"; break;
+        case MINUS: operator = "-"; break;
+        default: operator = "unknown"; break;
+    }
+
+    size_t len = strlen(operand) + strlen(operator) + 2; 
+    char *result = malloc(len);
+    snprintf(result, len, "%s%s", operator, operand);
+    return result;
+}
+
+
+char* _computeEqualityExpression(EqualityExpression* equalityExpression) {
+    if (equalityExpression == NULL) {
+        return NULL;
+    }
+
+    char *result = NULL;
+
+    if (equalityExpression->eqexp == NULL) {
+        // Base case: Compute the unary expression (single UnaryExpression)
+        result = _computeUnaryExpression(equalityExpression->uexp);
+    } else {
+        // Recursive case: Compute the left-hand side and right-hand side and combine with the operator
+        char *left = _computeEqualityExpression(equalityExpression->eqexp);
+        char *right = _computeUnaryExpression(equalityExpression->uexp);
+        
+        const char* operator = "==";
+
+        size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
+        char *result = malloc(len);
+        snprintf(result, len, "%s %s %s", left, operator, right);
+
+        free(left);
+        free(right);
+    }
+
+    return result;
+}
+
+char* _computeConditionalAndExpression(ConditionalAndExpression* conditionalAndExpression) {
+    if (conditionalAndExpression == NULL) {
+        return NULL;
+    }
+
+    char *result = NULL;
+
+    if (conditionalAndExpression->candexp == NULL) {
+        result = _computeEqualityExpression(conditionalAndExpression->eqexp);
+    } else {
+        char *left = _computeConditionalAndExpression(conditionalAndExpression->candexp); 
+        char *right = _computeEqualityExpression(conditionalAndExpression->eqexp); 
+        
+        const char* operator = "&&";
+
+        size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
+        char *result = malloc(len);
+        snprintf(result, len, "%s %s %s", left, operator, right);
+
+        free(left);
+        free(right);
+    }
+
+    return result;
+}
+
+char *_computeConditionalOrExpression(ConditionalOrExpression* conditionalOrExpression){
+        if (conditionalOrExpression == NULL) {
+        return NULL;
+    }
+
+    char *result = NULL;
+
+    if (conditionalOrExpression->corexp == NULL) {
+        result = _computeConditionalAndExpression(conditionalOrExpression->candexp);
+    } else {
+        char *left = _computeConditionalOrExpression(conditionalOrExpression->corexp); 
+        char *right = _computeConditionalAndExpression(conditionalOrExpression->candexp); 
+        
+        const char* operator = "||";
+
+        size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
+        char *result = malloc(len);
+        snprintf(result, len, "%s %s %s", left, operator, right);
+
+        free(left);
+        free(right);
+    }
+
+    return result;
+}
+
+char* _computeConditionalExpression(ConditionalExpression* conditionalExpression) {
+    if (conditionalExpression == NULL) {
+        return strdup("");
+    }
+
+    char* left = _computeConditionalOrExpression(conditionalExpression->corexp);
+
+    if (conditionalExpression->exp == NULL || conditionalExpression->cexp == NULL) {
+        return left;
+    }
+
+    // If there's both a middle expression and a right ConditionalExpression, combine them
+    char* middle = _computeExpression(conditionalExpression->exp);
+    char* right = _computeConditionalExpression(conditionalExpression->cexp);
+    size_t len = strlen(left) + strlen(middle) + strlen("?") + strlen(right) + strlen(":") + 5; // 5 for spaces and null terminator
+    char* result = malloc(len);
+    snprintf(result, len, "%s ? %s : %s", left, middle, right);
+    
+    // Clean up
+    free(left);
+    free(middle);
+    free(right);
+
+    return result;
+}
+
+char* _computeAssignment(Assignment* assignment) {
+    if (assignment == NULL) {
+        return strdup("");
+    }
+
+    char* left = _computeVarAccess(assignment->vaccess);
+
+    char* right = _computeExpression(assignment->expression); 
+
+    size_t len = strlen(left) + strlen(right) + strlen("=") + 3;
+
+    char* result = malloc(len);
+
+    snprintf(result, len, "%s = %s", left, right);
+
+    free(left);
+    free(right);
+
+    return result;
+}
+
+char* _computePrimary(Primary* primary) {
+    if (primary == NULL) {
+        return strdup("");
+    }
+
+    char* result = NULL;
+
+    switch (primary->type) {
+        case literal:
+            result = _computeLiteral(primary->lit);
+            break;
+        
+        case expression:
+            result = _computeExpression(primary->exp);
+            break;
+
+        case cexp:
+            result = _computeClassInstanceCreationExpression(primary->cice);
+            break;
+        
+        default:
+            result = strdup("");
+            break;
+    }
+
+    return result;
+}
+
+
+char* _computeClassInstanceCreationExpression(ClassInstanceCreationExpression* classInstanceCreationExpression) {
+    if (classInstanceCreationExpression == NULL) {
+        return strdup("");
+    }
+
+    char* result = NULL;
+    
+    if (classInstanceCreationExpression->ucice != NULL && classInstanceCreationExpression->vaccess != NULL) {
+        char* vaccessStr = _computeVarAccess(classInstanceCreationExpression->vaccess);
+        char* uciceStr = _computeUnqualifiedClassInstanceCreationExpression(classInstanceCreationExpression->ucice);
+        result = malloc(strlen(vaccessStr) + strlen(uciceStr) + 2);
+        sprintf(result, "%s.%s", vaccessStr, uciceStr);
+        free(vaccessStr);
+        free(uciceStr);
+
+    } else if (classInstanceCreationExpression->ucice != NULL && classInstanceCreationExpression->primary != NULL) {
+        char* primaryStr = _computePrimary(classInstanceCreationExpression->primary); 
+        char* uciceStr = _computeUnqualifiedClassInstanceCreationExpression(classInstanceCreationExpression->ucice);
+        result = malloc(strlen(primaryStr) + strlen(uciceStr) + 2);
+        sprintf(result, "%s.%s", primaryStr, uciceStr);
+        free(primaryStr);
+        free(uciceStr);
+
+    } else {
+        result = _computeUnqualifiedClassInstanceCreationExpression(classInstanceCreationExpression->ucice); 
+    }
+
+    return result;
+}
+
+
+char* _computeUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstanceCreationExpression* unqualifiedClassInstanceCreationExpression) {
+    if (unqualifiedClassInstanceCreationExpression == NULL) {
+        return strdup("");
+    }
+
+    char* arglistStr = _computeArgumentList(unqualifiedClassInstanceCreationExpression->arglist);
+
+    char* result = malloc(strlen(arglistStr) + 10);
+
+    sprintf(result, "%d(%s)", unqualifiedClassInstanceCreationExpression->param->stuff, arglistStr);
+
+    free(arglistStr);
+
+    return result;
+}
+
+// Mid-level functions
+char* _computeExpression(Expression* expression) {
+    if (expression == NULL) {
+        return strdup("");
+    }
+
+    switch (expression->type) {
+        case xexp:
+            return _computeConditionalExpression(expression->xexp);
+
+        case assignment:
+            return _computeAssignment(expression->assignment);
+
+        default:
+            return strdup("");
+    }
+}
+
+
+char* _computeMethodInvocation(MethodInvocation* methodInvocation) {
+    if (methodInvocation == NULL) {
+        return strdup("");
+    }
+
+    char* varAccessStr = _computeVarAccess(methodInvocation->vaccess);
+
+    char* argumentListStr = _computeArgumentList(methodInvocation->arglist);
+
+    size_t totalLength = strlen(varAccessStr) + strlen(argumentListStr) + 3;
+    char* methodInvocationStr = malloc(totalLength);
+
+    snprintf(methodInvocationStr, totalLength, "%s(%s)", varAccessStr, argumentListStr);
+
+    free(varAccessStr);
+    free(argumentListStr);
+
+    return methodInvocationStr;
+}
+
+
+char* _computeStatementExpression(StatementExpression* statementExpression) {
+    if (statementExpression == NULL) {
+        return strdup("");
+    }
+
+    char* result = NULL;
+
+    switch (statementExpression->type) {
+        case assignation: {
+            result = _computeAssignment(statementExpression->assignment);
+            break;
+        }
+        case invocation: {
+            result = _computeMethodInvocation(statementExpression->method_invocation);
+            break;
+        }
+        case assigParam: {
+            char* expStr = _computeExpression(statementExpression->exp);
+
+            size_t totalLength = strlen(statementExpression->var_name) + strlen(expStr) + 12;
+            result = malloc(totalLength);
+            snprintf(result, totalLength, "%d %s = %s", statementExpression->param->stuff, statementExpression->var_name, expStr);
+
+            free(expStr);
+            break;
+        }
+        default:
+            result = strdup("");
+            break;
+    }
+
+    return result;
+}
+
+
+char* _computeStatementExpressionList(StatementExpressionList* statementExpressionList) {
+    if (statementExpressionList == NULL) {
+        return strdup("");
+    }
+
+    char* result = NULL;
+    char* currentExprStr = _computeStatementExpression(statementExpressionList->exp);
+
+    if (statementExpressionList->list == NULL) {
+        result = currentExprStr;
+    } else {
+        char* restOfListStr = _computeStatementExpressionList(statementExpressionList->list);
+
+        size_t totalLength = strlen(currentExprStr) + strlen(restOfListStr) + 3;
+        result = malloc(totalLength);
+        snprintf(result, totalLength, "%s, %s", currentExprStr, restOfListStr);
+
+        free(restOfListStr);
+    }
+
+    free(currentExprStr);
+
+    return result;
+}
+
+
+char* _computeIfThenStatement(IfThenStatement* ifThenStatement) {
+    if(ifThenStatement == NULL){
+        return strdup("");
+    }
+
+    char* conditionStr = _computeExpression(ifThenStatement->exp);
+    
+    char* ifStatementStr = _computeStatement(ifThenStatement->statement1);
+    
+    char* result = malloc(strlen("if () {  }") + strlen(conditionStr) + strlen(ifStatementStr) + 1);
+    sprintf(result, "if (%s) { %s }", conditionStr, ifStatementStr);
+    
+    free(conditionStr);
+    free(ifStatementStr);
+    
+    if (ifThenStatement->statement2 != NULL) {
+        char* elseStatementStr = _computeStatement(ifThenStatement->statement2);
+        size_t totalLength = strlen(result) + strlen(" else { }") + strlen(elseStatementStr) + 1;
+        
+        result = realloc(result, totalLength);
+        strcat(result, " else { ");
+        strcat(result, elseStatementStr);
+        strcat(result, " }");
+        
+        free(elseStatementStr);
+    }
+    
+    return result;
+}
+
+
+char *_computeForInit(ForInit* forInit) {
+    switch (forInit->type) {
+        case statementExpList: {
+            return _computeStatementExpressionList(forInit->statementExpList);
+        }
+
+        case withParams: {
+            size_t totalLen = strlen(forInit->var_name_param) + 10;
+            char* result = malloc(totalLen);
+            snprintf(result, totalLen, "%d %s", forInit->param->stuff, forInit->var_name_param);
+            return result;
+        }
+
+        case withoutParams: {
+            return strdup(forInit->var_name);
+        }
+
+        default:
+             return strdup("");
+    }
+}
+
+// Higher-level functions
+char *_computeStatement(Statement* statement) {
+    switch (statement->type) {
+        case state: {
+            return _computeStatementExpression(statement->sexp);
+        }
+
+        case ifThenStatement: {
+            return _computeIfThenStatement(statement->ifThen);
+        }
+
+        case While: {
+            char* whileCondition = _computeExpression(statement->expwhile);
+            char* whileStatement = _computeStatement(statement->statementwhile);
+
+            size_t totalLen = strlen(whileCondition) + strlen(whileStatement) + 50;
+            char* result = malloc(totalLen);
+            snprintf(result, totalLen, "while (%s) { %s }", whileCondition, whileStatement);
+            return result;
+        }
+
+        case For: {
+            char* forInit = _computeForInit(statement->forInit);
+            char* forCondition = _computeExpression(statement->expfor);
+            char* forStatementList = _computeStatementExpressionList(statement->statementExpList);
+            char* forBody = _computeStatement(statement->statementfor);
+
+            size_t totalLen = strlen(forInit) + strlen(forCondition) + strlen(forStatementList) + strlen(forBody) + 20;
+            char* result = malloc(totalLen);
+            if (result != NULL) {
+                snprintf(result, totalLen, "for (%s; %s; %s) { %s }", forInit, forCondition, forStatementList, forBody);
+            }
+            return result;
+        }
+
+        default:
+            return strdup("");
+    }
+}
+
+char *_computeBlock(Block* block) {
+    switch (block->type) {
+        case statement: {
+            char* statementResult = _computeStatement(block->statement);
+            char* nestedBlockResult = block->block ? _computeBlock(block->block) : NULL;
+            size_t totalLen = strlen(statementResult) + (nestedBlockResult != NULL ? strlen(nestedBlockResult) : 0) + 10;
+            char* result = malloc(totalLen);
+            if (result != NULL) {
+                snprintf(result, totalLen, "%s %s", statementResult, nestedBlockResult != NULL ? nestedBlockResult : "");
+            }
+            return result;
+        }
+
+        case ret: {
+            char* returnExpr = _computeExpression(block->exp);
+            size_t totalLen = strlen(returnExpr) + 10;
+            char* result = malloc(totalLen);
+            if (result != NULL) {
+                snprintf(result, totalLen, "return %s;", returnExpr);
+            }
+            return result;
+        }
+
+        case throw: {
+            char* throwExpr = _computeExpression(block->exp);
+            size_t totalLen = strlen(throwExpr) + 10;
+            char* result = malloc(totalLen);
+            if (result != NULL) {
+                snprintf(result, totalLen, "throw %s;", throwExpr);
+            }
+            return result;
+        }
+
+        default:
+            return strdup("");
+    }
+}
+
+
 
 void buildAutomaton(ComputationResult *computationResult)
 {
