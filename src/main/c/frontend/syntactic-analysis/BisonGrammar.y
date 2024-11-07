@@ -270,7 +270,7 @@ NumericComparison: JAVA_GEQ																																							{ $$ = JavaNum
 	| JAVA_LEQ																																										{ $$ = JavaNumericComparisonSemanticAction($1); }
 	| JAVA_LESSER																																									{ $$ = JavaNumericComparisonSemanticAction($1); }
 	;
-
+;
 Block: Statement Block																																								{ $$ = JavaBlockSemanticAction($1, $2); }
 	| Statement																																										{ $$ = JavaBlockSemanticAction($1, NULL); }
 	| JAVA_RETURN Expression ENDLINE																																				{ $$ = JavaReturnExpressionSemanticAction($2); }
@@ -278,7 +278,7 @@ Block: Statement Block																																								{ $$ = JavaBlockSe
 	;
 
 Statement: ENDLINE																																									{ $$ = NULL; }
-	| StatementExpression																																							{ $$ = JavaStatementExpressionSemanticAction($1); }
+	| StatementExpression  ENDLINE																																							{ $$ = JavaStatementExpressionSemanticAction($1); }
 	| IfThenStatement																																								{ $$ = IfStatementSemanticAction($1); }
 	| JAVA_WHILE OPEN_PARENTHESES Expression[exp] CLOSE_PARENTHESES OPEN_BRACES Statement[state] CLOSE_BRACES																		{ $$ = WhileStatementSemanticAction($exp, $state); }
 	| JAVA_FOR OPEN_PARENTHESES ForInit[init] ENDLINE Expression[exp] ENDLINE StatementExpressionList[stlist] CLOSE_PARENTHESES OPEN_BRACES Statement[state] CLOSE_BRACES			{ $$ = ForStatementSemanticAction($init, $exp, $stlist, $state); }
