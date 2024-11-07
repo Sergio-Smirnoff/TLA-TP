@@ -508,7 +508,7 @@ void write_java_initialization(const automaton *a, int file_descriptor)
         automaton_state *s = get_state(a, state_index);
         if (s->throws_token)
         {
-            write(file_descriptor, buffer, sprintf(buffer, "var -> Token.%s", s->token));
+            write(file_descriptor, buffer, sprintf(buffer, "var -> %s", s->token));
         }
         else
         {
