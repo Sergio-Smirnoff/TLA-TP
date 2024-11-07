@@ -176,8 +176,6 @@ void _computeRule(Rule *my_rule)
     case lexeme_action:
         lexeme = my_rule->lex;
         returner = _computeAction(my_rule->action);
-        fprintf(logFile, "FINISHED Compute Rule: %s\n", returner);
-        fflush(logFile);
         _addToList(lexeme, returner);
         break;
     case ignore_lexeme:
@@ -224,6 +222,10 @@ char *_computeParams(Param* params){
 
         case BOOLEAN_TYPE:
             result = strdup("Boolean");
+            break;
+
+        case TOKEN_TYPE:
+            result = strdup("Token");
             break;
 
         default:
@@ -669,7 +671,6 @@ char* _computeUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstanc
     if (unqualifiedClassInstanceCreationExpression == NULL) {
         return strdup("");
     }
-
     char* arglistStr = _computeArgumentList(unqualifiedClassInstanceCreationExpression->arglist);
     char* params = _computeParams(unqualifiedClassInstanceCreationExpression->param);
     size_t total = strlen(arglistStr) + strlen(params) + 7;

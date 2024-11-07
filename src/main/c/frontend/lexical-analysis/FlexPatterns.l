@@ -52,6 +52,7 @@
 "Integer"                                       {  return FunctionParamLexeme(createLexicalAnalyzerContext(), INTEGER_TYPE); }
 "Double"                                        {  return FunctionParamLexeme(createLexicalAnalyzerContext(), DOUBLE_TYPE);  }
 "Boolean"                                       {  return FunctionParamLexeme(createLexicalAnalyzerContext(), BOOLEAN_TYPE); }
+"Token"                                         {  return FunctionParamLexeme(createLexicalAnalyzerContext(), TOKEN_TYPE);  }
 
 "default"                                       { return DefaultLexeme(createLexicalAnalyzerContext()); }
 "\n"                                            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }

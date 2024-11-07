@@ -97,6 +97,7 @@
 %token <token> STRING_TYPE
 %token <token> INTEGER_TYPE
 %token <token> DOUBLE_TYPE
+%token <token> TOKEN_TYPE
 %token <token> RANGER
 %token <token> ENDLINE
 %token <token> ARROW
@@ -254,6 +255,7 @@ param: STRING_TYPE																																									{ $$ = ParamSemanticA
     | INTEGER_TYPE																																									{ $$ = ParamSemanticAction($1); }
     | DOUBLE_TYPE																																									{ $$ = ParamSemanticAction($1); }
 	| BOOLEAN_TYPE																																									{ $$ = ParamSemanticAction($1); }
+	| TOKEN_TYPE																																									{ $$ = ParamSemanticAction($1); }
 	;
 
 
