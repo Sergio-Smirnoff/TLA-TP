@@ -889,10 +889,6 @@ char *_computeBlock(Block* block) {
             if (result != NULL) {
                 snprintf(result, totalLen, "%s; %s", statementResult, nestedBlockResult != NULL ? nestedBlockResult : "");
             }
-            fprintf(logFile, "Computed Block Statement:840\n");
-            fprintf(logFile, "Block Statement result: %s\n", result);
-
-            fflush(logFile);
             return result;
         }
 
@@ -903,9 +899,6 @@ char *_computeBlock(Block* block) {
             if (result != NULL) {
                 snprintf(result, totalLen, "return %s;", returnExpr);
             }
-                        fprintf(logFile, "Computed Block Statement:840\n");
-            fprintf(logFile, "Block Statement result: %s\n", result);
-                        fflush(logFile);
             return result;
         }
 
