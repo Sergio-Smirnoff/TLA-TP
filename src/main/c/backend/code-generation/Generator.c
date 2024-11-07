@@ -48,8 +48,12 @@ static void _generateProgram(automaton * automaton) {
 static void _generatePrologue(void) {
 	_output(0, "%s",
 		"\n\n"
+		"//INSERT PACKAGE NAME HERE"
 		"import java.util.*;\n"
 		"import java.util.function.Function;\n\n"
+
+		"//EDIT THIS IMPORT TO MATCH YOUR PACKAGE"
+		"import static Automaton.Token.*;\n\n"
 		"public class Automaton {\n"
 		"\n"
 		"    private static State initialState;\n"
