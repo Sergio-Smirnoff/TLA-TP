@@ -499,7 +499,7 @@ void write_java_initialization(const automaton *a, int file_descriptor)
 {
     char new_state_start[] = "\t\tAutomaton.newState(";
     char new_state_end[] = ");\n";
-    char null[] = "s -> null";
+    char null[] = "var -> null";
     char buffer[BLOCK]; // this is big enough to hold an uint64_t in decimal notation
 
     for (uint64_t state_index = 0; state_index < a->states_size; state_index++)
@@ -508,7 +508,7 @@ void write_java_initialization(const automaton *a, int file_descriptor)
         automaton_state *s = get_state(a, state_index);
         if (s->throws_token)
         {
-            write(file_descriptor, buffer, sprintf(buffer, "s -> Token.%s", s->token));
+            write(file_descriptor, buffer, sprintf(buffer, "var -> Token.%s", s->token));
         }
         else
         {
