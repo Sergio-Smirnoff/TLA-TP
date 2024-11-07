@@ -491,8 +491,71 @@ int itoa(uint64_t v, char *sp)
     return len;
 }
 
+char get_transition_matcher(rule *rule)
+{
+    return rule->matcher;
+}
+
+uint64_t *get_to_state_indices(rule *rule)
+{
+    return rule->next_indices;
+}
+
+uint64_t get_to_state_indices_size(rule *rule)
+{
+    return rule->next_indices_size;
+}
+
+void free_automaton_iterator(automaton_iterator *iterator)
+{
+    free(iterator);
+}
+void free_state_iterator(state_iterator *iterator)
+{
+    free(iterator);
+}
+
+automaton_iterator *get_automaton_iterator(automaton *a)
+{
+    automaton_iterator *iterator = malloc(sizeof(automaton_iterator));
+    iterator->automaton = a;
+    iterator->state_index = 0;
+    return iterator;
+}
+state_iterator *get_state_iterator(automaton_state *s)
+{
+    state_iterator *iterator = malloc(sizeof(state_iterator));
+    iterator->state = s;
+    iterator->rule_index = 0;
+    return iterator;
+}
+
+automaton_state *get_next_state(automaton_iterator *iterator)
+{
+    if (has_next_state(iterator))
+        return iterator->automaton->states[iterator->state_index++];
+    return NULL;
+}
+
+rule *get_next_rule(state_iterator *iterator)
+{
+    if (has_next_rule(iterator))
+        return &iterator->state->delta[iterator->rule_index++];
+    return NULL;
+}
+
+char has_next_state(automaton_iterator *iterator)
+{
+    return iterator->state_index < iterator->automaton->states_size;
+}
+
+char has_next_rule(state_iterator *iterator)
+{
+    return iterator->rule_index < iterator->state->delta_size;
+}
+
 // boolean hasNextLine(automaton *a) {
-//     return 
+//     return
 // }
 
 void write_java_initialization(const automaton *a, int file_descriptor)
@@ -540,7 +603,7 @@ void write_java_initialization(const automaton *a, int file_descriptor)
             case '\t':
                 write(file_descriptor, buffer, sprintf(buffer, "'\\t'"));
                 break;
-            
+
             case '\n':
                 write(file_descriptor, buffer, sprintf(buffer, "'\\n'"));
                 break;

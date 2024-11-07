@@ -2,12 +2,10 @@
 #ifndef AUTM_H
 #define AUTM_H
 
-#include "../../shared/Type.h"
 #include <stdint.h>
 
 typedef char *token_t;
 #define UNKNOWN_TOKEN (token_t)1
-
 
 typedef struct rule
 {
@@ -38,6 +36,32 @@ typedef struct automaton
     char max_symbol;
 } automaton;
 
+typedef struct automaton_iterator
+{
+    automaton *automaton;
+    uint64_t state_index;
+} automaton_iterator;
+
+typedef struct state_iterator
+{
+    automaton_state *state;
+    uint64_t rule_index;
+} state_iterator;
+
+char get_transition_matcher(rule *rule);
+
+uint64_t *get_to_state_indices(rule *rule);
+uint64_t get_to_state_indices_size(rule *rule);
+
+void free_automaton_iterator(automaton_iterator *iterator);
+void free_state_iterator(state_iterator *iterator);
+automaton_iterator *get_automaton_iterator(automaton *a);
+state_iterator *get_state_iterator(automaton_state *s);
+
+automaton_state *get_next_state(automaton_iterator *iterator);
+rule *get_next_rule(state_iterator *iterator);
+char has_next_state(automaton_iterator *iterator);
+char has_next_rule(state_iterator *iterator);
 
 uint64_t new_state(automaton *automaton, uint8_t throws_token, token_t token);
 
