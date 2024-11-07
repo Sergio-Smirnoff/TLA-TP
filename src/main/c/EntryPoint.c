@@ -28,7 +28,6 @@ const int main(const int count, const char ** arguments) {
 		logDebugging(logger, "Argument %d: \"%s\"", k, arguments[k]);
 	}
 
-
 	CompilerState compilerState = {
     	.abstractSyntaxTree = NULL,
     	.succeed = false,
@@ -47,14 +46,10 @@ const int main(const int count, const char ** arguments) {
 		compilerState.invalidRegexList->head = NULL;
 	}
 
-
-
 	const SyntacticAnalysisStatus syntacticAnalysisStatus = parse(&compilerState);
 	CompilationStatus compilationStatus = SUCCEED;
 	Program* program = compilerState.abstractSyntaxTree;
 	if (syntacticAnalysisStatus == ACCEPT) {
-			FILE *fptr;
-			fptr = fopen("ImTiredBoss.log","a");
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... ------------------------------------------------------------
 		logDebugging(logger, "Computing expression value...");

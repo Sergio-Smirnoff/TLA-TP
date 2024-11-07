@@ -215,7 +215,7 @@ static void _generatePrologue(void) {
 		"        @Override\n"
 		"        public String toString() {\n"
 		"            StringBuilder sb = new StringBuilder();\n"
-		"            sb.append(\"Token: \").append(this.name())\n"
+		"            sb.append(\"Token: \").append(this.name());\n"
 		"            if(hasParams) {\n"
 		"                sb.append(\"{ \");\n"
 		"                if (this.stringContent != null) {\n"
