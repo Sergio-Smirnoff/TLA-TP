@@ -569,7 +569,7 @@ void write_java_initialization(const automaton *a, int file_descriptor)
     char new_state_start[] = "\t\tAutomaton.newState(";
     char new_state_end[] = ");\n";
     char null[] = "(Function<StateTracker, Token>) null";
-    char buffer[BLOCK]; // this is big enough to hold an uint64_t in decimal notation
+    char buffer[10000]; // this is big enough to hold an uint64_t in decimal notation
 
     automaton_iterator *a_iterator = get_automaton_iterator(a);
     while (has_next_state(a_iterator))
