@@ -554,9 +554,15 @@ char has_next_rule(state_iterator *iterator)
     return iterator->rule_index < iterator->state->delta_size;
 }
 
-// boolean hasNextLine(automaton *a) {
-//     return
-// }
+char throws_token(automaton_state *s)
+{
+    return s->throws_token;
+}
+
+token_t get_token(automaton_state *s)
+{
+    return s->token;
+}
 
 void write_java_initialization(const automaton *a, int file_descriptor)
 {
@@ -565,13 +571,14 @@ void write_java_initialization(const automaton *a, int file_descriptor)
     char null[] = "(Function<StateTracker, Token>) null";
     char buffer[BLOCK]; // this is big enough to hold an uint64_t in decimal notation
 
-    for (uint64_t state_index = 0; state_index < a->states_size; state_index++)
+    automaton_iterator *a_iterator = get_automaton_iterator(a);
+    while (has_next_state(a_iterator))
     {
         write(file_descriptor, new_state_start, sizeof(new_state_start) - 1);
-        automaton_state *s = get_state(a, state_index);
-        if (s->throws_token)
+        automaton_state *s = get_next_state(a_iterator);
+        if (throws_token(s))
         {
-            write(file_descriptor, buffer, sprintf(buffer, "var -> %s", s->token));
+            write(file_descriptor, buffer, sprintf(buffer, "var -> %s", get_token(s)));
         }
         else
         {
@@ -579,26 +586,29 @@ void write_java_initialization(const automaton *a, int file_descriptor)
         }
         write(file_descriptor, new_state_end, sizeof(new_state_end) - 1);
     }
-
+    free_automaton_iterator(a_iterator);
     write(file_descriptor, "\n\n", 2);
 
     char set_transition_start[] = "\t\tAutomaton.setTransition(";
     char set_transition_end[] = ");\n";
 
-    for (uint64_t state_index = 0; state_index < a->states_size; state_index++)
+    a_iterator = get_automaton_iterator(a);
+
+    for (uint64_t state_index = 0; has_next_state(a_iterator); state_index++)
     {
-        automaton_state *s = get_state(a, state_index);
+        automaton_state *s = get_next_state(a_iterator);
         char state_index_buffer[BLOCK];
         char state_index_buffer_length = itoa(state_index, state_index_buffer);
-        for (uint64_t rule_index = 0; rule_index < s->delta_size; rule_index++)
+        state_iterator *s_iterator = get_state_iterator(s);
+        while (has_next_rule(s_iterator))
         {
-            rule r = s->delta[rule_index];
+            rule *r = get_next_rule(s_iterator);
             write(file_descriptor, set_transition_start, sizeof(set_transition_start) - 1);
             write(file_descriptor, state_index_buffer, state_index_buffer_length);
             write(file_descriptor, ", ", 2);
-            write(file_descriptor, buffer, itoa(r.next_indices[0], buffer)); // automaton should be dfa, only first transition for each matcher for each state is read
+            write(file_descriptor, buffer, itoa(get_to_state_indices(r)[0], buffer)); // automaton should be dfa, only first transition for each matcher for each state is read
             write(file_descriptor, ", ", 2);
-            switch (r.matcher)
+            switch (get_transition_matcher(r))
             {
             case '\t':
                 write(file_descriptor, buffer, sprintf(buffer, "'\\t'"));
@@ -620,13 +630,15 @@ void write_java_initialization(const automaton *a, int file_descriptor)
                 write(file_descriptor, buffer, sprintf(buffer, "'\\\\'"));
                 break;
             default:
+                char matcher = get_transition_matcher(r);
                 write(file_descriptor, "'", 1);
-                write(file_descriptor, &(r.matcher), 1);
+                write(file_descriptor, &matcher, 1);
                 write(file_descriptor, "'", 1);
             }
             write(file_descriptor, set_transition_end, sizeof(set_transition_end) - 1);
         }
     }
+    free_automaton_iterator(a_iterator);
 
     write(file_descriptor, "\n", 1);
 }
