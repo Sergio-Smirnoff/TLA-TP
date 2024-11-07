@@ -62,6 +62,8 @@ automaton_state *get_next_state(automaton_iterator *iterator);
 rule *get_next_rule(state_iterator *iterator);
 char has_next_state(automaton_iterator *iterator);
 char has_next_rule(state_iterator *iterator);
+token_t get_token(automaton_state *s);
+char throws_token(automaton_state *s);
 
 uint64_t new_state(automaton *automaton, uint8_t throws_token, token_t token);
 
