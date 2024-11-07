@@ -128,8 +128,8 @@
 %token <token> JAVA_THROW
 %token <token> JAVA_NOT
 %token <token> JAVA_NEW
-%token <token> NUMBER
-%token <token> FLOAT
+%token <string> NUMBER
+%token <string> FLOAT
 %token <token> UNKNOWN
 
 /** Non-terminals. */
@@ -376,10 +376,10 @@ ClassInstanceCreationExpression: UnqualifiedClassInstanceCreationExpression					
 UnqualifiedClassInstanceCreationExpression: JAVA_NEW param OPEN_PARENTHESES ArgumentList CLOSE_PARENTHESES																			{ $$ = UnqualifiedClassSemanticAction($2,$4); }
 	;
 
-Literal: NUMBER																																										{ $$ = JavaLiteralTokenSemanticAction($1); }
+Literal: NUMBER																																										{ $$ = JavaLiteralStrSemanticAction($1); }
 	| JAVA_TRUE																																										{ $$ = JavaLiteralTokenSemanticAction($1); }
 	| JAVA_FALSE																																									{ $$ = JavaLiteralTokenSemanticAction($1); }
-	| FLOAT																																											{ $$ = JavaLiteralTokenSemanticAction($1); }
+	| FLOAT																																											{ $$ = JavaLiteralStrSemanticAction($1); }
 	| STR																																											{ $$ = JavaLiteralStrSemanticAction($1); }
 	;
 
