@@ -13,7 +13,7 @@ static Valid_Regex_List *validRegexList;
 static automaton *automat;
 static ComputationResult *result;
 static boolean has_default = false;
-static int level = 0;
+
 // should be deleted
 static FILE *logFile;
 
@@ -34,6 +34,7 @@ char *_computeVarAccess(VarAccess* varAccess);
 char *_computeArgumentList(ArgumentList* argumentList);
 char *_computePostfixExpression(PostfixExpression* postfixExpression);
 char *_computeUnaryExpression(UnaryExpression* unaryExpression);
+char *_computeParams(Param* params);
 
 //----------------Unary Expression Aux functions -----------------------------------------
 char* _computeNumericComparison(char *left, char *right, NumericComparison *numcomp);
@@ -199,6 +200,38 @@ void _computeRule(Rule *my_rule)
 }
 
 // Leaf-level functions
+char *_computeParams(Param* params){
+    if(params == NULL){
+        return strdup("");
+    }
+
+    char* result = NULL;
+
+    switch(params->stuff){
+        case STRING_TYPE:
+            result = strdup("String");
+            break;
+
+        case INTEGER_TYPE:
+            result = strdup("Integer");
+            break;
+
+        case DOUBLE_TYPE:
+            result = strdup("Double");
+            break;
+
+        case BOOLEAN_TYPE:
+            result = strdup("Boolean");
+            break;
+
+        default:
+            result = strdup("");
+            break;
+    }
+
+    return result;
+}
+
 char *_computeLiteral(Literal* literal){
     if(literal == NULL){
         return NULL;
@@ -241,13 +274,14 @@ char* _computeVarAccess(VarAccess* varAccess) {
 
         else if(varAccess->param != NULL){
             char* nestedResult = _computeVarAccess(varAccess->vaccess);
+            char* params = _computeParams(varAccess->param);
 
-            size_t len = strlen(nestedResult) + 10 + 2;  //2 for the dot and the null terminator
+            size_t len = strlen(nestedResult) + strlen(params) + 2;
             char* result = calloc(len, sizeof(char));
-            snprintf(result, len, "%d.%s", varAccess->param->stuff, nestedResult);
+            snprintf(result, len, "%s.%s", params, nestedResult);
 
             free(nestedResult);
-
+            free(params);
             return result;
 
         } else {
@@ -363,8 +397,11 @@ char* _computeUnaryExpression(UnaryExpression* unaryExpression) {
                 if(unaryExpression->param == NULL){
                     result = strdup("()");
                 } else {
-                    result = malloc(12);
-                    snprintf(result, 12, "(%d)", unaryExpression->param->stuff);
+                    char* params= _computeParams(unaryExpression->param);
+                    size_t total = strlen(params) + 3;
+                    result = malloc(total);
+                    snprintf(result, total, "(%s)", params);
+                    free(params);
                 }
             }
             break;
@@ -632,12 +669,14 @@ char* _computeUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstanc
     }
 
     char* arglistStr = _computeArgumentList(unqualifiedClassInstanceCreationExpression->arglist);
+    char* params = _computeParams(unqualifiedClassInstanceCreationExpression->param);
+    size_t total = strlen(arglistStr) + strlen(params) + 7;
+    char* result = malloc(total);
 
-    char* result = malloc(strlen(arglistStr) + 10);
-
-    sprintf(result, "%d(%s)", unqualifiedClassInstanceCreationExpression->param->stuff, arglistStr);
+    snprintf(result, total, "new %s(%s)", params, arglistStr);
 
     free(arglistStr);
+    free(params);
 
     return result;
 }
@@ -700,11 +739,13 @@ char* _computeStatementExpression(StatementExpression* statementExpression) {
         }
         case assigParam: {
             char* expStr = _computeExpression(statementExpression->exp);
+            char* paramStr = _computeParams(statementExpression->param);
 
-            size_t totalLength = strlen(statementExpression->var_name) + strlen(expStr) + 12;
+            size_t totalLength = strlen(statementExpression->var_name) + strlen(expStr) + strlen(paramStr) + 5;
             result = malloc(totalLength);
-            snprintf(result, totalLength, "%d %s = %s", statementExpression->param->stuff, statementExpression->var_name, expStr);
+            snprintf(result, totalLength, "%s %s = %s", paramStr, statementExpression->var_name, expStr);
 
+            free(paramStr);
             free(expStr);
             break;
         }
@@ -781,9 +822,11 @@ char *_computeForInit(ForInit* forInit) {
         }
 
         case withParams: {
-            size_t totalLen = strlen(forInit->var_name_param) + 10;
+            char *paramStr = _computeParams(forInit->param);
+            size_t totalLen = strlen(forInit->var_name_param) + strlen(paramStr) + 2;
             char* result = malloc(totalLen);
-            snprintf(result, totalLen, "%d %s", forInit->param->stuff, forInit->var_name_param);
+            snprintf(result, totalLen, "%s %s", paramStr, forInit->var_name_param);
+            free(paramStr);
             return result;
         }
 
@@ -800,21 +843,14 @@ char *_computeForInit(ForInit* forInit) {
 char *_computeStatement(Statement* statement) {
     switch (statement->type) {
         case state: {
-            fprintf(logFile, "Compute state:802\n");
-            fflush(logFile);
-            fprintf(logFile, "Statement data: %s\n", _computeStatementExpression(statement->sexp));
             return _computeStatementExpression(statement->sexp);
         }
 
         case ifThenStatement: {
-            fprintf(logFile, "Compute ifThen:802\n");
-            fflush(logFile);
             return _computeIfThenStatement(statement->ifThen);
         }
 
         case While: {
-            fprintf(logFile, "Compute while:802\n");
-            fflush(logFile);
             char* whileCondition = _computeExpression(statement->expwhile);
             char* whileStatement = _computeStatement(statement->statementwhile);
 
@@ -825,8 +861,6 @@ char *_computeStatement(Statement* statement) {
         }
 
         case For: {
-            fprintf(logFile, "Compute for:802\n");
-            fflush(logFile);
             char* forInit = _computeForInit(statement->forInit);
             char* forCondition = _computeExpression(statement->expfor);
             char* forStatementList = _computeStatementExpressionList(statement->statementExpList);
@@ -846,50 +880,38 @@ char *_computeStatement(Statement* statement) {
 }
 
 char *_computeBlock(Block* block) {
-            fprintf(logFile, "Block type:%d\n", block->type);
-            fflush(logFile);
     switch (block->type) {
         case statement: {
-            fprintf(logFile, "Compute Block Statement:840 lvl:%d\n", level++);
-            fflush(logFile);
-            fprintf(logFile, "Block statement: %x\n", block->statement);
-            fflush(logFile);
-            fprintf(logFile, "Block data: %x\n", block->block);
-            fflush(logFile);
             char* statementResult = _computeStatement(block->statement);
-            fprintf(logFile, "Computed Statement:840 lvl:%d\n", level-1);
-            fflush(logFile);
             char* nestedBlockResult = block->block != NULL ? _computeBlock(block->block) : NULL;
-            fprintf(logFile, "Computed NestedBlock:840\n");
-            fflush(logFile);
             size_t totalLen = strlen(statementResult) + (nestedBlockResult != NULL ? strlen(nestedBlockResult) : 0) + 10;
             char* result = malloc(totalLen);
             if (result != NULL) {
-                snprintf(result, totalLen, "%s %s", statementResult, nestedBlockResult != NULL ? nestedBlockResult : "");
+                snprintf(result, totalLen, "%s; %s", statementResult, nestedBlockResult != NULL ? nestedBlockResult : "");
             }
             fprintf(logFile, "Computed Block Statement:840\n");
             fprintf(logFile, "Block Statement result: %s\n", result);
+
             fflush(logFile);
             return result;
         }
 
         case ret: {
-            fprintf(logFile, "Compute Block return:840\n");
-            fflush(logFile);
             char* returnExpr = _computeExpression(block->exp);
-            size_t totalLen = strlen(returnExpr) + 10;
+            size_t totalLen = strlen(returnExpr) + 9;
             char* result = malloc(totalLen);
             if (result != NULL) {
                 snprintf(result, totalLen, "return %s;", returnExpr);
             }
+                        fprintf(logFile, "Computed Block Statement:840\n");
+            fprintf(logFile, "Block Statement result: %s\n", result);
+                        fflush(logFile);
             return result;
         }
 
         case throw: {
-            fprintf(logFile, "Compute Block throw:840\n");
-            fflush(logFile);
             char* throwExpr = _computeExpression(block->exp);
-            size_t totalLen = strlen(throwExpr) + 10;
+            size_t totalLen = strlen(throwExpr) + 9;
             char* result = malloc(totalLen);
             if (result != NULL) {
                 snprintf(result, totalLen, "throw %s;", throwExpr);
@@ -910,17 +932,14 @@ char *_computeAction(Action *my_action)
     }
     else if(my_action->type == function_body)
     {
-        fprintf(logFile, "Compute Action:884\n");
-        fflush(logFile);
         char *block_str = _computeBlock(my_action->block);
-        size_t totalLen = strlen(block_str) + 20;
+        char *params = _computeParams(my_action->param);
+
+        size_t totalLen = strlen(block_str) + strlen(params) + 2;
         char * result = malloc(totalLen);
-        fprintf(logFile, "Computed Action:690000\n");
-        fflush(logFile);
-        snprintf(result, totalLen, "%d %s", my_action->param != NULL ? my_action->param->stuff : 1, block_str);
-        fprintf(logFile, "COPIED Action:690000\n");
-        fflush(logFile);
+        snprintf(result, totalLen, "%s %s", params, block_str);
         free(block_str);
+        free(params);
         fprintf(logFile, "FINISHED Compute Action:891 :DDDDD\n");
         fflush(logFile);
         return result;

@@ -627,13 +627,6 @@ Block* JavaBlockSemanticAction(Statement* state, Block* block){
 	new_block->statement = state;
 	new_block->block = block;
 	new_block->type = statement;
-
-	FILE * ptr = fopen("log.txt", "a");
-	fprintf(ptr, "Block ptr: %x\n", new_block);
-    fprintf(ptr, "Block statement: %x\n", new_block->statement);
-	fprintf(ptr, "Block nextblockptr: %x\n", new_block->block);
-	fprintf(ptr, "Block type: %x\n", new_block->type);
-	fclose(ptr);
 	return new_block;
 }
 
@@ -642,11 +635,6 @@ Block* JavaReturnExpressionSemanticAction(Expression* exp){
 	Block * block = calloc(1, sizeof(Block));
 	block->exp = exp;
 	block->type = ret;
-	FILE * ptr = fopen("logret.txt", "a");
-	fprintf(ptr, "Block ptr: %x\n", block);
-	fprintf(ptr, "Block exp: %x\n", block->exp);
-	fprintf(ptr, "Block type: %x\n", block->type);
-	fclose(ptr);
 	return block;
 }
 
