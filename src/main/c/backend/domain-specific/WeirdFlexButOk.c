@@ -176,6 +176,8 @@ void _computeRule(Rule *my_rule)
     case lexeme_action:
         lexeme = my_rule->lex;
         returner = _computeAction(my_rule->action);
+        fprintf(logFile, "FINISHED Compute Rule: %s\n", returner);
+        fflush(logFile);
         _addToList(lexeme, returner);
         break;
     case ignore_lexeme:
@@ -854,7 +856,7 @@ char *_computeStatement(Statement* statement) {
             char* whileCondition = _computeExpression(statement->expwhile);
             char* whileStatement = _computeStatement(statement->statementwhile);
 
-            size_t totalLen = strlen(whileCondition) + strlen(whileStatement) + 50;
+            size_t totalLen = strlen(whileCondition) + strlen(whileStatement) + 14;
             char* result = malloc(totalLen);
             snprintf(result, totalLen, "while (%s) { %s }", whileCondition, whileStatement);
             return result;
@@ -866,7 +868,7 @@ char *_computeStatement(Statement* statement) {
             char* forStatementList = _computeStatementExpressionList(statement->statementExpList);
             char* forBody = _computeStatement(statement->statementfor);
 
-            size_t totalLen = strlen(forInit) + strlen(forCondition) + strlen(forStatementList) + strlen(forBody) + 20;
+            size_t totalLen = strlen(forInit) + strlen(forCondition) + strlen(forStatementList) + strlen(forBody) + 16;
             char* result = malloc(totalLen);
             if (result != NULL) {
                 snprintf(result, totalLen, "for (%s; %s; %s) { %s }", forInit, forCondition, forStatementList, forBody);
@@ -928,13 +930,11 @@ char *_computeAction(Action *my_action)
         char *block_str = _computeBlock(my_action->block);
         char *params = _computeParams(my_action->param);
 
-        size_t totalLen = strlen(block_str) + strlen(params) + 2;
+        size_t totalLen = strlen(block_str) + strlen(params) + 6;
         char * result = malloc(totalLen);
-        snprintf(result, totalLen, "%s %s", params, block_str);
+        snprintf(result, totalLen, "{ %s %s }", params, block_str);
         free(block_str);
         free(params);
-        fprintf(logFile, "FINISHED Compute Action:891 :DDDDD\n");
-        fflush(logFile);
         return result;
     } else {
         return strdup("IGNORE_FOR_NOW");
