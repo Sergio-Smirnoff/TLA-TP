@@ -2,9 +2,10 @@
 #ifndef AUTM_H
 #define AUTM_H
 
+#include "../../shared/Type.h"
 #include <stdint.h>
 
-typedef void *token_t;
+typedef char *token_t;
 #define UNKNOWN_TOKEN (token_t)1
 
 
@@ -111,6 +112,9 @@ automaton *get_deterministic_equivalent(const automaton *automaton);
  * @param file_descriptor
  */
 void write_java_initialization(const automaton *a, int file_descriptor);
+
+// boolean hasNextLine(automaton *a);
+// char* nextLine(automaton *a);
 
 /**
  * @brief Set the token thrown by a state

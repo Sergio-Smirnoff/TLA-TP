@@ -58,6 +58,7 @@ endif ()
 add_executable(Compiler
 	src/main/c/EntryPoint.c
 	src/main/c/backend/domain-specific/WeirdFlexButOk.c
+	src/main/c/backend/code-generation/Generator.c
 	src/main/c/backend/automaton/automaton.c
 	src/main/c/backend/automaton/closed_hashing.c
 	src/main/c/frontend/lexical-analysis/FlexActions.c

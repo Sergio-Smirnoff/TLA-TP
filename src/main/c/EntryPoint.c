@@ -21,7 +21,7 @@ const int main(const int count, const char ** arguments) {
 	initializeSyntacticAnalyzerModule();
 	initializeAbstractSyntaxTreeModule();
 	initializeWeirdFlexModule();
-	//initializeGeneratorModule();
+	initializeGeneratorModule();
 
 	// Logs the arguments of the application.
 	for (int k = 0; k < count; ++k) {
@@ -33,7 +33,8 @@ const int main(const int count, const char ** arguments) {
     	.abstractSyntaxTree = NULL,
     	.succeed = false,
     	.validRegexList = malloc(sizeof(Valid_Regex_List)),
-    	.invalidRegexList = malloc(sizeof(Invalid_Regex_List))
+    	.invalidRegexList = malloc(sizeof(Invalid_Regex_List)),
+		.automaton = NULL
 	};
 
 
@@ -57,12 +58,6 @@ const int main(const int count, const char ** arguments) {
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... ------------------------------------------------------------
 		logDebugging(logger, "Computing expression value...");
-		Valid_Regex_List_Node* current = compilerState.validRegexList->head;
-		while (current != NULL) {
-			fprintf(fptr,"Valid regex: %s\n", current->regex_id);
-			current = current->next;
-		}
-		fclose(fptr);
 		
 		ComputationResult* computationResult = computeProgram(program, compilerState.validRegexList);
 		if(!computationResult->succeed) {
@@ -77,18 +72,13 @@ const int main(const int count, const char ** arguments) {
 				logError(logger, "Error: %s", computationResult->errorMessage);
 				free(computationResult->errorMessage);
 				compilationStatus = FAILED;
+			} else {
+				compilerState.automaton = computationResult->automaton;
+				generate(&compilerState);
 			}
+			free_automaton(computationResult->automaton);
+			free(computationResult);
 		}
-		free(computationResult);
-		/*
-		if (computationResult->succeed) {
-			//compilerState.value = computationResult.value;
-			generate(&compilerState);
-		} else {
-			logError(logger, "The computation phase rejects the input program.");
-			compilationStatus = FAILED;
-		}
-		*/
 		// ...end of the Backend. -----------------------------------------------------------------
 		// ----------------------------------------------------------------------------------------
 		logDebugging(logger, "Releasing AST resources...");
@@ -107,10 +97,9 @@ const int main(const int count, const char ** arguments) {
 	
 		compilationStatus = FAILED;
 	}
-	logDebugging(logger, "Releasing AST resources...");
-	//releaseProgram(program);
+
 	logDebugging(logger, "Releasing modules resources...");
-	//shutdownGeneratorModule();
+	shutdownGeneratorModule();
 	shutdownWeirdFlexModule();
 	shutdownAbstractSyntaxTreeModule();
 	shutdownSyntacticAnalyzerModule();

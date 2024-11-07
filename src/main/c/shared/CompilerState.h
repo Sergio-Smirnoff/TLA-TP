@@ -3,6 +3,7 @@
 
 #include "Type.h"
 #include "../frontend/syntactic-analysis/AbstractSyntaxTree.h"
+#include "../backend/automaton/automaton.h"
 
 typedef struct Invalid_Regex_List Invalid_Regex_List;
 typedef struct Invalid_Regex_List_Node Invalid_Regex_List_Node;
@@ -55,6 +56,8 @@ typedef struct {
 	// TODO: Add a symbol table.
 	// TODO: Add configuration.
 	// TODO: ...
+
+	automaton * automaton;
 } CompilerState;
 
 #endif

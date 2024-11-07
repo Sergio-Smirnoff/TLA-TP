@@ -2,11 +2,14 @@
 #include "closed_hashing.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 #define BLOCK 32
 #define DTE(x) ((delta_table_entry *)(x))
 #define BIG_PRIME 1000000007
+
+static uint64_t _printedLines = 0;
 
 void resize_automaton(automaton *a)
 {
@@ -488,180 +491,24 @@ int itoa(uint64_t v, char *sp)
     return len;
 }
 
+// boolean hasNextLine(automaton *a) {
+//     return 
+// }
+
 void write_java_initialization(const automaton *a, int file_descriptor)
 {
-    char automaton_class_start[] = "\n\
-\n\
-import java.util.*;\n\
-import java.util.function.Function;\n\
-\n\
-import static ar.edu.itba.paw.webapp.controller.Automaton.Token.*;\n\
-\n\
-public class Automaton {\n\
-\n\
-    private static State initialState;\n\
-    private static final List<State> states = new ArrayList<>();\n\
-    private static final StateTracker stateTracker = new StateTracker();\n\
-\n\
-    private Automaton() {\n\
-    }\n\
-\n\
-    public static int newState(Token token) {\n\
-        return newState((s) -> token);\n\
-    }\n\
-\n\
-    public static int newState(Function<StateTracker, Token> tokenGenerator) {\n\
-        State state = new State(tokenGenerator);\n\
-        if (initialState == null)\n\
-            initialState = state;\n\
-        states.add(state);\n\
-        return states.size() - 1;\n\
-    }\n\
-\n\
-    public static void setInitialState(int index) {\n\
-        initialState = states.get(index);\n\
-    }\n\
-\n\
-    public static void setTransition(int from, int to, char symbol) {\n\
-        states.get(from).setTransition(states.get(to), symbol);\n\
-    }\n\
-\n\
-    private static void manageState(char symbol, Token token) {\n\
-        if (token != null) {\n\
-            Automaton.stateTracker.lexeme = new StringBuilder();\n\
-            Automaton.stateTracker.token = token;\n\
-        } else {\n\
-            Automaton.stateTracker.lexeme.append(symbol);\n\
-        }\n\
-        if (symbol == '\n') {\n\
-            Automaton.stateTracker.attribute.row++;\n\
-            Automaton.stateTracker.attribute.column = 0;\n\
-        } else {\n\
-            Automaton.stateTracker.attribute.column++;\n\
-        }\n\
-    }\n\
-\n\
-    private record TokenAndConsume(Token token, int consumeIndex) {\n\
-    }\n\
-\n\
-    private static TokenAndConsume getNextToken(char[] charArray, int readIndex) {\n\
-        State current = initialState;\n\
-        Token foundToken = null;\n\
-        int consumeIndex = readIndex;\n\
-        while (current != null && readIndex < charArray.length) {\n\
-            Token aux = current.tokenGenerator.apply(stateTracker);\n\
-            if (aux != null) {\n\
-                // store the most recent token found\n\
-                foundToken = aux;\n\
-                // consume the string up to that token\n\
-                consumeIndex = readIndex;\n\
-            }\n\
-            current = current.getTransition(charArray[readIndex]);\n\
-            readIndex++;\n\
-        }\n\
-        Token aux;\n\
-        if (current != null && (aux = current.tokenGenerator.apply(stateTracker)) != null) {\n\
-            foundToken = aux;\n\
-            // consume the string up to that token\n\
-            consumeIndex = readIndex;\n\
-        }\n\
-        return new TokenAndConsume(foundToken, consumeIndex);\n\
-    }\n\
-\n\
-    public static List<Token> getTokenList(String s) {\n\
-        TokenAndConsume tokenAndConsume;\n\
-        int i;\n\
-        char[] chars = s.toCharArray();\n\
-        List<Token> tokens = new ArrayList<>();\n\
-        for (i = 0; i < chars.length; ) {\n\
-            tokenAndConsume = getNextToken(chars, i);\n\
-            if (tokenAndConsume.token == null) {\n\
-                tokens.add(UNKNOWN);\n\
-                break;\n\
-            }\n\
-            tokens.add(tokenAndConsume.token);\n\
-            manageState(chars[i], tokenAndConsume.token);\n\
-            i = tokenAndConsume.consumeIndex;\n\
-        }\n\
-        return tokens;\n\
-    }\n\
-\n\
-    public static class StateTracker {\n\
-        private StringBuilder lexeme;\n\
-        private Token token;\n\
-        public final Attribute attribute = new Attribute();\n\
-\n\
-        public String getLexeme() {\n\
-            return lexeme.toString();\n\
-        }\n\
-\n\
-        public Token getToken() {\n\
-            return token;\n\
-        }\n\
-\n\
-        public Attribute getAttribute() {\n\
-            return attribute;\n\
-        }\n\
-\n\
-        public static class Attribute {\n\
-            // User managed\n\
-            public Integer id, num;\n\
-            // Non-user managed\n\
-            private Integer row = 0, column = 0;\n\
-\n\
-            public Integer getRow() {\n\
-                return row;\n\
-            }\n\
-\n\
-            public Integer getColumn() {\n\
-                return column;\n\
-            }\n\
-        }\n\
-    }\n\
-\n\
-    public enum Token {\n\
-        PUT_YOUR_USED_TOKENS_HERE, UNKNOWN\n\
-    }\n\
-\n\
-    private static class State {\n\
-        private final Map<Character, State> transitions;\n\
-        private final Function<StateTracker, Token> tokenGenerator;\n\
-\n\
-        private State(Function<StateTracker, Token> tokenGenerator) {\n\
-            this.tokenGenerator = tokenGenerator;\n\
-            this.transitions = new HashMap<>();\n\
-        }\n\
-\n\
-        public void setTransition(State to, char symbol) {\n\
-            transitions.put(symbol, to);\n\
-        }\n\
-\n\
-        public State getTransition(char symbol) {\n\
-            return transitions.get(symbol);\n\
-        }\n\
-    }\n\
-\n\
-    private static boolean initialized = false;\n\
-\n\
-    public static void initialize() {\n\
-        if (initialized)\n\
-            throw new IllegalStateException();\n\
-        initialized = true;";
-    char automaton_class_end[] = "    }\n\
-}";
-    char new_state_start[] = "Automaton.newState(";
+    char new_state_start[] = "\t\tAutomaton.newState(";
     char new_state_end[] = ");\n";
     char null[] = "s -> null";
     char buffer[BLOCK]; // this is big enough to hold an uint64_t in decimal notation
 
-    write(file_descriptor, automaton_class_start, sizeof(automaton_class_start) - 1);
     for (uint64_t state_index = 0; state_index < a->states_size; state_index++)
     {
         write(file_descriptor, new_state_start, sizeof(new_state_start) - 1);
         automaton_state *s = get_state(a, state_index);
         if (s->throws_token)
         {
-            write(file_descriptor, buffer, itoa(s->token, buffer));
+            write(file_descriptor, buffer, sprintf(buffer, "s -> Token.%s", s->token));
         }
         else
         {
@@ -672,7 +519,7 @@ public class Automaton {\n\
 
     write(file_descriptor, "\n\n", 2);
 
-    char set_transition_start[] = "Automaton.setTransition(";
+    char set_transition_start[] = "\t\tAutomaton.setTransition(";
     char set_transition_end[] = ");\n";
 
     for (uint64_t state_index = 0; state_index < a->states_size; state_index++)
@@ -687,13 +534,36 @@ public class Automaton {\n\
             write(file_descriptor, state_index_buffer, state_index_buffer_length);
             write(file_descriptor, ", ", 2);
             write(file_descriptor, buffer, itoa(r.next_indices[0], buffer)); // automaton should be dfa, only first transition for each matcher for each state is read
-            write(file_descriptor, ", '", 3);
-            write(file_descriptor, &(r.matcher), 1);
-            write(file_descriptor, "'", 1);
+            write(file_descriptor, ", ", 2);
+            switch (r.matcher)
+            {
+            case '\t':
+                write(file_descriptor, buffer, sprintf(buffer, "'\\t'"));
+                break;
+            
+            case '\n':
+                write(file_descriptor, buffer, sprintf(buffer, "'\\n'"));
+                break;
+
+            case '\r':
+                write(file_descriptor, buffer, sprintf(buffer, "'\\r'"));
+                break;
+
+            case '\'':
+                write(file_descriptor, buffer, sprintf(buffer, "'\\''"));
+                break;
+
+            case '\\':
+                write(file_descriptor, buffer, sprintf(buffer, "'\\\\'"));
+                break;
+            default:
+                write(file_descriptor, "'", 1);
+                write(file_descriptor, &(r.matcher), 1);
+                write(file_descriptor, "'", 1);
+            }
             write(file_descriptor, set_transition_end, sizeof(set_transition_end) - 1);
         }
     }
 
     write(file_descriptor, "\n", 1);
-    write(file_descriptor, automaton_class_end, sizeof(automaton_class_end) - 1);
 }

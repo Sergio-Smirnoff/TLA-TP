@@ -23,32 +23,33 @@ void initializeWeirdFlexModule();
 /** Shutdown module's internal state. */
 void shutdownWeirdFlexModule();
 
-typedef enum return_type
-{
-    RETURN_TOKEN,
-    RETURN_STRING,
-    JAVA_BLOCK
-} return_type;
+// typedef enum return_type
+// {
+//     RETURN_TOKEN,
+//     RETURN_STRING,
+//     JAVA_BLOCK
+// } return_type;
 
-typedef struct return_struct
-{
-    union
-    {
-        Token *token;
-        char *string;
-        struct
-        {
-            Token parameters;
-            Block *java_block;
-        };
-    };
-    return_type type;
-} return_struct;
+// typedef struct return_struct
+// {
+//     union
+//     {
+//         Token *token;
+//         char *string;
+//         struct
+//         {
+//             Token parameters;
+//             Block *java_block;
+//         };
+//     };
+//     return_type type;
+// } return_struct;
 
 typedef struct transformer_list
 {
     Lexeme_precursor *lexeme;
-    return_struct *returner;
+    // return_struct *returner;
+    char *returner;
     struct transformer_list *next;
 } transformer_list;
 

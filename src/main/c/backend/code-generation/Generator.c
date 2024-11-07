@@ -5,117 +5,38 @@
 const char _indentationCharacter = ' ';
 const char _indentationSize = 4;
 static Logger * _logger = NULL;
+static FILE * _outputFile = NULL;
 
 void initializeGeneratorModule() {
 	_logger = createLogger("Generator");
+	_outputFile = fopen("Automaton.java", "w");
 }
 
 void shutdownGeneratorModule() {
 	if (_logger != NULL) {
 		destroyLogger(_logger);
 	}
+	if (_outputFile != NULL) {
+		fclose(_outputFile);
+	}
 }
 
 /** PRIVATE FUNCTIONS */
 
-static const char _expressionTypeToCharacter(const ExpressionType type);
-static void _generateConstant(const unsigned int indentationLevel, Constant * constant);
-static void _generateEpilogue(const int value);
-static void _generateExpression(const unsigned int indentationLevel, Expression * expression);
-static void _generateFactor(const unsigned int indentationLevel, Factor * factor);
-static void _generateProgram(Program * program);
 static void _generatePrologue(void);
+static void _generateProgram(automaton * automaton);
+static void _generateEpilogue(void);
 static char * _indentation(const unsigned int indentationLevel);
 static void _output(const unsigned int indentationLevel, const char * const format, ...);
 
 /**
- * Converts and expression type to the proper character of the operation
- * involved, or returns '\0' if that's not possible.
- */
-static const char _expressionTypeToCharacter(const ExpressionType type) {
-	switch (type) {
-		case ADDITION: return '+';
-		case DIVISION: return '/';
-		case MULTIPLICATION: return '*';
-		case SUBTRACTION: return '-';
-		default:
-			logError(_logger, "The specified expression type cannot be converted into character: %d", type);
-			return '\0';
-	}
-}
-
-/**
- * Generates the output of a constant.
- */
-static void _generateConstant(const unsigned int indentationLevel, Constant * constant) {
-	_output(indentationLevel, "%s", "[ $C$, circle, draw, black!20\n");
-	_output(1 + indentationLevel, "%s%d%s", "[ $", constant->value, "$, circle, draw ]\n");
-	_output(indentationLevel, "%s", "]\n");
-}
-
-/**
- * Creates the epilogue of the generated output, that is, the final lines that
- * completes a valid Latex document.
- */
-static void _generateEpilogue(const int value) {
-	_output(0, "%s%d%s",
-		"            [ $", value, "$, circle, draw, blue ]\n"
-		"        ]\n"
-		"    \\end{forest}\n"
-		"\\end{document}\n\n"
-	);
-}
-
-/**
- * Generates the output of an expression.
- */
-static void _generateExpression(const unsigned int indentationLevel, Expression * expression) {
-	_output(indentationLevel, "%s", "[ $E$, circle, draw, black!20\n");
-	switch (expression->type) {
-		case ADDITION:
-		case DIVISION:
-		case MULTIPLICATION:
-		case SUBTRACTION:
-			_generateExpression(1 + indentationLevel, expression->leftExpression);
-			_output(1 + indentationLevel, "%s%c%s", "[ $", _expressionTypeToCharacter(expression->type), "$, circle, draw, purple ]\n");
-			_generateExpression(1 + indentationLevel, expression->rightExpression);
-			break;
-		case FACTOR:
-			_generateFactor(1 + indentationLevel, expression->factor);
-			break;
-		default:
-			logError(_logger, "The specified expression type is unknown: %d", expression->type);
-			break;
-	}
-	_output(indentationLevel, "%s", "]\n");
-}
-
-/**
- * Generates the output of a factor.
- */
-static void _generateFactor(const unsigned int indentationLevel, Factor * factor) {
-	_output(indentationLevel, "%s", "[ $F$, circle, draw, black!20\n");
-	switch (factor->type) {
-		case CONSTANT:
-			_generateConstant(1 + indentationLevel, factor->constant);
-			break;
-		case EXPRESSION:
-			_output(1 + indentationLevel, "%s", "[ $($, circle, draw, purple ]\n");
-			_generateExpression(1 + indentationLevel, factor->expression);
-			_output(1 + indentationLevel, "%s", "[ $)$, circle, draw, purple ]\n");
-			break;
-		default:
-			logError(_logger, "The specified factor type is unknown: %d", factor->type);
-			break;
-	}
-	_output(indentationLevel, "%s", "]\n");
-}
-
-/**
  * Generates the output of the program.
  */
-static void _generateProgram(Program * program) {
-	_generateExpression(3, program->expression);
+static void _generateProgram(automaton * automaton) {
+	if(_outputFile == NULL) {
+		write_java_initialization(automaton, 1);
+	}
+	write_java_initialization(automaton, fileno(_outputFile));
 }
 
 /**
@@ -126,16 +47,230 @@ static void _generateProgram(Program * program) {
  */
 static void _generatePrologue(void) {
 	_output(0, "%s",
-		"\\documentclass{standalone}\n\n"
-		"\\usepackage[utf8]{inputenc}\n"
-		"\\usepackage[T1]{fontenc}\n"
-		"\\usepackage{amsmath}\n"
-		"\\usepackage{forest}\n"
-		"\\usepackage{microtype}\n\n"
-		"\\begin{document}\n"
-		"    \\centering\n"
-		"    \\begin{forest}\n"
-		"        [ \\text{$=$}, circle, draw, purple\n"
+		"\n\n"
+		"import java.util.*;\n"
+		"import java.util.function.Function;\n\n"
+		"public class Automaton {\n"
+		"\n"
+		"    private static State initialState;\n"
+		"    private static final List<State> states = new ArrayList<>();\n"
+		"	private static final StateTracker stateTracker = new StateTracker();\n"
+		"\n"
+		"	private Automaton() {}\n"
+		"\n"
+		"	public static int newState(Token token) {\n"
+		"		return newState((s) -> token);\n"
+		"	}\n"
+		"\n"
+		"	public static int newState(Function<StateTracker, Token> tokenGenerator) {\n"
+		"	 	State state = new State(tokenGenerator);\n"
+		"		if (initialState == null)\n"
+		"			initialState = state;\n"
+		"		states.add(state);\n"
+		"		return states.size() - 1;\n"
+		"	}\n"
+		"\n"
+		"	public static void setInitialState(int index) {\n"
+		"		initialState = states.get(index);\n"
+		"	}\n"
+		"\n"
+		"	public static void setTransition(int from, int to, char symbol) {\n"
+		"		states.get(from).setTransition(states.get(to), symbol);\n"
+		"	}\n"
+		"\n"
+		"	private static void manageState(char symbol, Token token) {\n"
+		"		if (token != null) {\n"
+		"			Automaton.stateTracker.lexeme = new StringBuilder();\n"
+		"			Automaton.stateTracker.token = token;\n"
+		"		} else {\n"
+		"			Automaton.stateTracker.lexeme.append(symbol);\n"
+		"		}\n"
+		"		if (symbol == '\\n') {\n"
+		"			Automaton.stateTracker.attribute.row++;\n"
+		"			Automaton.stateTracker.attribute.column = 0;\n"
+		"		} else {\n"
+		"			Automaton.stateTracker.attribute.column++;\n"
+		"		}\n"
+		"	}\n"
+		"\n"
+		"	private record TokenAndConsume(Token token, int consumeIndex) {}\n"
+		"\n"
+		"	private static TokenAndConsume getNextToken(char[] charArray, int readIndex) {\n"
+		"		State current = initialState;\n"
+		"		Token foundToken = null;\n"
+		"		int consumeIndex = readIndex;\n"
+		"		while (current != null && readIndex < charArray.length) {\n"
+		"			Token aux = current.tokenGenerator.apply(stateTracker);\n"
+		"			if (aux != null) {\n"
+		"				foundToken = aux;\n"
+		"				consumeIndex = readIndex;\n"
+		"			}\n"
+		"			current = current.getTransition(charArray[readIndex]);\n"
+		"			readIndex++;\n"
+		"		}\n"
+		"		Token aux;\n"
+		"		if (current != null && (aux = current.tokenGenerator.apply(stateTracker)) != null) {\n"
+		"			foundToken = aux;\n"
+		"			consumeIndex = readIndex;\n"
+		"		}\n"
+		"		return new TokenAndConsume(foundToken, consumeIndex);\n"
+		"	}\n"
+		"\n"
+		"	public static List<Token> getTokenList(String s) {\n"
+		"		TokenAndConsume tokenAndConsume;\n"
+		"		int i;\n"
+		"		char[] chars = s.toCharArray();\n"
+		"		List<Token> tokens = new ArrayList<>();\n"
+		"		for (i = 0; i < chars.length; ) {\n"
+		"			tokenAndConsume = getNextToken(chars, i);\n"
+		"			if (tokenAndConsume.token == null) {\n"
+		"				tokens.add(Token.UNKNOWN);\n"
+		"				break;\n"
+		"			}\n"
+		"			tokens.add(tokenAndConsume.token);\n"
+		"			manageState(chars[i], tokenAndConsume.token);\n"
+		"			i = tokenAndConsume.consumeIndex;\n"
+		"		}\n"
+		"		return tokens;\n"
+		"	}\n"
+		"\n"
+		"	public static class StateTracker {\n"
+		"		private StringBuilder lexeme;\n"
+		"		private Token token;\n"
+		"		public final Attribute attribute = new Attribute();\n"
+		"\n"
+		"		public String getLexeme() {\n"
+		"			return lexeme.toString();\n"
+		"		}\n"
+		"\n"
+		"		public Token getToken() {\n"
+		"			return token;\n"
+		"		}\n"
+		"\n"
+		"		public Attribute getAttribute() {\n"
+		"			return attribute;\n"
+		"		}\n"
+		"\n"
+		"		public static class Attribute {\n"
+		"			// User managed\n"
+		"			public Integer id, num;\n"
+		"			// Non-user managed\n"
+		"			private Integer row = 0, column = 0;\n"
+		"\n"
+		"			public Integer getRow() {\n"
+		"				return row;\n"
+		"			}\n"
+		"\n"
+		"			public Integer getColumn() {\n"
+		"				return column;\n"
+		"			}\n"
+		"		}\n"
+		"	}\n"
+		"\n"
+		"	public enum Token {\n"
+		"		PUT_YOUR_USED_TOKENS_HERE, UNKNOWN;\n"
+		"\n\n"
+        "		private String stringContent;\n"
+        "		private Integer intContent;\n"
+		"        private Boolean boolContent;\n"
+		"        private Double doubleContent;\n"
+		"        private Boolean hasParams = false;\n"
+		"\n"
+		"        public void setStringContent(String stringContent) {\n"
+		"            this.stringContent = stringContent;\n"
+		"            this.hasParams = true;\n"
+		"        }\n"
+		"\n"
+		"        public void setIntContent(Integer intContent) {\n"
+		"            this.intContent = intContent;\n"
+		"            this.hasParams = true;\n"
+		"        }\n"
+		"\n"
+		"        public void setBoolContent(Boolean boolContent) {\n"
+		"            this.boolContent = boolContent;\n"
+		"            this.hasParams = true;\n"
+		"        }\n"
+		"\n"
+		"        public void setDoubleContent(Double doubleContent) {\n"
+		"            this.doubleContent = doubleContent;\n"
+		"            this.hasParams = true;\n"
+		"        }\n"
+		"\n"
+		"        public String getStringContent() {\n"
+		"            return stringContent;\n"
+		"        }\n"
+		"\n"
+		"        public Integer getIntContent() {\n"
+		"            return intContent;\n"
+		"        }\n"
+		"\n"
+		"        public Boolean getBoolContent() {\n"
+		"            return boolContent;\n"
+		"        }\n"
+		"\n"
+		"        public Double getDoubleContent() {\n"
+		"            return doubleContent;\n"
+		"        }\n"
+		"\n"
+		"        @Override\n"
+		"        public String toString() {\n"
+		"            StringBuilder sb = new StringBuilder();\n"
+		"            sb.append(\"Token: \").append(this.name())\n"
+		"            if(hasParams) {\n"
+		"                sb.append(\"{ \");\n"
+		"                if (this.stringContent != null) {\n"
+		"                    sb.append(\"stringContent: \").append(this.stringContent).append(\" \");\n"
+		"                }\n"
+		"                if (this.intContent != null) {\n"
+		"                    sb.append(\"intContent: \").append(this.intContent).append(\" \");\n"
+		"                }\n"
+		"                if (this.boolContent != null) {\n"
+		"                    sb.append(\"boolContent: \").append(this.boolContent).append(\" \");\n"
+		"                }\n"
+		"                if (this.doubleContent != null) {\n"
+		"                    sb.append(\"doubleContent: \").append(this.doubleContent).append(\" \");\n"
+		"                }\n"
+		"                sb.append(\"}\");\n"
+		"			}\n"
+		"            return sb.toString();\n"
+        "		}\n"
+		"	}\n"
+		"\n"
+		"	private static class State {\n"
+		"		private final Map<Character, State> transitions;\n"
+		"		private final Function<StateTracker, Token> tokenGenerator;\n"
+		"\n"
+		"		private State(Function<StateTracker, Token> tokenGenerator) {\n"
+		"			this.tokenGenerator = tokenGenerator;\n"
+		"			this.transitions = new HashMap<>();\n"
+		"		}\n"
+		"\n"
+		"		public void setTransition(State to, char symbol) {\n"
+		"			transitions.put(symbol, to);\n"
+		"		}\n"
+		"\n"
+		"		public State getTransition(char symbol) {\n"
+		"			return transitions.get(symbol);\n"
+		"		}\n"
+		"	}\n"
+		"\n"
+		"	private static boolean initialized = false;\n"
+		"\n"
+		"	public static void initialize() {\n"
+		"		if (initialized)\n"
+		"			throw new IllegalStateException();\n"
+		"		initialized = true;\n\n"
+	);
+}
+
+/**
+ * Creates the epilogue of the generated output, that is, the final lines that
+ * completes a valid Latex document.
+ */
+static void _generateEpilogue() {
+	_output(0, "%s",
+		"    }\n"
+		"}"
 	);
 }
 
@@ -156,8 +291,13 @@ static void _output(const unsigned int indentationLevel, const char * const form
 	va_start(arguments, format);
 	char * indentation = _indentation(indentationLevel);
 	char * effectiveFormat = concatenate(2, indentation, format);
-	vfprintf(stdout, effectiveFormat, arguments);
-	fflush(stdout);
+	if(_outputFile != NULL) {
+		vfprintf(_outputFile, effectiveFormat, arguments);
+		fflush(_outputFile);
+	} else {
+		vfprintf(stdout, effectiveFormat, arguments);
+		fflush(stdout);
+	}
 	free(effectiveFormat);
 	free(indentation);
 	va_end(arguments);
@@ -168,7 +308,7 @@ static void _output(const unsigned int indentationLevel, const char * const form
 void generate(CompilerState * compilerState) {
 	logDebugging(_logger, "Generating final output...");
 	_generatePrologue();
-	_generateProgram(compilerState->abstractSyntaxtTree);
-	_generateEpilogue(compilerState->value);
+	_generateProgram(compilerState->automaton);
+	_generateEpilogue();
 	logDebugging(_logger, "Generation is done.");
 }
