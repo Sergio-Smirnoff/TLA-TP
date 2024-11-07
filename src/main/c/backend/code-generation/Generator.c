@@ -139,7 +139,7 @@ static void _generatePrologue(void) {
 		"	}\n"
 		"\n"
 		"	public static class StateTracker {\n"
-		"		private StringBuilder lexeme;\n"
+		"		private StringBuilder lexeme = new StringBuilder();\n"
 		"		private Token token;\n"
 		"		public final Attribute attribute = new Attribute();\n"
 		"\n"
