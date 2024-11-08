@@ -176,7 +176,7 @@ void buildAutomaton(ComputationResult *computationResult)
         aux = aux->next;
     }
     automaton *dfa = get_deterministic_equivalent(automat);
-    free(automat);
+    free_automaton(automat);
     computationResult->automaton = dfa;
     return;
 }
