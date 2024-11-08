@@ -125,11 +125,14 @@ char *_computeLiteral(Literal *literal)
 
     if (literal->type == str)
     {
-        return strdup(literal->str);
+        size_t len = strlen(literal->str) + 3;
+        char *stringinastring = malloc(sizeof(char) * len);
+        snprintf(stringinastring, len, "\"%s\"", literal->str);
+        return stringinastring;
     }
     else if (literal->type == token)
     {
-        char *tok = malloc(10);
+        char *tok = malloc(sizeof(char) * 10);
         snprintf(tok, 10, "%d", literal->token);
         return strdup(tok);
     }
@@ -221,7 +224,7 @@ char *_computeArgumentList(ArgumentList *argumentList)
     char *restOfList = _computeArgumentList(argumentList->arglist);
 
     size_t len = strlen(currentExpression) + strlen(restOfList) + 2; // 2 for the comma and null-terminator
-    char *result = malloc(len);
+    char *result = malloc(sizeof(char) * len);
 
     snprintf(result, len, "%s,%s", currentExpression, restOfList);
 
@@ -313,7 +316,7 @@ char *_computeUnaryExpression(UnaryExpression *unaryExpression)
         {
             char *params = _computeParams(unaryExpression->param);
             size_t total = strlen(params) + 3;
-            result = malloc(total);
+            result = malloc(sizeof(char) * total);
             snprintf(result, total, "(%s)", params);
             free(params);
         }
@@ -362,7 +365,7 @@ char *_computeNumericComparison(char *left, char *right, NumericComparison *numc
     }
 
     size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
-    char *result = malloc(len);
+    char *result = malloc(sizeof(char) * len);
     snprintf(result, len, "%s %s %s", left, operator, right);
     return result;
 }
@@ -393,7 +396,7 @@ char *_computeDoubleTokenExpression(char *left, char *right, UnaryExpressionType
     }
 
     size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
-    char *result = malloc(len);
+    char *result = malloc(sizeof(char) * len);
     snprintf(result, len, "%s %s %s", left, operator, right);
     return result;
 }
@@ -424,7 +427,7 @@ char *_computeSingleTokenOperator(char *operand, Token token)
     }
 
     size_t len = strlen(operand) + strlen(operator) + 2;
-    char *result = malloc(len);
+    char *result = malloc(sizeof(char) * len);
     snprintf(result, len, "%s%s", operator, operand);
     return result;
 }
@@ -452,7 +455,7 @@ char *_computeEqualityExpression(EqualityExpression *equalityExpression)
         const char *operator= "==";
 
         size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
-        char *result = malloc(len);
+        char *result = malloc(sizeof(char) * len);
         snprintf(result, len, "%s %s %s", left, operator, right);
 
         free(left);
@@ -483,7 +486,7 @@ char *_computeConditionalAndExpression(ConditionalAndExpression *conditionalAndE
         const char *operator= "&&";
 
         size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
-        char *result = malloc(len);
+        char *result = malloc(sizeof(char) * len);
         snprintf(result, len, "%s %s %s", left, operator, right);
 
         free(left);
@@ -514,7 +517,7 @@ char *_computeConditionalOrExpression(ConditionalOrExpression *conditionalOrExpr
         const char *operator= "||";
 
         size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
-        char *result = malloc(len);
+        char *result = malloc(sizeof(char) * len);
         snprintf(result, len, "%s %s %s", left, operator, right);
 
         free(left);
@@ -542,7 +545,7 @@ char *_computeConditionalExpression(ConditionalExpression *conditionalExpression
     char *middle = _computeExpression(conditionalExpression->exp);
     char *right = _computeConditionalExpression(conditionalExpression->cexp);
     size_t len = strlen(left) + strlen(middle) + strlen("?") + strlen(right) + strlen(":") + 5; // 5 for spaces and null terminator
-    char *result = malloc(len);
+    char *result = malloc(sizeof(char) * len);
     snprintf(result, len, "%s ? %s : %s", left, middle, right);
 
     // Clean up
@@ -566,7 +569,7 @@ char *_computeAssignment(Assignment *assignment)
 
     size_t len = strlen(left) + strlen(right) + strlen("=") + 3;
 
-    char *result = malloc(len);
+    char *result = malloc(sizeof(char) * len);
 
     snprintf(result, len, "%s = %s", left, right);
 
@@ -620,7 +623,7 @@ char *_computeClassInstanceCreationExpression(ClassInstanceCreationExpression *c
     {
         char *vaccessStr = _computeVarAccess(classInstanceCreationExpression->vaccess);
         char *uciceStr = _computeUnqualifiedClassInstanceCreationExpression(classInstanceCreationExpression->ucice);
-        result = malloc(strlen(vaccessStr) + strlen(uciceStr) + 2);
+        result = malloc(sizeof(char) * (strlen(vaccessStr) + strlen(uciceStr) + 2));
         sprintf(result, "%s.%s", vaccessStr, uciceStr);
         free(vaccessStr);
         free(uciceStr);
@@ -629,7 +632,7 @@ char *_computeClassInstanceCreationExpression(ClassInstanceCreationExpression *c
     {
         char *primaryStr = _computePrimary(classInstanceCreationExpression->primary);
         char *uciceStr = _computeUnqualifiedClassInstanceCreationExpression(classInstanceCreationExpression->ucice);
-        result = malloc(strlen(primaryStr) + strlen(uciceStr) + 2);
+        result = malloc(sizeof(char) * (strlen(primaryStr) + strlen(uciceStr) + 2));
         sprintf(result, "%s.%s", primaryStr, uciceStr);
         free(primaryStr);
         free(uciceStr);
@@ -655,7 +658,7 @@ char *_computeUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstanc
         char *arglistStr = _computeArgumentList(unqualifiedClassInstanceCreationExpression->arglist);
         char *params = _computeParams(unqualifiedClassInstanceCreationExpression->param);
         total = strlen(arglistStr) + strlen(params) + 7;
-        result = malloc(total);
+        result = malloc(sizeof(char) * total);
 
         snprintf(result, total, "new %s(%s)", params, arglistStr);
 
@@ -666,7 +669,7 @@ char *_computeUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstanc
     {
         char *methodStr = _computeMethodInvocation(unqualifiedClassInstanceCreationExpression->invocation);
         total = strlen(methodStr) + 5;
-        result = malloc(total);
+        result = malloc(sizeof(char) * total);
         snprintf(result, total, "new %s", methodStr);
 
         free(methodStr);
@@ -708,7 +711,7 @@ char *_computeMethodInvocation(MethodInvocation *methodInvocation)
     char *argumentListStr = _computeArgumentList(methodInvocation->arglist);
 
     size_t totalLength = strlen(varAccessStr) + strlen(argumentListStr) + 3;
-    char *methodInvocationStr = malloc(totalLength);
+    char *methodInvocationStr = malloc(sizeof(char) * totalLength);
 
     snprintf(methodInvocationStr, totalLength, "%s(%s)", varAccessStr, argumentListStr);
 
@@ -745,7 +748,7 @@ char *_computeStatementExpression(StatementExpression *statementExpression)
         char *paramStr = _computeParams(statementExpression->param);
 
         size_t totalLength = strlen(statementExpression->var_name) + strlen(expStr) + strlen(paramStr) + 5;
-        result = malloc(totalLength);
+        result = malloc(sizeof(char) * totalLength);
         snprintf(result, totalLength, "%s %s = %s", paramStr, statementExpression->var_name, expStr);
 
         free(paramStr);
@@ -779,7 +782,7 @@ char *_computeStatementExpressionList(StatementExpressionList *statementExpressi
         char *restOfListStr = _computeStatementExpressionList(statementExpressionList->list);
 
         size_t totalLength = strlen(currentExprStr) + strlen(restOfListStr) + 3;
-        result = malloc(totalLength);
+        result = malloc(sizeof(char) * totalLength);
         snprintf(result, totalLength, "%s, %s", currentExprStr, restOfListStr);
 
         free(restOfListStr);
@@ -801,7 +804,7 @@ char *_computeIfThenStatement(IfThenStatement *ifThenStatement)
 
     char *ifStatementStr = _computeBlock(ifThenStatement->ifblock);
 
-    char *result = malloc(strlen("if () {  }") + strlen(conditionStr) + strlen(ifStatementStr) + 1);
+    char *result = malloc(sizeof(char) * (strlen("if () {  }") + strlen(conditionStr) + strlen(ifStatementStr) + 1));
     sprintf(result, "if (%s) { %s }", conditionStr, ifStatementStr);
 
     free(conditionStr);
@@ -836,7 +839,7 @@ char *_computeForInit(ForInit *forInit)
     {
         char *paramStr = _computeParams(forInit->param);
         size_t totalLen = strlen(forInit->var_name_param) + strlen(paramStr) + 2;
-        char *result = malloc(totalLen);
+        char *result = malloc(sizeof(char) * totalLen);
         snprintf(result, totalLen, "%s %s", paramStr, forInit->var_name_param);
         free(paramStr);
         return result;
@@ -873,7 +876,7 @@ char *_computeStatement(Statement *statement)
         char *whileStatement = _computeBlock(statement->blockwhile);
 
         size_t totalLen = strlen(whileCondition) + strlen(whileStatement) + 14;
-        char *result = malloc(totalLen);
+        char *result = malloc(sizeof(char) * totalLen);
         snprintf(result, totalLen, "while (%s) { %s }", whileCondition, whileStatement);
         return result;
     }
@@ -886,7 +889,7 @@ char *_computeStatement(Statement *statement)
         char *forBody = _computeBlock(statement->blockfor);
 
         size_t totalLen = strlen(forInit) + strlen(forCondition) + strlen(forStatementList) + strlen(forBody) + 16;
-        char *result = malloc(totalLen);
+        char *result = malloc(sizeof(char) * totalLen);
         if (result != NULL)
         {
             snprintf(result, totalLen, "for (%s; %s; %s) { %s }", forInit, forCondition, forStatementList, forBody);
@@ -908,7 +911,7 @@ char *_computeBlock(Block *block)
         char *statementResult = _computeStatement(block->statement);
         char *nestedBlockResult = block->block != NULL ? _computeBlock(block->block) : NULL;
         size_t totalLen = strlen(statementResult) + (nestedBlockResult != NULL ? strlen(nestedBlockResult) : 0) + 10;
-        char *result = malloc(totalLen);
+        char *result = malloc(sizeof(char) * totalLen);
         if (result != NULL)
         {
             snprintf(result, totalLen, "%s; %s", statementResult, nestedBlockResult != NULL ? nestedBlockResult : "");
@@ -920,7 +923,7 @@ char *_computeBlock(Block *block)
     {
         char *returnExpr = _computeExpression(block->exp);
         size_t totalLen = strlen(returnExpr) + 9;
-        char *result = malloc(totalLen);
+        char *result = malloc(sizeof(char) * totalLen);
         if (result != NULL)
         {
             snprintf(result, totalLen, "return %s;", returnExpr);
@@ -932,7 +935,7 @@ char *_computeBlock(Block *block)
     {
         char *throwExpr = _computeExpression(block->exp);
         size_t totalLen = strlen(throwExpr) + 9;
-        char *result = malloc(totalLen);
+        char *result = malloc(sizeof(char) * totalLen);
         if (result != NULL)
         {
             snprintf(result, totalLen, "throw %s;", throwExpr);
@@ -957,7 +960,7 @@ char *_computeAction(Action *my_action)
         char *params = _computeParams(my_action->param);
 
         size_t totalLen = strlen(block_str) + strlen(params) + 6;
-        char *result = malloc(totalLen);
+        char *result = malloc(sizeof(char) * totalLen);
         snprintf(result, totalLen, "{ %s %s }", params, block_str);
         free(block_str);
         free(params);

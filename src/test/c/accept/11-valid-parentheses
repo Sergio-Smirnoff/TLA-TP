@@ -7,10 +7,11 @@
 ")" -> (){
     var.attribute.num = var.attribute.num - 1;
     if(var.attribute.num < 0){
-        throw new IllegalStateException();
+        throw new IllegalStateException("Found more closing parentheses than opening parentheses");
     }
     return CLOSE;
 };
+/* A syntactic analyzer is still necessary to confirm there are not more opening parentheses than closing parentheses */
 
 /* All other text is ignored */
 default;
