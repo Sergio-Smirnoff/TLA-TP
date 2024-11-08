@@ -916,6 +916,9 @@ char *_computeBlock(Block *block)
         {
             snprintf(result, totalLen, "%s; %s", statementResult, nestedBlockResult != NULL ? nestedBlockResult : "");
         }
+        free(statementResult);
+        if (nestedBlockResult != NULL)
+            free(nestedBlockResult);
         return result;
     }
 
@@ -1054,7 +1057,9 @@ static void _generateProgram(automaton *automaton)
                 }
                 else
                 {
-                    _output(0, "var -> %s", _computeAction(act));
+                    char *to_free = _computeAction(act);
+                    _output(0, "var -> %s", to_free);
+                    free(to_free);
                 }
             }
         }
@@ -1081,6 +1086,7 @@ static void _generateProgram(automaton *automaton)
             rule *r = get_next_rule(s_iterator);
             _output(2, set_transition_format, state_index, get_to_state_indices(r)[0], _escapeMatcher(get_transition_matcher(r), aux, MAX_UINT64_LENGTH));
         }
+        free_state_iterator(s_iterator);
     }
     free_automaton_iterator(a_iterator);
 
