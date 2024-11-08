@@ -30,7 +30,8 @@ Regex digit         [0-9];
 Regex letter        [a-zA-Z];
 
 {letter}[{letter}{digit}]* -> (){
-                        Token tok = IDENT.setStringContent(var.getLexeme());
+                        Token tok = IDENT;
+                        tok.setStringContent(var.getLexeme());
                         return tok;
  };
 
@@ -43,5 +44,6 @@ Regex letter        [a-zA-Z];
 "\t";
 "\n";
 "\r";
+" ";
 
 default -> REJECT;
