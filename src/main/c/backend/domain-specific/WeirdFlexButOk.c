@@ -14,9 +14,6 @@ static automaton *automat;
 static ComputationResult *result;
 static boolean has_default = false;
 
-// should be deleted
-static FILE *logFile;
-
 /** PRIVATE FUNCTIONS */
 static void _addToList(Lexeme_precursor *lexeme, Action *returner);
 static void _freeTransformerList(struct transformer_list *list);
@@ -27,7 +24,6 @@ void _regexContent(Regexes *regexes, uint64_t startIndex, uint64_t endIndex);
 void _computeRegexClass(Regex_class *regexClass, uint64_t startIndex, uint64_t endIndex);
 void _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returner, uint64_t currentIndex);
 uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner, boolean isEndOfChain);
-
 
 static void _addToList(Lexeme_precursor *lexeme, Action *returner)
 {
@@ -56,7 +52,6 @@ static void _addToList(Lexeme_precursor *lexeme, Action *returner)
     }
 }
 
-// Seems useless
 static void _freeTransformerList(struct transformer_list *list)
 {
     transformer_list *aux = list;
@@ -85,7 +80,6 @@ void initializeWeirdFlexModule()
 {
     _logger = createLogger("Weird Flex");
     list = (struct transformer_list *)calloc(1, sizeof(struct transformer_list));
-    logFile = fopen("Backend.log", "a");
 }
 
 void shutdownWeirdFlexModule()
@@ -94,8 +88,6 @@ void shutdownWeirdFlexModule()
     {
         destroyLogger(_logger);
     }
-    fclose(logFile);
-    // maybe not needed (even maybe wrong)
     _freeTransformerList(list);
 }
 
@@ -217,7 +209,7 @@ void _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returne
                 uint64_t defaultStateIndex = new_state(automat, 1, returner);
                 for (unsigned char c = 9; c < 127; c++)
                 {
-                    if(!(c == 11 || c == 12 || (c >= 14 && c <= 31)))
+                    if (!(c == 11 || c == 12 || (c >= 14 && c <= 31)))
                     {
                         set_transition(automat, 0, defaultStateIndex, c);
                     }
@@ -237,8 +229,62 @@ void _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returne
             }
             else
             {
-                nextStateIndex = new_state(automat, 0, NULL);
-                set_transition(automat, currentStateIndex, nextStateIndex, *s);
+                if (*s == '\\')
+                {
+                    s++;
+                    switch (*s)
+                    {
+                    case 'a':
+                        *s = '\a';
+                        break;
+
+                    case 'b':
+                        *s = '\b';
+                        break;
+
+                    case 't':
+                        *s = '\t';
+                        break;
+
+                    case 'n':
+                        *s = '\n';
+                        break;
+
+                    case 'v':
+                        *s = '\v';
+                        break;
+
+                    case 'f':
+                        *s = '\f';
+                        break;
+
+                    case 'r':
+                        *s = '\r';
+                        break;
+
+                    case '\0':
+                        result->succeed = false;
+                        result->errorMessage = strdup("There can't be more than one default lexeme");
+                        break;
+                    default:
+                        break;
+                    }
+                    if (!s[1])
+                    {
+                        nextStateIndex = new_state(automat, 1, returner);
+                        set_transition(automat, currentStateIndex, nextStateIndex, *s);
+                    }
+                    else
+                    {
+                        nextStateIndex = new_state(automat, 0, NULL);
+                        set_transition(automat, currentStateIndex, nextStateIndex, *s);
+                    }
+                }
+                else
+                {
+                    nextStateIndex = new_state(automat, 0, NULL);
+                    set_transition(automat, currentStateIndex, nextStateIndex, *s);
+                }
             }
             s++;
             currentStateIndex = nextStateIndex;
@@ -282,7 +328,7 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
     }
     if (lexeme->closure == NULL)
     {
-        if(isEndOfChain)
+        if (isEndOfChain)
         {
             finalState = new_state(automat, 1, returner);
         }
@@ -296,7 +342,7 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
     {
         if (lexeme->closure->closure == PLUS)
         {
-            if(isEndOfChain)
+            if (isEndOfChain)
             {
                 finalState = new_state(automat, 1, returner);
             }
@@ -305,6 +351,13 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
                 finalState = new_state(automat, 0, NULL);
             }
             _regexContent(node, currentIndex, finalState);
+        }
+        else
+        {
+            if (isEndOfChain)
+            {
+                set_token(automat, currentIndex, returner);
+            }
         }
         _regexContent(node, finalState, finalState);
     }

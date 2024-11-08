@@ -30,13 +30,13 @@ Regex digit         [0-9];
 Regex letter        [a-zA-Z];
 
 {letter}[{letter}{digit}]* -> (){
-                       var.attribute.id = var.getLexeme(); /* var.text is an instance of StringBuilder */
-                       return IDENT;
+                        Token tok = IDENT.setStringContent(var.getLexeme());
+                        return tok;
  };
 
 {digit}+ -> (){
-                       var.attribute.num = Integer.parseInt(var.getLexeme());
-                       return NUMBER;
+                        var.attribute.num = Integer.parseInt(var.getLexeme());
+                        return NUMBER;
 };
 
 /*Skipps white spaces*/ 
