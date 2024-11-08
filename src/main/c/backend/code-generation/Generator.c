@@ -544,15 +544,26 @@ char* _computeUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstanc
     if (unqualifiedClassInstanceCreationExpression == NULL) {
         return strdup("");
     }
-    char* arglistStr = _computeArgumentList(unqualifiedClassInstanceCreationExpression->arglist);
-    char* params = _computeParams(unqualifiedClassInstanceCreationExpression->param);
-    size_t total = strlen(arglistStr) + strlen(params) + 7;
-    char* result = malloc(total);
+    char *result;
+    size_t total;
+    if(unqualifiedClassInstanceCreationExpression->type == parargs){
+        char* arglistStr = _computeArgumentList(unqualifiedClassInstanceCreationExpression->arglist);
+        char* params = _computeParams(unqualifiedClassInstanceCreationExpression->param);
+        total = strlen(arglistStr) + strlen(params) + 7;
+        result = malloc(total);
 
-    snprintf(result, total, "new %s(%s)", params, arglistStr);
+        snprintf(result, total, "new %s(%s)", params, arglistStr);
 
-    free(arglistStr);
-    free(params);
+        free(arglistStr);
+        free(params);
+    }else{
+        char *methodStr = _computeMethodInvocation(unqualifiedClassInstanceCreationExpression->invocation);
+        total = strlen(methodStr) + 5;
+        result = malloc(total);
+        snprintf(result, total, "new %s", methodStr);
+
+        free(methodStr);
+    }
 
     return result;
 }
@@ -667,7 +678,7 @@ char* _computeIfThenStatement(IfThenStatement* ifThenStatement) {
 
     char* conditionStr = _computeExpression(ifThenStatement->exp);
     
-    char* ifStatementStr = _computeStatement(ifThenStatement->statement1);
+    char* ifStatementStr = _computeBlock(ifThenStatement->ifblock);
     
     char* result = malloc(strlen("if () {  }") + strlen(conditionStr) + strlen(ifStatementStr) + 1);
     sprintf(result, "if (%s) { %s }", conditionStr, ifStatementStr);
@@ -675,8 +686,8 @@ char* _computeIfThenStatement(IfThenStatement* ifThenStatement) {
     free(conditionStr);
     free(ifStatementStr);
     
-    if (ifThenStatement->statement2 != NULL) {
-        char* elseStatementStr = _computeStatement(ifThenStatement->statement2);
+    if (ifThenStatement->elseblock != NULL) {
+        char* elseStatementStr = _computeBlock(ifThenStatement->elseblock);
         size_t totalLength = strlen(result) + strlen(" else { }") + strlen(elseStatementStr) + 1;
         
         result = realloc(result, totalLength);
@@ -728,7 +739,7 @@ char *_computeStatement(Statement* statement) {
 
         case While: {
             char* whileCondition = _computeExpression(statement->expwhile);
-            char* whileStatement = _computeStatement(statement->statementwhile);
+            char* whileStatement = _computeBlock(statement->blockwhile);
 
             size_t totalLen = strlen(whileCondition) + strlen(whileStatement) + 14;
             char* result = malloc(totalLen);
@@ -740,7 +751,7 @@ char *_computeStatement(Statement* statement) {
             char* forInit = _computeForInit(statement->forInit);
             char* forCondition = _computeExpression(statement->expfor);
             char* forStatementList = _computeStatementExpressionList(statement->statementExpList);
-            char* forBody = _computeStatement(statement->statementfor);
+            char* forBody = _computeBlock(statement->blockfor);
 
             size_t totalLen = strlen(forInit) + strlen(forCondition) + strlen(forStatementList) + strlen(forBody) + 16;
             char* result = malloc(totalLen);

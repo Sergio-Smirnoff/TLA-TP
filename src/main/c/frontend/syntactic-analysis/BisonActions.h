@@ -68,8 +68,8 @@ Block* JavaThrowExpressionSemanticAction(Expression* exp);
 // Statement
 Statement* JavaStatementExpressionSemanticAction(StatementExpression* sexp);
 Statement* IfStatementSemanticAction(IfThenStatement* ifs);
-Statement* WhileStatementSemanticAction(Expression* exp, Statement* state);
-Statement* ForStatementSemanticAction(ForInit* fors, Expression* exp, StatementExpressionList* list, Statement* state);
+Statement* WhileStatementSemanticAction(Expression* exp, Block* state);
+Statement* ForStatementSemanticAction(ForInit* fors, Expression* exp, StatementExpressionList* list, Block* state);
 
 // ForInit
 ForInit* ForInitExpressionListSemanticAction(StatementExpressionList* list);
@@ -79,7 +79,7 @@ ForInit* JavaVarTypeDefinitionSemantictAction(Param* param, char* var_name, ForI
 StatementExpressionList* StatementExpressionListSemanticAction(StatementExpression* exp, StatementExpressionList* list);
 
 // IfThenStatement
-IfThenStatement* JavaIfThenStructureSemanticAction(Expression* exp, Statement* ifs, Statement* elses);
+IfThenStatement* JavaIfThenStructureSemanticAction(Expression* exp, Block* ifs, Block* elses);
 
 // StatementExpression
 StatementExpression* JavaAsignmentSemanticAction(Assignment* assignment);
@@ -140,6 +140,7 @@ ClassInstanceCreationExpression* PrimaryInstanceCreationExpressionSemanticAction
 
 // UnqualifiedClassInstanceCreationExpression
 UnqualifiedClassInstanceCreationExpression* UnqualifiedClassSemanticAction(Param* param, ArgumentList* list);
+UnqualifiedClassInstanceCreationExpression* UnqualifiedClassSemanticActionInvocation(MethodInvocation *invocation);
 
 // Literal
 Literal* JavaLiteralStrSemanticAction(char* str);

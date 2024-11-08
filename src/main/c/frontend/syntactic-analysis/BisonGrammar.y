@@ -282,8 +282,8 @@ Block: Statement Block																																								{ $$ = JavaBlockSe
 Statement: ENDLINE																																									{ $$ = NULL; }
 	| StatementExpression  ENDLINE																																							{ $$ = JavaStatementExpressionSemanticAction($1); }
 	| IfThenStatement																																								{ $$ = IfStatementSemanticAction($1); }
-	| JAVA_WHILE OPEN_PARENTHESES Expression[exp] CLOSE_PARENTHESES OPEN_BRACES Statement[state] CLOSE_BRACES																		{ $$ = WhileStatementSemanticAction($exp, $state); }
-	| JAVA_FOR OPEN_PARENTHESES ForInit[init] ENDLINE Expression[exp] ENDLINE StatementExpressionList[stlist] CLOSE_PARENTHESES OPEN_BRACES Statement[state] CLOSE_BRACES			{ $$ = ForStatementSemanticAction($init, $exp, $stlist, $state); }
+	| JAVA_WHILE OPEN_PARENTHESES Expression[exp] CLOSE_PARENTHESES OPEN_BRACES Block[state] CLOSE_BRACES																		{ $$ = WhileStatementSemanticAction($exp, $state); }
+	| JAVA_FOR OPEN_PARENTHESES ForInit[init] ENDLINE Expression[exp] ENDLINE StatementExpressionList[stlist] CLOSE_PARENTHESES OPEN_BRACES Block[state] CLOSE_BRACES			{ $$ = ForStatementSemanticAction($init, $exp, $stlist, $state); }
 	;
 
 ForInit: StatementExpressionList																																					{ $$ = ForInitExpressionListSemanticAction($1); }
@@ -295,8 +295,8 @@ StatementExpressionList: %empty																																						{ $$ = NULL
 	| StatementExpression COMMA StatementExpressionList																																{ $$ = StatementExpressionListSemanticAction($1, $3); }
 	;
 
-IfThenStatement: JAVA_IF OPEN_PARENTHESES Expression[expression] CLOSE_PARENTHESES OPEN_BRACES Statement[ifstatement] CLOSE_BRACES																			{ $$ = JavaIfThenStructureSemanticAction($expression, $ifstatement, NULL); }
-	| JAVA_IF OPEN_PARENTHESES Expression[expression] CLOSE_PARENTHESES OPEN_BRACES Statement[ifstatement] CLOSE_BRACES JAVA_ELSE OPEN_BRACES Statement[elsestatement] CLOSE_BRACES													{ $$ = JavaIfThenStructureSemanticAction($expression, $ifstatement, $elsestatement); }
+IfThenStatement: JAVA_IF OPEN_PARENTHESES Expression[expression] CLOSE_PARENTHESES OPEN_BRACES Block[ifblock] CLOSE_BRACES																{ $$ = JavaIfThenStructureSemanticAction($expression, $ifblock, NULL); }
+	| JAVA_IF OPEN_PARENTHESES Expression[expression] CLOSE_PARENTHESES OPEN_BRACES Block[ifblock] CLOSE_BRACES JAVA_ELSE OPEN_BRACES Block[elseblock] CLOSE_BRACES											{ $$ = JavaIfThenStructureSemanticAction($expression, $ifblock, $elseblock); }
 	;
 
 StatementExpression: Assignment																																						{ $$ = JavaAsignmentSemanticAction($1); }
@@ -375,6 +375,7 @@ ClassInstanceCreationExpression: UnqualifiedClassInstanceCreationExpression					
 	;
 
 UnqualifiedClassInstanceCreationExpression: JAVA_NEW param OPEN_PARENTHESES ArgumentList CLOSE_PARENTHESES																			{ $$ = UnqualifiedClassSemanticAction($2,$4); }
+	| JAVA_NEW MethodInvocation																																						{ $$ = UnqualifiedClassSemanticActionInvocation($2); }
 	;
 
 Literal: NUMBER																																										{ $$ = JavaLiteralStrSemanticAction($1); }
