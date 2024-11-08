@@ -3,10 +3,13 @@
 
 #include "../../frontend/syntactic-analysis/AbstractSyntaxTree.h"
 #include "../automaton/automaton.h"
+#include "../domain-specific/WeirdFlexButOk.h"
 #include "../../shared/CompilerState.h"
 #include "../../shared/Logger.h"
 #include "../../shared/String.h"
 #include <stdarg.h>
+#include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 /** Initialize module's internal state. */

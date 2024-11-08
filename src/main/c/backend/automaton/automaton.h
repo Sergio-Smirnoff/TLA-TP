@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-typedef char *token_t;
+typedef void *token_t;
 #define UNKNOWN_TOKEN (token_t)1
 
 typedef struct rule
