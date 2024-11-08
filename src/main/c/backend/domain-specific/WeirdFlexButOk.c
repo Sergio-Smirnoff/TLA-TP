@@ -176,6 +176,8 @@ void _computeRule(Rule *my_rule)
     case lexeme_action:
         lexeme = my_rule->lex;
         returner = _computeAction(my_rule->action);
+        fprintf(logFile, "Action: %s\n", returner);
+        fflush(logFile);
         _addToList(lexeme, returner);
         break;
     case ignore_lexeme:
@@ -238,7 +240,7 @@ char *_computeParams(Param* params){
 
 char *_computeLiteral(Literal* literal){
     if(literal == NULL){
-        return NULL;
+        return strdup("");
     }
 
     if(literal->type == str){
@@ -248,13 +250,13 @@ char *_computeLiteral(Literal* literal){
         snprintf(tok, 10, "%d", literal->token);
         return strdup(tok);
     } else {
-        return NULL;
+        return strdup("");
     }
 }
 
 char* _computeVarAccess(VarAccess* varAccess) {
     if (varAccess == NULL) {
-        return NULL;
+        return strdup("");
     }
 
     if (varAccess->vaccess != NULL) {
@@ -289,7 +291,7 @@ char* _computeVarAccess(VarAccess* varAccess) {
             return result;
 
         } else {
-            return NULL;
+            return strdup("");
         }
     }
 
@@ -304,7 +306,7 @@ char* _computeVarAccess(VarAccess* varAccess) {
         return methodResult;
     }
 
-    return NULL;
+    return strdup("");
 }
 
 char *_computeArgumentList(ArgumentList* argumentList){
@@ -336,7 +338,7 @@ char *_computeArgumentList(ArgumentList* argumentList){
 
 char* _computePostfixExpression(PostfixExpression* postfixExpression) {
     if (postfixExpression == NULL) {
-        return NULL;
+        return strdup("");
     }
 
     char *result = NULL;
@@ -346,7 +348,6 @@ char* _computePostfixExpression(PostfixExpression* postfixExpression) {
     }
 
     else if (postfixExpression->vaccess != NULL) {
-
         result = _computeVarAccess(postfixExpression->vaccess);
 
         if (postfixExpression->token == INCREMENT) {
@@ -365,11 +366,10 @@ char* _computePostfixExpression(PostfixExpression* postfixExpression) {
 
 char* _computeUnaryExpression(UnaryExpression* unaryExpression) {
     if (unaryExpression == NULL) {
-        return NULL;
+        return strdup("");
     }
 
     char *result = NULL;
-
     switch (unaryExpression->globaltype) {
         case numericComparison:
             {
@@ -482,12 +482,13 @@ char* _computeSingleTokenOperator(char *operand, Token token) {
 
 char* _computeEqualityExpression(EqualityExpression* equalityExpression) {
     if (equalityExpression == NULL) {
-        return NULL;
+        return strdup("");
     }
 
     char *result = NULL;
 
     if (equalityExpression->eqexp == NULL) {
+        
         // Base case: Compute the unary expression (single UnaryExpression)
         result = _computeUnaryExpression(equalityExpression->uexp);
     } else {
@@ -510,11 +511,10 @@ char* _computeEqualityExpression(EqualityExpression* equalityExpression) {
 
 char* _computeConditionalAndExpression(ConditionalAndExpression* conditionalAndExpression) {
     if (conditionalAndExpression == NULL) {
-        return NULL;
+        return strdup("");
     }
 
     char *result = NULL;
-
     if (conditionalAndExpression->candexp == NULL) {
         result = _computeEqualityExpression(conditionalAndExpression->eqexp);
     } else {
@@ -536,12 +536,13 @@ char* _computeConditionalAndExpression(ConditionalAndExpression* conditionalAndE
 
 char *_computeConditionalOrExpression(ConditionalOrExpression* conditionalOrExpression){
         if (conditionalOrExpression == NULL) {
-        return NULL;
+        return strdup("");
     }
 
     char *result = NULL;
 
     if (conditionalOrExpression->corexp == NULL) {
+        
         result = _computeConditionalAndExpression(conditionalOrExpression->candexp);
     } else {
         char *left = _computeConditionalOrExpression(conditionalOrExpression->corexp); 
@@ -564,9 +565,7 @@ char* _computeConditionalExpression(ConditionalExpression* conditionalExpression
     if (conditionalExpression == NULL) {
         return strdup("");
     }
-
     char* left = _computeConditionalOrExpression(conditionalExpression->corexp);
-
     if (conditionalExpression->exp == NULL || conditionalExpression->cexp == NULL) {
         return left;
     }
@@ -671,6 +670,7 @@ char* _computeUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstanc
     if (unqualifiedClassInstanceCreationExpression == NULL) {
         return strdup("");
     }
+
     char* arglistStr = _computeArgumentList(unqualifiedClassInstanceCreationExpression->arglist);
     char* params = _computeParams(unqualifiedClassInstanceCreationExpression->param);
     size_t total = strlen(arglistStr) + strlen(params) + 7;
@@ -743,7 +743,6 @@ char* _computeStatementExpression(StatementExpression* statementExpression) {
         case assigParam: {
             char* expStr = _computeExpression(statementExpression->exp);
             char* paramStr = _computeParams(statementExpression->param);
-
             size_t totalLength = strlen(statementExpression->var_name) + strlen(expStr) + strlen(paramStr) + 5;
             result = malloc(totalLength);
             snprintf(result, totalLength, "%s %s = %s", paramStr, statementExpression->var_name, expStr);

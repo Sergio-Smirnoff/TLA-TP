@@ -323,12 +323,16 @@ Primary* PrimaryExpressionSemanticAction(Expression* exp){
 	Primary * primary = calloc(1, sizeof(Primary));
 	primary->exp = exp;
 	primary->type = expression;
+
+	return primary;
 }
 Primary* PrimaryCExpSemanticAction(ClassInstanceCreationExpression* cice){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Primary * primary = calloc(1, sizeof(Primary));
 	primary->cice = cice;
 	primary->type = cexp;
+
+	return primary;
 }
 
 
