@@ -44,5 +44,6 @@ Regex letter        [a-zA-Z];
 "\t";
 "\n";
 "\r";
+" ";
 
 default -> REJECT;
