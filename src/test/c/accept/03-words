@@ -1,6 +1,6 @@
 Regex letter      [a-zA-Z];
 
 {letter}+ -> (){
-    var.attibute.id = var.text.toString();
+    var.attibute.id = var.getLexeme();
     return WORD;
 };

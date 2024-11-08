@@ -841,18 +841,44 @@ int _itoa(uint64_t v, char *sp)
 }
 
 /**
+ * Will not always write the output into the buffer, returned char* is the only valid return :P
+ * bufferLength should be at least 6
+ */
+char *_escapeMatcher(char matcher, char *buffer,uint64_t bufferLength ){
+	switch (matcher)
+            {
+            case '\t':
+                return "'\\t'";
+            case '\n':
+                return "'\\n'";
+            case '\r':
+                return "'\\r'";
+            case '\'':
+                return "'\\''";
+            case '\\':
+                return "'\\\\'";
+            case '%':
+                return "'%'";
+            default:
+			snprintf(buffer, bufferLength, "\'%c\'", matcher);
+			return buffer;
+            }
+}
+
+/**
  * Generates the output of the program.
  */
 static void _generateProgram(automaton * automaton) {
-	char new_state_start[] = "Automaton.newState(";
+	char new_state_start[] = "/*%ld*/Automaton.newState(";
     char new_state_end[] = ");\n";
     char null[] = "(Function<StateTracker, Token>) null";
 	char ignore[] = "var -> null";
 
     automaton_iterator *a_iterator = get_automaton_iterator(automaton);
+	uint64_t index = 0;
     while (has_next_state(a_iterator))
     {
-        _output(2, new_state_start);
+        _output(2, new_state_start, index++);
         automaton_state *s = get_next_state(a_iterator);
         if (throws_token(s))
         {
@@ -880,59 +906,19 @@ static void _generateProgram(automaton * automaton) {
     free_automaton_iterator(a_iterator);
     _output(0, "\n\n");
 
-    char set_transition_start[] = "Automaton.setTransition(";
-    char set_transition_end[] = ");\n";
-    char aux[4];
+	char set_transition_format[] = "Automaton.setTransition(%ld, %ld, %s);\n";
+    char aux[MAX_UINT64_LENGTH];
 
     a_iterator = get_automaton_iterator(automaton);
 
     for (uint64_t state_index = 0; has_next_state(a_iterator); state_index++)
     {
         automaton_state *s = get_next_state(a_iterator);
-        char state_index_buffer[MAX_UINT64_LENGTH] = {0};
-        char state_index_buffer_length = _itoa(state_index, state_index_buffer);
         state_iterator *s_iterator = get_state_iterator(s);
         while (has_next_rule(s_iterator))
         {
             rule *r = get_next_rule(s_iterator);
-            _output(2, set_transition_start);
-            _output(0, state_index_buffer);
-            _output(0, ", ");
-			_itoa(get_to_state_indices(r)[0], state_index_buffer);
-            _output(0, state_index_buffer); // automaton should be dfa, only first transition for each matcher for each state is read
-            _output(0, ", ");
-            switch (get_transition_matcher(r))
-            {
-            case '\t':
-                _output(0, "'\\t'");
-                break;
-
-            case '\n':
-                _output(0, "'\\n'");
-                break;
-
-            case '\r':
-                _output(0, "'\\r'");
-                break;
-
-            case '\'':
-                _output(0, "'\\''");
-                break;
-
-            case '\\':
-                _output(0, "'\\\\'");
-                break;
-            case '%':
-                _output(0, "'%%'");
-                break;
-            default:
-                char matcher = get_transition_matcher(r);
-                _output(0, "'");
-                snprintf(aux, 4, "%c", matcher);
-                _output(0, aux);
-                _output(0, "'");
-            }
-            _output(0, set_transition_end);
+			_output(2, set_transition_format, state_index, get_to_state_indices(r)[0], _escapeMatcher(get_transition_matcher(r), aux, MAX_UINT64_LENGTH));
         }
     }
     free_automaton_iterator(a_iterator);
