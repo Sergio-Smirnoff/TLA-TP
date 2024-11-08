@@ -111,7 +111,8 @@ char hashset_contains(const hashset *set, const void *element)
     return hashset_get(set, element) != NULL;
 }
 
-uint64_t hashset_size(hashset *set){
+uint64_t hashset_size(hashset *set)
+{
     return set->elements_size;
 }
 

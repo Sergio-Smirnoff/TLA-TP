@@ -6,197 +6,221 @@
 
 const char _indentationCharacter = ' ';
 const char _indentationSize = 4;
-static Logger * _logger = NULL;
-static FILE * _outputFile = NULL;
+static Logger *_logger = NULL;
+static FILE *_outputFile = NULL;
 
-void initializeGeneratorModule() {
-	_logger = createLogger("Generator");
-	_outputFile = fopen("Automaton.java", "w");
+void initializeGeneratorModule()
+{
+    _logger = createLogger("Generator");
+    _outputFile = fopen("Automaton.java", "w");
 }
 
-void shutdownGeneratorModule() {
-	if (_logger != NULL) {
-		destroyLogger(_logger);
-	}
-	if (_outputFile != NULL) {
-		fclose(_outputFile);
-	}
+void shutdownGeneratorModule()
+{
+    if (_logger != NULL)
+    {
+        destroyLogger(_logger);
+    }
+    if (_outputFile != NULL)
+    {
+        fclose(_outputFile);
+    }
 }
 
 /** PRIVATE FUNCTIONS */
 
 static int _itoa(uint64_t v, char *sp);
 static void _generatePrologue(void);
-static void _generateProgram(automaton * automaton);
+static void _generateProgram(automaton *automaton);
 static void _generateEpilogue(void);
-static char * _indentation(const unsigned int indentationLevel);
-static void _output(const unsigned int indentationLevel, const char * const format, ...);
+static char *_indentation(const unsigned int indentationLevel);
+static void _output(const unsigned int indentationLevel, const char *const format, ...);
 
 /* JAVA FUNCTIONS */
 // Leaf-level functions
-char *_computeLiteral(Literal* literal);
-char *_computeVarAccess(VarAccess* varAccess);
-char *_computeArgumentList(ArgumentList* argumentList);
-char *_computePostfixExpression(PostfixExpression* postfixExpression);
-char *_computeUnaryExpression(UnaryExpression* unaryExpression);
-char *_computeParams(Param* params);
+char *_computeLiteral(Literal *literal);
+char *_computeVarAccess(VarAccess *varAccess);
+char *_computeArgumentList(ArgumentList *argumentList);
+char *_computePostfixExpression(PostfixExpression *postfixExpression);
+char *_computeUnaryExpression(UnaryExpression *unaryExpression);
+char *_computeParams(Param *params);
 
 //----------------Unary Expression Aux functions -----------------------------------------
-char* _computeNumericComparison(char *left, char *right, NumericComparison *numcomp);
-char* _computeDoubleTokenExpression(char *left, char *right, UnaryExpressionType type);
-char* _computeSingleTokenOperator(char *operand, Token token);
+char *_computeNumericComparison(char *left, char *right, NumericComparison *numcomp);
+char *_computeDoubleTokenExpression(char *left, char *right, UnaryExpressionType type);
+char *_computeSingleTokenOperator(char *operand, Token token);
 // ---------------------------------------------------------------------------------------
 
-char *_computeEqualityExpression(EqualityExpression* equalityExpression);
-char *_computeConditionalAndExpression(ConditionalAndExpression* conditionalAndExpression);
-char *_computeConditionalOrExpression(ConditionalOrExpression* conditionalOrExpression);
-char *_computeConditionalExpression(ConditionalExpression* conditionalExpression);
-char *_computeAssignment(Assignment* assignment);
-char *_computePrimary(Primary* primary);
-char *_computeClassInstanceCreationExpression(ClassInstanceCreationExpression* classInstanceCreationExpression);
-char *_computeUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstanceCreationExpression* unqualifiedClassInstanceCreationExpression);
+char *_computeEqualityExpression(EqualityExpression *equalityExpression);
+char *_computeConditionalAndExpression(ConditionalAndExpression *conditionalAndExpression);
+char *_computeConditionalOrExpression(ConditionalOrExpression *conditionalOrExpression);
+char *_computeConditionalExpression(ConditionalExpression *conditionalExpression);
+char *_computeAssignment(Assignment *assignment);
+char *_computePrimary(Primary *primary);
+char *_computeClassInstanceCreationExpression(ClassInstanceCreationExpression *classInstanceCreationExpression);
+char *_computeUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstanceCreationExpression *unqualifiedClassInstanceCreationExpression);
 
 // Mid-level functions
-char *_computeExpression(Expression* expression);
-char *_computeMethodInvocation(MethodInvocation* methodInvocation);
-char *_computeStatementExpression(StatementExpression* statementExpression);
-char *_computeStatementExpressionList(StatementExpressionList* statementExpressionList);
-char *_computeIfThenStatement(IfThenStatement* ifThenStatement);
-char *_computeForInit(ForInit* forInit);
+char *_computeExpression(Expression *expression);
+char *_computeMethodInvocation(MethodInvocation *methodInvocation);
+char *_computeStatementExpression(StatementExpression *statementExpression);
+char *_computeStatementExpressionList(StatementExpressionList *statementExpressionList);
+char *_computeIfThenStatement(IfThenStatement *ifThenStatement);
+char *_computeForInit(ForInit *forInit);
 
 // Higher-level functions
-char *_computeStatement(Statement* statement);
-char *_computeBlock(Block* block);
+char *_computeStatement(Statement *statement);
+char *_computeBlock(Block *block);
 
 // Top-level function
-char *_computeAction(Action* my_action);
+char *_computeAction(Action *my_action);
 
 // Definitions:
 // Leaf-level functions
-char *_computeParams(Param* params){
-    if(params == NULL){
+char *_computeParams(Param *params)
+{
+    if (params == NULL)
+    {
         return strdup("");
     }
 
-    char* result = NULL;
+    char *result = NULL;
 
-    switch(params->stuff){
-        case STRING_TYPE:
-            result = strdup("String");
-            break;
+    switch (params->stuff)
+    {
+    case STRING_TYPE:
+        result = strdup("String");
+        break;
 
-        case INTEGER_TYPE:
-            result = strdup("Integer");
-            break;
+    case INTEGER_TYPE:
+        result = strdup("Integer");
+        break;
 
-        case DOUBLE_TYPE:
-            result = strdup("Double");
-            break;
+    case DOUBLE_TYPE:
+        result = strdup("Double");
+        break;
 
-        case BOOLEAN_TYPE:
-            result = strdup("Boolean");
-            break;
+    case BOOLEAN_TYPE:
+        result = strdup("Boolean");
+        break;
 
-        case TOKEN_TYPE:
-            result = strdup("Token");
-            break;
+    case TOKEN_TYPE:
+        result = strdup("Token");
+        break;
 
-        default:
-            result = strdup("");
-            break;
+    default:
+        result = strdup("");
+        break;
     }
 
     return result;
 }
 
-char *_computeLiteral(Literal* literal){
-    if(literal == NULL){
+char *_computeLiteral(Literal *literal)
+{
+    if (literal == NULL)
+    {
         return NULL;
     }
 
-    if(literal->type == str){
+    if (literal->type == str)
+    {
         return strdup(literal->str);
-    } else if(literal->type == token){
-        char * tok = malloc(10);
+    }
+    else if (literal->type == token)
+    {
+        char *tok = malloc(10);
         snprintf(tok, 10, "%d", literal->token);
         return strdup(tok);
-    } else {
+    }
+    else
+    {
         return NULL;
     }
 }
 
-char* _computeVarAccess(VarAccess* varAccess) {
-    if (varAccess == NULL) {
+char *_computeVarAccess(VarAccess *varAccess)
+{
+    if (varAccess == NULL)
+    {
         return NULL;
     }
 
-    if (varAccess->vaccess != NULL) {
+    if (varAccess->vaccess != NULL)
+    {
 
         // Case 3: Operator on VarAccess (e.g., var_name.VarAccess.var_name)
 
-        if(varAccess->var_name != NULL){
-            char* nestedResult = _computeVarAccess(varAccess->vaccess);
+        if (varAccess->var_name != NULL)
+        {
+            char *nestedResult = _computeVarAccess(varAccess->vaccess);
 
-            size_t len = strlen(nestedResult) + strlen(varAccess->var_name) + 2;  //2 for the dot and the null terminator
-            char* result = calloc(len, sizeof(char));
+            size_t len = strlen(nestedResult) + strlen(varAccess->var_name) + 2; // 2 for the dot and the null terminator
+            char *result = calloc(len, sizeof(char));
             snprintf(result, len, "%s.%s", varAccess->var_name, nestedResult);
-            
+
             free(nestedResult);
 
             return result;
         }
 
-    
         // Case 4: Parameter-based access (e.g., par.VarAccess)
 
-        else if(varAccess->param != NULL){
-            char* nestedResult = _computeVarAccess(varAccess->vaccess);
-            char* params = _computeParams(varAccess->param);
+        else if (varAccess->param != NULL)
+        {
+            char *nestedResult = _computeVarAccess(varAccess->vaccess);
+            char *params = _computeParams(varAccess->param);
 
             size_t len = strlen(nestedResult) + strlen(params) + 2;
-            char* result = calloc(len, sizeof(char));
+            char *result = calloc(len, sizeof(char));
             snprintf(result, len, "%s.%s", params, nestedResult);
 
             free(nestedResult);
             free(params);
             return result;
-
-        } else {
+        }
+        else
+        {
             return NULL;
         }
     }
 
     // Case 1: Base case - Simple var_name
-    if (varAccess->var_name != NULL) {
-        return strdup(varAccess->var_name); 
+    if (varAccess->var_name != NULL)
+    {
+        return strdup(varAccess->var_name);
     }
 
     // Case 2: Method invocation (e.g., a.b.c.d.method())
-    if (varAccess->method_invocation != NULL) {
-        char* methodResult = _computeMethodInvocation(varAccess->method_invocation);
+    if (varAccess->method_invocation != NULL)
+    {
+        char *methodResult = _computeMethodInvocation(varAccess->method_invocation);
         return methodResult;
     }
 
     return NULL;
 }
 
-char *_computeArgumentList(ArgumentList* argumentList){
+char *_computeArgumentList(ArgumentList *argumentList)
+{
     // Base case: empty argument list
-    if (argumentList == NULL) {
+    if (argumentList == NULL)
+    {
         return strdup("");
     }
 
     char *currentExpression = _computeExpression(argumentList->expression);
 
     // Base case: no more arguments
-    if (argumentList->arglist == NULL) {
+    if (argumentList->arglist == NULL)
+    {
         return currentExpression;
     }
 
-    //Recursive case: there are more arguments
+    // Recursive case: there are more arguments
     char *restOfList = _computeArgumentList(argumentList->arglist);
 
-    size_t len = strlen(currentExpression) + strlen(restOfList) + 2;  // 2 for the comma and null-terminator
+    size_t len = strlen(currentExpression) + strlen(restOfList) + 2; // 2 for the comma and null-terminator
     char *result = malloc(len);
 
     snprintf(result, len, "%s,%s", currentExpression, restOfList);
@@ -207,27 +231,34 @@ char *_computeArgumentList(ArgumentList* argumentList){
     return result;
 }
 
-char* _computePostfixExpression(PostfixExpression* postfixExpression) {
-    if (postfixExpression == NULL) {
+char *_computePostfixExpression(PostfixExpression *postfixExpression)
+{
+    if (postfixExpression == NULL)
+    {
         return NULL;
     }
 
     char *result = NULL;
 
-    if (postfixExpression->primary != NULL) {
+    if (postfixExpression->primary != NULL)
+    {
         result = _computePrimary(postfixExpression->primary);
     }
 
-    else if (postfixExpression->vaccess != NULL) {
+    else if (postfixExpression->vaccess != NULL)
+    {
 
         result = _computeVarAccess(postfixExpression->vaccess);
 
-        if (postfixExpression->token == INCREMENT) {
+        if (postfixExpression->token == INCREMENT)
+        {
             size_t len = strlen(result) + 2;
             result = realloc(result, len);
             strcat(result, "++");
-        } else if (postfixExpression->token == DECREMENT) {
-            size_t len = strlen(result) + 2; 
+        }
+        else if (postfixExpression->token == DECREMENT)
+        {
+            size_t len = strlen(result) + 2;
             result = realloc(result, len);
             strcat(result, "--");
         }
@@ -236,78 +267,98 @@ char* _computePostfixExpression(PostfixExpression* postfixExpression) {
     return result;
 }
 
-char* _computeUnaryExpression(UnaryExpression* unaryExpression) {
-    if (unaryExpression == NULL) {
+char *_computeUnaryExpression(UnaryExpression *unaryExpression)
+{
+    if (unaryExpression == NULL)
+    {
         return NULL;
     }
 
     char *result = NULL;
 
-    switch (unaryExpression->globaltype) {
-        case numericComparison:
-            {
-                char *left = _computeUnaryExpression(unaryExpression->uexp1_num);
-                char *right = _computePostfixExpression(unaryExpression->uexp2_num);
+    switch (unaryExpression->globaltype)
+    {
+    case numericComparison:
+    {
+        char *left = _computeUnaryExpression(unaryExpression->uexp1_num);
+        char *right = _computePostfixExpression(unaryExpression->uexp2_num);
 
-                result = _computeNumericComparison(left, right, unaryExpression->numcomp);
-                free(left);
-                free(right);
-            }
-            break;
+        result = _computeNumericComparison(left, right, unaryExpression->numcomp);
+        free(left);
+        free(right);
+    }
+    break;
 
-        case doubleToken:
-            {
-                char *left = _computeUnaryExpression(unaryExpression->uexp1_exp);
-                char *right = _computePostfixExpression(unaryExpression->uexp2_exp);
-                result = _computeDoubleTokenExpression(left, right, unaryExpression->type);
-                free(left);
-                free(right);
-            }
-            break;
+    case doubleToken:
+    {
+        char *left = _computeUnaryExpression(unaryExpression->uexp1_exp);
+        char *right = _computePostfixExpression(unaryExpression->uexp2_exp);
+        result = _computeDoubleTokenExpression(left, right, unaryExpression->type);
+        free(left);
+        free(right);
+    }
+    break;
 
-        case postfixExpression:
-            result = _computePostfixExpression(unaryExpression->pexp);
-            break;
+    case postfixExpression:
+        result = _computePostfixExpression(unaryExpression->pexp);
+        break;
 
-        case param:
-            {
-                if(unaryExpression->param == NULL){
-                    result = strdup("()");
-                } else {
-                    char* params= _computeParams(unaryExpression->param);
-                    size_t total = strlen(params) + 3;
-                    result = malloc(total);
-                    snprintf(result, total, "(%s)", params);
-                    free(params);
-                }
-            }
-            break;
+    case param:
+    {
+        if (unaryExpression->param == NULL)
+        {
+            result = strdup("()");
+        }
+        else
+        {
+            char *params = _computeParams(unaryExpression->param);
+            size_t total = strlen(params) + 3;
+            result = malloc(total);
+            snprintf(result, total, "(%s)", params);
+            free(params);
+        }
+    }
+    break;
 
-        case singleToken:
-            {
-                char *operand = _computeUnaryExpression(unaryExpression->uexp);
-                result = _computeSingleTokenOperator(operand, unaryExpression->token);
-                free(operand);
-            }
-            break;
+    case singleToken:
+    {
+        char *operand = _computeUnaryExpression(unaryExpression->uexp);
+        result = _computeSingleTokenOperator(operand, unaryExpression->token);
+        free(operand);
+    }
+    break;
 
-        default:
-            result = NULL;
-            break;
+    default:
+        result = NULL;
+        break;
     }
 
     return result;
 }
 
-char* _computeNumericComparison(char *left, char *right, NumericComparison *numcomp) {
-    char *operator = NULL;
-    switch (numcomp->token) {
-        case JAVA_EXACT_COMPARISON: operator = "=="; break;
-        case JAVA_LESSER: operator = "<"; break;
-        case JAVA_GREATER: operator = ">"; break;
-        case JAVA_LEQ: operator = "<="; break;
-        case JAVA_GEQ: operator = ">="; break;
-        default: operator = "unknown"; break;
+char *_computeNumericComparison(char *left, char *right, NumericComparison *numcomp)
+{
+    char *operator= NULL;
+    switch (numcomp->token)
+    {
+    case JAVA_EXACT_COMPARISON:
+        operator= "==";
+        break;
+    case JAVA_LESSER:
+        operator= "<";
+        break;
+    case JAVA_GREATER:
+        operator= ">";
+        break;
+    case JAVA_LEQ:
+        operator= "<=";
+        break;
+    case JAVA_GEQ:
+        operator= ">=";
+        break;
+    default:
+        operator= "unknown";
+        break;
     }
 
     size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
@@ -316,16 +367,29 @@ char* _computeNumericComparison(char *left, char *right, NumericComparison *numc
     return result;
 }
 
-
-char* _computeDoubleTokenExpression(char *left, char *right, UnaryExpressionType type) {
-    char *operator = NULL;
-    switch (type) {
-        case star_t: operator = "*"; break;
-        case div_type: operator = "/"; break;
-        case mod_t: operator = "%"; break;
-        case plus_t: operator = "+"; break;
-        case minus_t: operator = "-"; break;
-        default: operator = "unknown"; break;
+char *_computeDoubleTokenExpression(char *left, char *right, UnaryExpressionType type)
+{
+    char *operator= NULL;
+    switch (type)
+    {
+    case star_t:
+        operator= "*";
+        break;
+    case div_type:
+        operator= "/";
+        break;
+    case mod_t:
+        operator= "%";
+        break;
+    case plus_t:
+        operator= "+";
+        break;
+    case minus_t:
+        operator= "-";
+        break;
+    default:
+        operator= "unknown";
+        break;
     }
 
     size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
@@ -334,41 +398,58 @@ char* _computeDoubleTokenExpression(char *left, char *right, UnaryExpressionType
     return result;
 }
 
-
-char* _computeSingleTokenOperator(char *operand, Token token) {
-    char *operator = NULL;
-    switch (token) {
-        case JAVA_NOT: operator = "!"; break;
-        case INCREMENT: operator = "++"; break;
-        case DECREMENT: operator = "--"; break;
-        case PLUS: operator = "+"; break;
-        case MINUS: operator = "-"; break;
-        default: operator = "unknown"; break;
+char *_computeSingleTokenOperator(char *operand, Token token)
+{
+    char *operator= NULL;
+    switch (token)
+    {
+    case JAVA_NOT:
+        operator= "!";
+        break;
+    case INCREMENT:
+        operator= "++";
+        break;
+    case DECREMENT:
+        operator= "--";
+        break;
+    case PLUS:
+        operator= "+";
+        break;
+    case MINUS:
+        operator= "-";
+        break;
+    default:
+        operator= "unknown";
+        break;
     }
 
-    size_t len = strlen(operand) + strlen(operator) + 2; 
+    size_t len = strlen(operand) + strlen(operator) + 2;
     char *result = malloc(len);
     snprintf(result, len, "%s%s", operator, operand);
     return result;
 }
 
-
-char* _computeEqualityExpression(EqualityExpression* equalityExpression) {
-    if (equalityExpression == NULL) {
+char *_computeEqualityExpression(EqualityExpression *equalityExpression)
+{
+    if (equalityExpression == NULL)
+    {
         return NULL;
     }
 
     char *result = NULL;
 
-    if (equalityExpression->eqexp == NULL) {
+    if (equalityExpression->eqexp == NULL)
+    {
         // Base case: Compute the unary expression (single UnaryExpression)
         result = _computeUnaryExpression(equalityExpression->uexp);
-    } else {
+    }
+    else
+    {
         // Recursive case: Compute the left-hand side and right-hand side and combine with the operator
         char *left = _computeEqualityExpression(equalityExpression->eqexp);
         char *right = _computeUnaryExpression(equalityExpression->uexp);
-        
-        const char* operator = "==";
+
+        const char *operator= "==";
 
         size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
         char *result = malloc(len);
@@ -381,20 +462,25 @@ char* _computeEqualityExpression(EqualityExpression* equalityExpression) {
     return result;
 }
 
-char* _computeConditionalAndExpression(ConditionalAndExpression* conditionalAndExpression) {
-    if (conditionalAndExpression == NULL) {
+char *_computeConditionalAndExpression(ConditionalAndExpression *conditionalAndExpression)
+{
+    if (conditionalAndExpression == NULL)
+    {
         return NULL;
     }
 
     char *result = NULL;
 
-    if (conditionalAndExpression->candexp == NULL) {
+    if (conditionalAndExpression->candexp == NULL)
+    {
         result = _computeEqualityExpression(conditionalAndExpression->eqexp);
-    } else {
-        char *left = _computeConditionalAndExpression(conditionalAndExpression->candexp); 
-        char *right = _computeEqualityExpression(conditionalAndExpression->eqexp); 
-        
-        const char* operator = "&&";
+    }
+    else
+    {
+        char *left = _computeConditionalAndExpression(conditionalAndExpression->candexp);
+        char *right = _computeEqualityExpression(conditionalAndExpression->eqexp);
+
+        const char *operator= "&&";
 
         size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
         char *result = malloc(len);
@@ -407,20 +493,25 @@ char* _computeConditionalAndExpression(ConditionalAndExpression* conditionalAndE
     return result;
 }
 
-char *_computeConditionalOrExpression(ConditionalOrExpression* conditionalOrExpression){
-        if (conditionalOrExpression == NULL) {
+char *_computeConditionalOrExpression(ConditionalOrExpression *conditionalOrExpression)
+{
+    if (conditionalOrExpression == NULL)
+    {
         return NULL;
     }
 
     char *result = NULL;
 
-    if (conditionalOrExpression->corexp == NULL) {
+    if (conditionalOrExpression->corexp == NULL)
+    {
         result = _computeConditionalAndExpression(conditionalOrExpression->candexp);
-    } else {
-        char *left = _computeConditionalOrExpression(conditionalOrExpression->corexp); 
-        char *right = _computeConditionalAndExpression(conditionalOrExpression->candexp); 
-        
-        const char* operator = "||";
+    }
+    else
+    {
+        char *left = _computeConditionalOrExpression(conditionalOrExpression->corexp);
+        char *right = _computeConditionalAndExpression(conditionalOrExpression->candexp);
+
+        const char *operator= "||";
 
         size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
         char *result = malloc(len);
@@ -433,24 +524,27 @@ char *_computeConditionalOrExpression(ConditionalOrExpression* conditionalOrExpr
     return result;
 }
 
-char* _computeConditionalExpression(ConditionalExpression* conditionalExpression) {
-    if (conditionalExpression == NULL) {
+char *_computeConditionalExpression(ConditionalExpression *conditionalExpression)
+{
+    if (conditionalExpression == NULL)
+    {
         return strdup("");
     }
 
-    char* left = _computeConditionalOrExpression(conditionalExpression->corexp);
+    char *left = _computeConditionalOrExpression(conditionalExpression->corexp);
 
-    if (conditionalExpression->exp == NULL || conditionalExpression->cexp == NULL) {
+    if (conditionalExpression->exp == NULL || conditionalExpression->cexp == NULL)
+    {
         return left;
     }
 
     // If there's both a middle expression and a right ConditionalExpression, combine them
-    char* middle = _computeExpression(conditionalExpression->exp);
-    char* right = _computeConditionalExpression(conditionalExpression->cexp);
+    char *middle = _computeExpression(conditionalExpression->exp);
+    char *right = _computeConditionalExpression(conditionalExpression->cexp);
     size_t len = strlen(left) + strlen(middle) + strlen("?") + strlen(right) + strlen(":") + 5; // 5 for spaces and null terminator
-    char* result = malloc(len);
+    char *result = malloc(len);
     snprintf(result, len, "%s ? %s : %s", left, middle, right);
-    
+
     // Clean up
     free(left);
     free(middle);
@@ -459,18 +553,20 @@ char* _computeConditionalExpression(ConditionalExpression* conditionalExpression
     return result;
 }
 
-char* _computeAssignment(Assignment* assignment) {
-    if (assignment == NULL) {
+char *_computeAssignment(Assignment *assignment)
+{
+    if (assignment == NULL)
+    {
         return strdup("");
     }
 
-    char* left = _computeVarAccess(assignment->vaccess);
+    char *left = _computeVarAccess(assignment->vaccess);
 
-    char* right = _computeExpression(assignment->expression); 
+    char *right = _computeExpression(assignment->expression);
 
     size_t len = strlen(left) + strlen(right) + strlen("=") + 3;
 
-    char* result = malloc(len);
+    char *result = malloc(len);
 
     snprintf(result, len, "%s = %s", left, right);
 
@@ -480,75 +576,84 @@ char* _computeAssignment(Assignment* assignment) {
     return result;
 }
 
-char* _computePrimary(Primary* primary) {
-    if (primary == NULL) {
+char *_computePrimary(Primary *primary)
+{
+    if (primary == NULL)
+    {
         return strdup("");
     }
 
-    char* result = NULL;
+    char *result = NULL;
 
-    switch (primary->type) {
-        case literal:
-            result = _computeLiteral(primary->lit);
-            break;
-        
-        case expression:
-            result = _computeExpression(primary->exp);
-            break;
+    switch (primary->type)
+    {
+    case literal:
+        result = _computeLiteral(primary->lit);
+        break;
 
-        case cexp:
-            result = _computeClassInstanceCreationExpression(primary->cice);
-            break;
-        
-        default:
-            result = strdup("");
-            break;
+    case expression:
+        result = _computeExpression(primary->exp);
+        break;
+
+    case cexp:
+        result = _computeClassInstanceCreationExpression(primary->cice);
+        break;
+
+    default:
+        result = strdup("");
+        break;
     }
 
     return result;
 }
 
-
-char* _computeClassInstanceCreationExpression(ClassInstanceCreationExpression* classInstanceCreationExpression) {
-    if (classInstanceCreationExpression == NULL) {
+char *_computeClassInstanceCreationExpression(ClassInstanceCreationExpression *classInstanceCreationExpression)
+{
+    if (classInstanceCreationExpression == NULL)
+    {
         return strdup("");
     }
 
-    char* result = NULL;
-    
-    if (classInstanceCreationExpression->ucice != NULL && classInstanceCreationExpression->vaccess != NULL) {
-        char* vaccessStr = _computeVarAccess(classInstanceCreationExpression->vaccess);
-        char* uciceStr = _computeUnqualifiedClassInstanceCreationExpression(classInstanceCreationExpression->ucice);
+    char *result = NULL;
+
+    if (classInstanceCreationExpression->ucice != NULL && classInstanceCreationExpression->vaccess != NULL)
+    {
+        char *vaccessStr = _computeVarAccess(classInstanceCreationExpression->vaccess);
+        char *uciceStr = _computeUnqualifiedClassInstanceCreationExpression(classInstanceCreationExpression->ucice);
         result = malloc(strlen(vaccessStr) + strlen(uciceStr) + 2);
         sprintf(result, "%s.%s", vaccessStr, uciceStr);
         free(vaccessStr);
         free(uciceStr);
-
-    } else if (classInstanceCreationExpression->ucice != NULL && classInstanceCreationExpression->primary != NULL) {
-        char* primaryStr = _computePrimary(classInstanceCreationExpression->primary); 
-        char* uciceStr = _computeUnqualifiedClassInstanceCreationExpression(classInstanceCreationExpression->ucice);
+    }
+    else if (classInstanceCreationExpression->ucice != NULL && classInstanceCreationExpression->primary != NULL)
+    {
+        char *primaryStr = _computePrimary(classInstanceCreationExpression->primary);
+        char *uciceStr = _computeUnqualifiedClassInstanceCreationExpression(classInstanceCreationExpression->ucice);
         result = malloc(strlen(primaryStr) + strlen(uciceStr) + 2);
         sprintf(result, "%s.%s", primaryStr, uciceStr);
         free(primaryStr);
         free(uciceStr);
-
-    } else {
-        result = _computeUnqualifiedClassInstanceCreationExpression(classInstanceCreationExpression->ucice); 
+    }
+    else
+    {
+        result = _computeUnqualifiedClassInstanceCreationExpression(classInstanceCreationExpression->ucice);
     }
 
     return result;
 }
 
-
-char* _computeUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstanceCreationExpression* unqualifiedClassInstanceCreationExpression) {
-    if (unqualifiedClassInstanceCreationExpression == NULL) {
+char *_computeUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstanceCreationExpression *unqualifiedClassInstanceCreationExpression)
+{
+    if (unqualifiedClassInstanceCreationExpression == NULL)
+    {
         return strdup("");
     }
     char *result;
     size_t total;
-    if(unqualifiedClassInstanceCreationExpression->type == parargs){
-        char* arglistStr = _computeArgumentList(unqualifiedClassInstanceCreationExpression->arglist);
-        char* params = _computeParams(unqualifiedClassInstanceCreationExpression->param);
+    if (unqualifiedClassInstanceCreationExpression->type == parargs)
+    {
+        char *arglistStr = _computeArgumentList(unqualifiedClassInstanceCreationExpression->arglist);
+        char *params = _computeParams(unqualifiedClassInstanceCreationExpression->param);
         total = strlen(arglistStr) + strlen(params) + 7;
         result = malloc(total);
 
@@ -556,7 +661,9 @@ char* _computeUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstanc
 
         free(arglistStr);
         free(params);
-    }else{
+    }
+    else
+    {
         char *methodStr = _computeMethodInvocation(unqualifiedClassInstanceCreationExpression->invocation);
         total = strlen(methodStr) + 5;
         result = malloc(total);
@@ -569,35 +676,39 @@ char* _computeUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstanc
 }
 
 // Mid-level functions
-char* _computeExpression(Expression* expression) {
-    if (expression == NULL) {
+char *_computeExpression(Expression *expression)
+{
+    if (expression == NULL)
+    {
         return strdup("");
     }
 
-    switch (expression->type) {
-        case xexp:
-            return _computeConditionalExpression(expression->xexp);
+    switch (expression->type)
+    {
+    case xexp:
+        return _computeConditionalExpression(expression->xexp);
 
-        case assignment:
-            return _computeAssignment(expression->assignment);
+    case assignment:
+        return _computeAssignment(expression->assignment);
 
-        default:
-            return strdup("");
+    default:
+        return strdup("");
     }
 }
 
-
-char* _computeMethodInvocation(MethodInvocation* methodInvocation) {
-    if (methodInvocation == NULL) {
+char *_computeMethodInvocation(MethodInvocation *methodInvocation)
+{
+    if (methodInvocation == NULL)
+    {
         return strdup("");
     }
 
-    char* varAccessStr = _computeVarAccess(methodInvocation->vaccess);
+    char *varAccessStr = _computeVarAccess(methodInvocation->vaccess);
 
-    char* argumentListStr = _computeArgumentList(methodInvocation->arglist);
+    char *argumentListStr = _computeArgumentList(methodInvocation->arglist);
 
     size_t totalLength = strlen(varAccessStr) + strlen(argumentListStr) + 3;
-    char* methodInvocationStr = malloc(totalLength);
+    char *methodInvocationStr = malloc(totalLength);
 
     snprintf(methodInvocationStr, totalLength, "%s(%s)", varAccessStr, argumentListStr);
 
@@ -607,56 +718,65 @@ char* _computeMethodInvocation(MethodInvocation* methodInvocation) {
     return methodInvocationStr;
 }
 
-
-char* _computeStatementExpression(StatementExpression* statementExpression) {
-    if (statementExpression == NULL) {
+char *_computeStatementExpression(StatementExpression *statementExpression)
+{
+    if (statementExpression == NULL)
+    {
         return strdup("");
     }
 
-    char* result = NULL;
+    char *result = NULL;
 
-    switch (statementExpression->type) {
-        case assignation: {
-            result = _computeAssignment(statementExpression->assignment);
-            break;
-        }
-        case vaccess: {
-            result = _computeVarAccess(statementExpression->var_access);
-            break;
-        }
-        case assigParam: {
-            char* expStr = _computeExpression(statementExpression->exp);
-            char* paramStr = _computeParams(statementExpression->param);
+    switch (statementExpression->type)
+    {
+    case assignation:
+    {
+        result = _computeAssignment(statementExpression->assignment);
+        break;
+    }
+    case vaccess:
+    {
+        result = _computeVarAccess(statementExpression->var_access);
+        break;
+    }
+    case assigParam:
+    {
+        char *expStr = _computeExpression(statementExpression->exp);
+        char *paramStr = _computeParams(statementExpression->param);
 
-            size_t totalLength = strlen(statementExpression->var_name) + strlen(expStr) + strlen(paramStr) + 5;
-            result = malloc(totalLength);
-            snprintf(result, totalLength, "%s %s = %s", paramStr, statementExpression->var_name, expStr);
+        size_t totalLength = strlen(statementExpression->var_name) + strlen(expStr) + strlen(paramStr) + 5;
+        result = malloc(totalLength);
+        snprintf(result, totalLength, "%s %s = %s", paramStr, statementExpression->var_name, expStr);
 
-            free(paramStr);
-            free(expStr);
-            break;
-        }
-        default:
-            result = strdup("");
-            break;
+        free(paramStr);
+        free(expStr);
+        break;
+    }
+    default:
+        result = strdup("");
+        break;
     }
 
     return result;
 }
 
-
-char* _computeStatementExpressionList(StatementExpressionList* statementExpressionList) {
-    if (statementExpressionList == NULL) {
+char *_computeStatementExpressionList(StatementExpressionList *statementExpressionList)
+{
+    if (statementExpressionList == NULL)
+    {
         return strdup("");
     }
 
-    char* result = NULL;
-    char* currentExprStr = _computeStatementExpression(statementExpressionList->exp);
+    char *result = NULL;
+    char *currentExprStr = _computeStatementExpression(statementExpressionList->exp);
 
-    if (statementExpressionList->list == NULL) {
+    if (statementExpressionList->list == NULL)
+    {
         result = currentExprStr;
-    } else {
-        char* restOfListStr = _computeStatementExpressionList(statementExpressionList->list);
+    }
+    else
+    {
+        char *restOfListStr = _computeStatementExpressionList(statementExpressionList->list);
 
         size_t totalLength = strlen(currentExprStr) + strlen(restOfListStr) + 3;
         result = malloc(totalLength);
@@ -670,137 +790,158 @@ char* _computeStatementExpressionList(StatementExpressionList* statementExpressi
     return result;
 }
 
-
-char* _computeIfThenStatement(IfThenStatement* ifThenStatement) {
-    if(ifThenStatement == NULL){
+char *_computeIfThenStatement(IfThenStatement *ifThenStatement)
+{
+    if (ifThenStatement == NULL)
+    {
         return strdup("");
     }
 
-    char* conditionStr = _computeExpression(ifThenStatement->exp);
-    
-    char* ifStatementStr = _computeBlock(ifThenStatement->ifblock);
-    
-    char* result = malloc(strlen("if () {  }") + strlen(conditionStr) + strlen(ifStatementStr) + 1);
+    char *conditionStr = _computeExpression(ifThenStatement->exp);
+
+    char *ifStatementStr = _computeBlock(ifThenStatement->ifblock);
+
+    char *result = malloc(strlen("if () {  }") + strlen(conditionStr) + strlen(ifStatementStr) + 1);
     sprintf(result, "if (%s) { %s }", conditionStr, ifStatementStr);
-    
+
     free(conditionStr);
     free(ifStatementStr);
-    
-    if (ifThenStatement->elseblock != NULL) {
-        char* elseStatementStr = _computeBlock(ifThenStatement->elseblock);
+
+    if (ifThenStatement->elseblock != NULL)
+    {
+        char *elseStatementStr = _computeBlock(ifThenStatement->elseblock);
         size_t totalLength = strlen(result) + strlen(" else { }") + strlen(elseStatementStr) + 1;
-        
+
         result = realloc(result, totalLength);
         strcat(result, " else { ");
         strcat(result, elseStatementStr);
         strcat(result, " }");
-        
+
         free(elseStatementStr);
     }
-    
+
     return result;
 }
 
+char *_computeForInit(ForInit *forInit)
+{
+    switch (forInit->type)
+    {
+    case statementExpList:
+    {
+        return _computeStatementExpressionList(forInit->statementExpList);
+    }
 
-char *_computeForInit(ForInit* forInit) {
-    switch (forInit->type) {
-        case statementExpList: {
-            return _computeStatementExpressionList(forInit->statementExpList);
-        }
+    case withParams:
+    {
+        char *paramStr = _computeParams(forInit->param);
+        size_t totalLen = strlen(forInit->var_name_param) + strlen(paramStr) + 2;
+        char *result = malloc(totalLen);
+        snprintf(result, totalLen, "%s %s", paramStr, forInit->var_name_param);
+        free(paramStr);
+        return result;
+    }
 
-        case withParams: {
-            char *paramStr = _computeParams(forInit->param);
-            size_t totalLen = strlen(forInit->var_name_param) + strlen(paramStr) + 2;
-            char* result = malloc(totalLen);
-            snprintf(result, totalLen, "%s %s", paramStr, forInit->var_name_param);
-            free(paramStr);
-            return result;
-        }
+    case withoutParams:
+    {
+        return strdup(forInit->var_name);
+    }
 
-        case withoutParams: {
-            return strdup(forInit->var_name);
-        }
-
-        default:
-             return strdup("");
+    default:
+        return strdup("");
     }
 }
 
 // Higher-level functions
-char *_computeStatement(Statement* statement) {
-    switch (statement->type) {
-        case state: {
-            return _computeStatementExpression(statement->sexp);
+char *_computeStatement(Statement *statement)
+{
+    switch (statement->type)
+    {
+    case state:
+    {
+        return _computeStatementExpression(statement->sexp);
+    }
+
+    case ifThenStatement:
+    {
+        return _computeIfThenStatement(statement->ifThen);
+    }
+
+    case While:
+    {
+        char *whileCondition = _computeExpression(statement->expwhile);
+        char *whileStatement = _computeBlock(statement->blockwhile);
+
+        size_t totalLen = strlen(whileCondition) + strlen(whileStatement) + 14;
+        char *result = malloc(totalLen);
+        snprintf(result, totalLen, "while (%s) { %s }", whileCondition, whileStatement);
+        return result;
+    }
+
+    case For:
+    {
+        char *forInit = _computeForInit(statement->forInit);
+        char *forCondition = _computeExpression(statement->expfor);
+        char *forStatementList = _computeStatementExpressionList(statement->statementExpList);
+        char *forBody = _computeBlock(statement->blockfor);
+
+        size_t totalLen = strlen(forInit) + strlen(forCondition) + strlen(forStatementList) + strlen(forBody) + 16;
+        char *result = malloc(totalLen);
+        if (result != NULL)
+        {
+            snprintf(result, totalLen, "for (%s; %s; %s) { %s }", forInit, forCondition, forStatementList, forBody);
         }
+        return result;
+    }
 
-        case ifThenStatement: {
-            return _computeIfThenStatement(statement->ifThen);
-        }
-
-        case While: {
-            char* whileCondition = _computeExpression(statement->expwhile);
-            char* whileStatement = _computeBlock(statement->blockwhile);
-
-            size_t totalLen = strlen(whileCondition) + strlen(whileStatement) + 14;
-            char* result = malloc(totalLen);
-            snprintf(result, totalLen, "while (%s) { %s }", whileCondition, whileStatement);
-            return result;
-        }
-
-        case For: {
-            char* forInit = _computeForInit(statement->forInit);
-            char* forCondition = _computeExpression(statement->expfor);
-            char* forStatementList = _computeStatementExpressionList(statement->statementExpList);
-            char* forBody = _computeBlock(statement->blockfor);
-
-            size_t totalLen = strlen(forInit) + strlen(forCondition) + strlen(forStatementList) + strlen(forBody) + 16;
-            char* result = malloc(totalLen);
-            if (result != NULL) {
-                snprintf(result, totalLen, "for (%s; %s; %s) { %s }", forInit, forCondition, forStatementList, forBody);
-            }
-            return result;
-        }
-
-        default:
-            return strdup("");
+    default:
+        return strdup("");
     }
 }
 
-char *_computeBlock(Block* block) {
-    switch (block->type) {
-        case statement: {
-            char* statementResult = _computeStatement(block->statement);
-            char* nestedBlockResult = block->block != NULL ? _computeBlock(block->block) : NULL;
-            size_t totalLen = strlen(statementResult) + (nestedBlockResult != NULL ? strlen(nestedBlockResult) : 0) + 10;
-            char* result = malloc(totalLen);
-            if (result != NULL) {
-                snprintf(result, totalLen, "%s; %s", statementResult, nestedBlockResult != NULL ? nestedBlockResult : "");
-            }
-            return result;
+char *_computeBlock(Block *block)
+{
+    switch (block->type)
+    {
+    case statement:
+    {
+        char *statementResult = _computeStatement(block->statement);
+        char *nestedBlockResult = block->block != NULL ? _computeBlock(block->block) : NULL;
+        size_t totalLen = strlen(statementResult) + (nestedBlockResult != NULL ? strlen(nestedBlockResult) : 0) + 10;
+        char *result = malloc(totalLen);
+        if (result != NULL)
+        {
+            snprintf(result, totalLen, "%s; %s", statementResult, nestedBlockResult != NULL ? nestedBlockResult : "");
         }
+        return result;
+    }
 
-        case ret: {
-            char* returnExpr = _computeExpression(block->exp);
-            size_t totalLen = strlen(returnExpr) + 9;
-            char* result = malloc(totalLen);
-            if (result != NULL) {
-                snprintf(result, totalLen, "return %s;", returnExpr);
-            }
-            return result;
+    case ret:
+    {
+        char *returnExpr = _computeExpression(block->exp);
+        size_t totalLen = strlen(returnExpr) + 9;
+        char *result = malloc(totalLen);
+        if (result != NULL)
+        {
+            snprintf(result, totalLen, "return %s;", returnExpr);
         }
+        return result;
+    }
 
-        case throw: {
-            char* throwExpr = _computeExpression(block->exp);
-            size_t totalLen = strlen(throwExpr) + 9;
-            char* result = malloc(totalLen);
-            if (result != NULL) {
-                snprintf(result, totalLen, "throw %s;", throwExpr);
-            }
-            return result;
+    case throw:
+    {
+        char *throwExpr = _computeExpression(block->exp);
+        size_t totalLen = strlen(throwExpr) + 9;
+        char *result = malloc(totalLen);
+        if (result != NULL)
+        {
+            snprintf(result, totalLen, "throw %s;", throwExpr);
         }
+        return result;
+    }
 
-        default:
-            return strdup("");
+    default:
+        return strdup("");
     }
 }
 
@@ -810,18 +951,20 @@ char *_computeAction(Action *my_action)
     {
         return strdup(my_action->varName);
     }
-    else if(my_action->type == function_body)
+    else if (my_action->type == function_body)
     {
         char *block_str = _computeBlock(my_action->block);
         char *params = _computeParams(my_action->param);
 
         size_t totalLen = strlen(block_str) + strlen(params) + 6;
-        char * result = malloc(totalLen);
+        char *result = malloc(totalLen);
         snprintf(result, totalLen, "{ %s %s }", params, block_str);
         free(block_str);
         free(params);
         return result;
-    } else {
+    }
+    else
+    {
         return strdup("IGNORE_FOR_NOW");
     }
 }
@@ -855,58 +998,62 @@ int _itoa(uint64_t v, char *sp)
  * Will not always write the output into the buffer, returned char* is the only valid return :P
  * bufferLength should be at least 6
  */
-char *_escapeMatcher(char matcher, char *buffer,uint64_t bufferLength ){
-	switch (matcher)
-            {
-            case '\t':
-                return "'\\t'";
-            case '\n':
-                return "'\\n'";
-            case '\r':
-                return "'\\r'";
-            case '\'':
-                return "'\\''";
-            case '\\':
-                return "'\\\\'";
-            case '%':
-                return "'%'";
-            default:
-			snprintf(buffer, bufferLength, "\'%c\'", matcher);
-			return buffer;
-            }
+char *_escapeMatcher(char matcher, char *buffer, uint64_t bufferLength)
+{
+    switch (matcher)
+    {
+    case '\t':
+        return "'\\t'";
+    case '\n':
+        return "'\\n'";
+    case '\r':
+        return "'\\r'";
+    case '\'':
+        return "'\\''";
+    case '\\':
+        return "'\\\\'";
+    case '%':
+        return "'%'";
+    default:
+        snprintf(buffer, bufferLength, "\'%c\'", matcher);
+        return buffer;
+    }
 }
 
 /**
  * Generates the output of the program.
  */
-static void _generateProgram(automaton * automaton) {
-	char new_state_start[] = "/*%ld*/Automaton.newState(";
+static void _generateProgram(automaton *automaton)
+{
+    char new_state_start[] = "/*%ld*/Automaton.newState(";
     char new_state_end[] = ");\n";
     char null[] = "(Function<StateTracker, Token>) null";
-	char ignore[] = "var -> null";
+    char ignore[] = "var -> null";
 
     automaton_iterator *a_iterator = get_automaton_iterator(automaton);
-	uint64_t index = 0;
+    uint64_t index = 0;
     while (has_next_state(a_iterator))
     {
         _output(2, new_state_start, index++);
         automaton_state *s = get_next_state(a_iterator);
         if (throws_token(s))
         {
-			Action* act = (Action *)get_token(s);
-			if(act == NULL)
-			{
-				_output(0, ignore);
-			}
-			else
-			{
-				if(act->type == action)
-				{
-					_output(0, "var -> %s", act->varName);
-				} else {
-					_output(0, "var -> %s", _computeAction(act));
-				}
-			}
+            Action *act = (Action *)get_token(s);
+            if (act == NULL)
+            {
+                _output(0, ignore);
+            }
+            else
+            {
+                if (act->type == action)
+                {
+                    _output(0, "var -> %s", act->varName);
+                }
+                else
+                {
+                    _output(0, "var -> %s", _computeAction(act));
+                }
+            }
         }
         else
         {
@@ -917,7 +1064,7 @@ static void _generateProgram(automaton * automaton) {
     free_automaton_iterator(a_iterator);
     _output(0, "\n\n");
 
-	char set_transition_format[] = "Automaton.setTransition(%ld, %ld, %s);\n";
+    char set_transition_format[] = "Automaton.setTransition(%ld, %ld, %s);\n";
     char aux[MAX_UINT64_LENGTH];
 
     a_iterator = get_automaton_iterator(automaton);
@@ -929,7 +1076,7 @@ static void _generateProgram(automaton * automaton) {
         while (has_next_rule(s_iterator))
         {
             rule *r = get_next_rule(s_iterator);
-			_output(2, set_transition_format, state_index, get_to_state_indices(r)[0], _escapeMatcher(get_transition_matcher(r), aux, MAX_UINT64_LENGTH));
+            _output(2, set_transition_format, state_index, get_to_state_indices(r)[0], _escapeMatcher(get_transition_matcher(r), aux, MAX_UINT64_LENGTH));
         }
     }
     free_automaton_iterator(a_iterator);
@@ -943,260 +1090,261 @@ static void _generateProgram(automaton * automaton) {
  *
  * @see https://ctan.dcc.uchile.cl/graphics/pgf/contrib/forest/forest-doc.pdf
  */
-static void _generatePrologue(void) {
-	_output(0, "%s",
-		"//INSERT PACKAGE NAME HERE\n"
-		"package Your_package;\n"
-		"\n"
-		"import java.util.*;\n"
-		"import java.util.function.Function;\n"
-		"\n"
-		"//EDIT THIS IMPORT TO MATCH YOUR PACKAGE\n"
-		"import static Your_package.Automaton.Token.*;\n"
-		"\n"
-		"\n"
-		"public abstract class Automaton {\n"
-		"\n"
-		"    // EDIT THIS ENUM TO MATCH YOUR TOKENS\n"
-		"    public enum Token {\n"
-		"        PUT_YOUR_USED_TOKENS_HERE, UNKNOWN;\n"
-		"\n"
-		"\n"
-		"        private String stringContent;\n"
-		"        private Integer intContent;\n"
-		"        private Boolean boolContent;\n"
-		"        private Double doubleContent;\n"
-		"        private Boolean hasParams = false;\n"
-		"\n"
-		"        public Token setStringContent(String stringContent) {\n"
-		"            this.stringContent = stringContent;\n"
-		"            this.hasParams = true;\n"
-        "            return this;\n"
-		"        }\n"
-		"\n"
-		"        public Token setIntContent(Integer intContent) {\n"
-		"            this.intContent = intContent;\n"
-		"            this.hasParams = true;\n"
-        "            return this;\n"
-		"        }\n"
-		"\n"
-		"        public Token setBoolContent(Boolean boolContent) {\n"
-		"            this.boolContent = boolContent;\n"
-		"            this.hasParams = true;\n"
-        "            return this;\n"
-		"        }\n"
-		"\n"
-		"        public Token setDoubleContent(Double doubleContent) {\n"
-		"            this.doubleContent = doubleContent;\n"
-		"            this.hasParams = true;\n"
-        "            return this;\n"
-		"        }\n"
-		"\n"
-		"        public String getStringContent() {\n"
-		"            return stringContent;\n"
-		"        }\n"
-		"\n"
-		"        public Integer getIntContent() {\n"
-		"            return intContent;\n"
-		"        }\n"
-		"\n"
-		"        public Boolean getBoolContent() {\n"
-		"            return boolContent;\n"
-		"        }\n"
-		"\n"
-		"        public Double getDoubleContent() {\n"
-		"            return doubleContent;\n"
-		"        }\n"
-		"\n"
-		"        @Override\n"
-		"        public String toString() {\n"
-		"            StringBuilder sb = new StringBuilder();\n"
-		"            sb.append(this.name());\n"
-		"            if (hasParams) {\n"
-		"                sb.append(\"{ \");\n"
-		"                if (this.stringContent != null) {\n"
-		"                    sb.append(\"stringContent: \").append(this.stringContent).append(\" \");\n"
-		"                }\n"
-		"                if (this.intContent != null) {\n"
-		"                    sb.append(\"intContent: \").append(this.intContent).append(\" \");\n"
-		"                }\n"
-		"                if (this.boolContent != null) {\n"
-		"                    sb.append(\"boolContent: \").append(this.boolContent).append(\" \");\n"
-		"                }\n"
-		"                if (this.doubleContent != null) {\n"
-		"                    sb.append(\"doubleContent: \").append(this.doubleContent).append(\" \");\n"
-		"                }\n"
-		"                sb.append(\"}\");\n"
-		"            }\n"
-		"            return sb.toString();\n"
-		"        }\n"
-		"    }\n"
-		"\n"
-		"    private static State initialState;\n"
-		"    private static final List<State> states = new ArrayList<>();\n"
-		"    private static StateTracker stateTracker = new StateTracker();\n"
-		"\n"
-		"    public static int newState(Token token) {\n"
-		"        return newState((s) -> token);\n"
-		"    }\n"
-		"\n"
-		"    public static int newState(Function<StateTracker, Token> tokenGenerator) {\n"
-		"        State state = new State(tokenGenerator);\n"
-		"        if (initialState == null)\n"
-		"            initialState = state;\n"
-		"        states.add(state);\n"
-		"        return states.size() - 1;\n"
-		"    }\n"
-		"\n"
-		"    public static void setInitialState(int index) {\n"
-		"        initialState = states.get(index);\n"
-		"    }\n"
-		"\n"
-		"    public static void setTransition(int from, int to, char symbol) {\n"
-		"        states.get(from).setTransition(states.get(to), symbol);\n"
-		"    }\n"
-		"\n"
-		"    private static void manageState(char symbol) {\n"
-		"        Automaton.stateTracker.lexeme.append(symbol);\n"
-		"        if (symbol == '\\n') {\n"
-		"            Automaton.stateTracker.attribute.row++;\n"
-		"            Automaton.stateTracker.attribute.column = 1;\n"
-		"        } else {\n"
-		"            Automaton.stateTracker.attribute.column++;\n"
-		"        }\n"
-		"    }\n"
-		"\n"
-		"    private static void foundTokenManageState(Token token) {\n"
-		"        Automaton.stateTracker.lexeme = new StringBuilder();\n"
-		"		 if(token != null)\n"
-		"	        Automaton.stateTracker.token = token;\n"
-		"    }\n"
-		"\n"
-		"    private static void updateStateInRange(char[] charArray, int rangeStart, int rangeEnd) {\n"
-		"        for (int i = rangeStart; i < rangeEnd; i++) {\n"
-		"            manageState(charArray[i]);\n"
-		"        }\n"
-		"    }\n"
-		"\n"
-		"    private record TokenAndConsume(Token token, int consumeIndex) {\n"
-		"    }\n"
-		"\n"
-		"    private static TokenAndConsume getNextToken(char[] charArray, int readIndex) {\n"
-		"        State current = initialState;\n"
-		"        Function<StateTracker, Token> foundToken = null;\n"
-		"        int consumeIndex = readIndex, startIndex = readIndex;\n"
-		"        while (current != null && readIndex < charArray.length) {\n"
-		"            Function<StateTracker, Token> aux = current.tokenGenerator;\n"
-		"            if (aux != null) {\n"
-		"                foundToken = aux;\n"
-		"                consumeIndex = readIndex;\n"
-		"            }\n"
-		"            current = current.getTransition(charArray[readIndex]);\n"
-		"            readIndex++;\n"
-		"        }\n"
-		"        Function<StateTracker, Token> aux;\n"
-		"        if (current != null && (aux = current.tokenGenerator) != null) {\n"
-		"            foundToken = aux;\n"
-		"            consumeIndex = readIndex;\n"
-		"        }\n"
-		"        updateStateInRange(charArray, startIndex, consumeIndex);\n"
-		"        if(foundToken == null)\n"
-		"		 	throw new NoSuchElementException(\"Error on row \%d, from column \%d to column \%d: \%s\".formatted(stateTracker.attribute.row, startIndex, consumeIndex, stateTracker.lexeme));\n"
-		"        return new TokenAndConsume(foundToken.apply(stateTracker), consumeIndex);\n"
-		"    }\n"
-		"\n"
-		"    public static List<Token> getTokenList(String s) {\n"
-		"	 stateTracker = new StateTracker();\n"
-		"        TokenAndConsume tokenAndConsume;\n"
-		"        int i;\n"
-		"        char[] chars = s.toCharArray();\n"
-		"        List<Token> tokens = new ArrayList<>();\n"
-		"        for (i = 0; i < chars.length; ) {\n"
-		"            tokenAndConsume = getNextToken(chars, i);\n"
-		"            foundTokenManageState(tokenAndConsume.token);\n"
-		"			 if(tokenAndConsume.token != null)\n"
-		"            	tokens.add(tokenAndConsume.token);\n"
-		"            i = tokenAndConsume.consumeIndex;\n"
-		"        }\n"
-		"        return tokens;\n"
-		"    }\n"
-		"\n"
-		"    public static class StateTracker {\n"
-		"        private StringBuilder lexeme = new StringBuilder();\n"
-		"        private Token token;\n"
-		"        public final Attribute attribute = new Attribute();\n"
-		"\n"
-		"        public String getLexeme() {\n"
-		"            return lexeme.toString();\n"
-		"        }\n"
-		"\n"
-		"        public Token getToken() {\n"
-		"            return token;\n"
-		"        }\n"
-		"\n"
-		"        public Attribute getAttribute() {\n"
-		"            return attribute;\n"
-		"        }\n"
-		"\n"
-		"        public static class Attribute {\n"
-		"            // User managed\n"
-		"            public Integer id, num;\n"
-		"            // Non-user managed\n"
-		"            private Integer row = 0, column = 1;\n"
-		"\n"
-		"            public Integer getRow() {\n"
-		"                return row;\n"
-		"            }\n"
-		"\n"
-		"            public Integer getColumn() {\n"
-		"                return column;\n"
-		"            }\n"
-		"        }\n"
-		"    }\n"
-		"\n"
-		"    private static class State {\n"
-		"        private final Map<Character, State> transitions;\n"
-		"        private final Function<StateTracker, Token> tokenGenerator;\n"
-		"\n"
-		"        private State(Function<StateTracker, Token> tokenGenerator) {\n"
-		"            this.tokenGenerator = tokenGenerator;\n"
-		"            this.transitions = new HashMap<>();\n"
-		"        }\n"
-		"\n"
-		"        public void setTransition(State to, char symbol) {\n"
-		"            transitions.put(symbol, to);\n"
-		"        }\n"
-		"\n"
-		"        public State getTransition(char symbol) {\n"
-		"            return transitions.get(symbol);\n"
-		"        }\n"
-		"    }\n"
-		"\n"
-		"    private static boolean initialized = false;\n"
-		"\n"
-		"    public static void initialize() {\n"
-		"        if (initialized)\n"
-		"            throw new IllegalStateException();\n"
-		"        initialized = true;\n"
-	);
+static void _generatePrologue(void)
+{
+    _output(0, "%s",
+            "//INSERT PACKAGE NAME HERE\n"
+            "package Your_package;\n"
+            "\n"
+            "import java.util.*;\n"
+            "import java.util.function.Function;\n"
+            "\n"
+            "//EDIT THIS IMPORT TO MATCH YOUR PACKAGE\n"
+            "import static Your_package.Automaton.Token.*;\n"
+            "\n"
+            "\n"
+            "public abstract class Automaton {\n"
+            "\n"
+            "    // EDIT THIS ENUM TO MATCH YOUR TOKENS\n"
+            "    public enum Token {\n"
+            "        PUT_YOUR_USED_TOKENS_HERE, UNKNOWN;\n"
+            "\n"
+            "\n"
+            "        private String stringContent;\n"
+            "        private Integer intContent;\n"
+            "        private Boolean boolContent;\n"
+            "        private Double doubleContent;\n"
+            "        private Boolean hasParams = false;\n"
+            "\n"
+            "        public Token setStringContent(String stringContent) {\n"
+            "            this.stringContent = stringContent;\n"
+            "            this.hasParams = true;\n"
+            "            return this;\n"
+            "        }\n"
+            "\n"
+            "        public Token setIntContent(Integer intContent) {\n"
+            "            this.intContent = intContent;\n"
+            "            this.hasParams = true;\n"
+            "            return this;\n"
+            "        }\n"
+            "\n"
+            "        public Token setBoolContent(Boolean boolContent) {\n"
+            "            this.boolContent = boolContent;\n"
+            "            this.hasParams = true;\n"
+            "            return this;\n"
+            "        }\n"
+            "\n"
+            "        public Token setDoubleContent(Double doubleContent) {\n"
+            "            this.doubleContent = doubleContent;\n"
+            "            this.hasParams = true;\n"
+            "            return this;\n"
+            "        }\n"
+            "\n"
+            "        public String getStringContent() {\n"
+            "            return stringContent;\n"
+            "        }\n"
+            "\n"
+            "        public Integer getIntContent() {\n"
+            "            return intContent;\n"
+            "        }\n"
+            "\n"
+            "        public Boolean getBoolContent() {\n"
+            "            return boolContent;\n"
+            "        }\n"
+            "\n"
+            "        public Double getDoubleContent() {\n"
+            "            return doubleContent;\n"
+            "        }\n"
+            "\n"
+            "        @Override\n"
+            "        public String toString() {\n"
+            "            StringBuilder sb = new StringBuilder();\n"
+            "            sb.append(this.name());\n"
+            "            if (hasParams) {\n"
+            "                sb.append(\"{ \");\n"
+            "                if (this.stringContent != null) {\n"
+            "                    sb.append(\"stringContent: \").append(this.stringContent).append(\" \");\n"
+            "                }\n"
+            "                if (this.intContent != null) {\n"
+            "                    sb.append(\"intContent: \").append(this.intContent).append(\" \");\n"
+            "                }\n"
+            "                if (this.boolContent != null) {\n"
+            "                    sb.append(\"boolContent: \").append(this.boolContent).append(\" \");\n"
+            "                }\n"
+            "                if (this.doubleContent != null) {\n"
+            "                    sb.append(\"doubleContent: \").append(this.doubleContent).append(\" \");\n"
+            "                }\n"
+            "                sb.append(\"}\");\n"
+            "            }\n"
+            "            return sb.toString();\n"
+            "        }\n"
+            "    }\n"
+            "\n"
+            "    private static State initialState;\n"
+            "    private static final List<State> states = new ArrayList<>();\n"
+            "    private static StateTracker stateTracker = new StateTracker();\n"
+            "\n"
+            "    public static int newState(Token token) {\n"
+            "        return newState((s) -> token);\n"
+            "    }\n"
+            "\n"
+            "    public static int newState(Function<StateTracker, Token> tokenGenerator) {\n"
+            "        State state = new State(tokenGenerator);\n"
+            "        if (initialState == null)\n"
+            "            initialState = state;\n"
+            "        states.add(state);\n"
+            "        return states.size() - 1;\n"
+            "    }\n"
+            "\n"
+            "    public static void setInitialState(int index) {\n"
+            "        initialState = states.get(index);\n"
+            "    }\n"
+            "\n"
+            "    public static void setTransition(int from, int to, char symbol) {\n"
+            "        states.get(from).setTransition(states.get(to), symbol);\n"
+            "    }\n"
+            "\n"
+            "    private static void manageState(char symbol) {\n"
+            "        Automaton.stateTracker.lexeme.append(symbol);\n"
+            "        if (symbol == '\\n') {\n"
+            "            Automaton.stateTracker.attribute.row++;\n"
+            "            Automaton.stateTracker.attribute.column = 1;\n"
+            "        } else {\n"
+            "            Automaton.stateTracker.attribute.column++;\n"
+            "        }\n"
+            "    }\n"
+            "\n"
+            "    private static void foundTokenManageState(Token token) {\n"
+            "        Automaton.stateTracker.lexeme = new StringBuilder();\n"
+            "		 if(token != null)\n"
+            "	        Automaton.stateTracker.token = token;\n"
+            "    }\n"
+            "\n"
+            "    private static void updateStateInRange(char[] charArray, int rangeStart, int rangeEnd) {\n"
+            "        for (int i = rangeStart; i < rangeEnd; i++) {\n"
+            "            manageState(charArray[i]);\n"
+            "        }\n"
+            "    }\n"
+            "\n"
+            "    private record TokenAndConsume(Token token, int consumeIndex) {\n"
+            "    }\n"
+            "\n"
+            "    private static TokenAndConsume getNextToken(char[] charArray, int readIndex) {\n"
+            "        State current = initialState;\n"
+            "        Function<StateTracker, Token> foundToken = null;\n"
+            "        int consumeIndex = readIndex, startIndex = readIndex;\n"
+            "        while (current != null && readIndex < charArray.length) {\n"
+            "            Function<StateTracker, Token> aux = current.tokenGenerator;\n"
+            "            if (aux != null) {\n"
+            "                foundToken = aux;\n"
+            "                consumeIndex = readIndex;\n"
+            "            }\n"
+            "            current = current.getTransition(charArray[readIndex]);\n"
+            "            readIndex++;\n"
+            "        }\n"
+            "        Function<StateTracker, Token> aux;\n"
+            "        if (current != null && (aux = current.tokenGenerator) != null) {\n"
+            "            foundToken = aux;\n"
+            "            consumeIndex = readIndex;\n"
+            "        }\n"
+            "        updateStateInRange(charArray, startIndex, consumeIndex);\n"
+            "        if(foundToken == null)\n"
+            "		 	throw new NoSuchElementException(\"Error on row \%d, from column \%d to column \%d: \%s\".formatted(stateTracker.attribute.row, startIndex, consumeIndex, stateTracker.lexeme));\n"
+            "        return new TokenAndConsume(foundToken.apply(stateTracker), consumeIndex);\n"
+            "    }\n"
+            "\n"
+            "    public static List<Token> getTokenList(String s) {\n"
+            "	 stateTracker = new StateTracker();\n"
+            "        TokenAndConsume tokenAndConsume;\n"
+            "        int i;\n"
+            "        char[] chars = s.toCharArray();\n"
+            "        List<Token> tokens = new ArrayList<>();\n"
+            "        for (i = 0; i < chars.length; ) {\n"
+            "            tokenAndConsume = getNextToken(chars, i);\n"
+            "            foundTokenManageState(tokenAndConsume.token);\n"
+            "			 if(tokenAndConsume.token != null)\n"
+            "            	tokens.add(tokenAndConsume.token);\n"
+            "            i = tokenAndConsume.consumeIndex;\n"
+            "        }\n"
+            "        return tokens;\n"
+            "    }\n"
+            "\n"
+            "    public static class StateTracker {\n"
+            "        private StringBuilder lexeme = new StringBuilder();\n"
+            "        private Token token;\n"
+            "        public final Attribute attribute = new Attribute();\n"
+            "\n"
+            "        public String getLexeme() {\n"
+            "            return lexeme.toString();\n"
+            "        }\n"
+            "\n"
+            "        public Token getToken() {\n"
+            "            return token;\n"
+            "        }\n"
+            "\n"
+            "        public Attribute getAttribute() {\n"
+            "            return attribute;\n"
+            "        }\n"
+            "\n"
+            "        public static class Attribute {\n"
+            "            // User managed\n"
+            "            public Integer id, num;\n"
+            "            // Non-user managed\n"
+            "            private Integer row = 0, column = 1;\n"
+            "\n"
+            "            public Integer getRow() {\n"
+            "                return row;\n"
+            "            }\n"
+            "\n"
+            "            public Integer getColumn() {\n"
+            "                return column;\n"
+            "            }\n"
+            "        }\n"
+            "    }\n"
+            "\n"
+            "    private static class State {\n"
+            "        private final Map<Character, State> transitions;\n"
+            "        private final Function<StateTracker, Token> tokenGenerator;\n"
+            "\n"
+            "        private State(Function<StateTracker, Token> tokenGenerator) {\n"
+            "            this.tokenGenerator = tokenGenerator;\n"
+            "            this.transitions = new HashMap<>();\n"
+            "        }\n"
+            "\n"
+            "        public void setTransition(State to, char symbol) {\n"
+            "            transitions.put(symbol, to);\n"
+            "        }\n"
+            "\n"
+            "        public State getTransition(char symbol) {\n"
+            "            return transitions.get(symbol);\n"
+            "        }\n"
+            "    }\n"
+            "\n"
+            "    private static boolean initialized = false;\n"
+            "\n"
+            "    public static void initialize() {\n"
+            "        if (initialized)\n"
+            "            throw new IllegalStateException();\n"
+            "        initialized = true;\n");
 }
 
 /**
  * Creates the epilogue of the generated output, that is, the final lines that
  * completes a valid Latex document.
  */
-static void _generateEpilogue() {
-	_output(0, "%s",
-		"    }\n"
-		"}"
-	);
+static void _generateEpilogue()
+{
+    _output(0, "%s",
+            "    }\n"
+            "}");
 }
 
 /**
  * Generates an indentation string for the specified level.
  */
-static char * _indentation(const unsigned int level) {
-	return indentation(_indentationCharacter, level, _indentationSize);
+static char *_indentation(const unsigned int level)
+{
+    return indentation(_indentationCharacter, level, _indentationSize);
 }
 
 /**
@@ -1204,29 +1352,34 @@ static char * _indentation(const unsigned int level) {
  * allows to see the output even close to a failure, because it drops the
  * buffering.
  */
-static void _output(const unsigned int indentationLevel, const char * const format, ...) {
-	va_list arguments;
-	va_start(arguments, format);
-	char * indentation = _indentation(indentationLevel);
-	char * effectiveFormat = concatenate(2, indentation, format);
-	if(_outputFile != NULL) {
-		vfprintf(_outputFile, effectiveFormat, arguments);
-		fflush(_outputFile);
-	} else {
-		vfprintf(stdout, effectiveFormat, arguments);
-		fflush(stdout);
-	}
-	free(effectiveFormat);
-	free(indentation);
-	va_end(arguments);
+static void _output(const unsigned int indentationLevel, const char *const format, ...)
+{
+    va_list arguments;
+    va_start(arguments, format);
+    char *indentation = _indentation(indentationLevel);
+    char *effectiveFormat = concatenate(2, indentation, format);
+    if (_outputFile != NULL)
+    {
+        vfprintf(_outputFile, effectiveFormat, arguments);
+        fflush(_outputFile);
+    }
+    else
+    {
+        vfprintf(stdout, effectiveFormat, arguments);
+        fflush(stdout);
+    }
+    free(effectiveFormat);
+    free(indentation);
+    va_end(arguments);
 }
 
 /** PUBLIC FUNCTIONS */
 
-void generate(CompilerState * compilerState) {
-	logDebugging(_logger, "Generating final output...");
-	_generatePrologue();
-	_generateProgram(compilerState->automaton);
-	_generateEpilogue();
-	logDebugging(_logger, "Generation is done.");
+void generate(CompilerState *compilerState)
+{
+    logDebugging(_logger, "Generating final output...");
+    _generatePrologue();
+    _generateProgram(compilerState->automaton);
+    _generateEpilogue();
+    logDebugging(_logger, "Generation is done.");
 }

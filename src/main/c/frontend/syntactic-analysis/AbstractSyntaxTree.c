@@ -2,14 +2,17 @@
 
 /* MODULE INTERNAL STATE */
 
-static Logger * _logger = NULL;
+static Logger *_logger = NULL;
 
-void initializeAbstractSyntaxTreeModule() {
+void initializeAbstractSyntaxTreeModule()
+{
 	_logger = createLogger("AbstractSyntxTree");
 }
 
-void shutdownAbstractSyntaxTreeModule() {
-	if (_logger != NULL) {
+void shutdownAbstractSyntaxTreeModule()
+{
+	if (_logger != NULL)
+	{
 		destroyLogger(_logger);
 	}
 }
@@ -99,7 +102,7 @@ void releaseRegexClass(Regex_class * regex_class) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (regex_class != NULL) {
 		if (regex_class->type == range) {
-			releaseRange(regex_class->range);	
+			releaseRange(regex_class->range);
 		}
 		releaseRegexClass(regex_class->regex_class);
 		free(regex_class);

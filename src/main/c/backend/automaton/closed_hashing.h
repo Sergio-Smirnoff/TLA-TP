@@ -19,46 +19,46 @@ typedef struct hashset
 
 /**
  * @brief Creates a hashset for (void *) elements
- * 
+ *
  * @param hasher Hashing function
  * @param compare Comparison function for (void *) elements
  * @param free_f Free function for (void *) elements
  * @param initial_dim Initial/expected size of the hashset
- * @return hashset* 
+ * @return hashset*
  */
 hashset *new_hashset(hash_function hasher, compare_function compare, free_function free_f, uint64_t initial_dim);
 
 /**
  * @brief Add an element to the set
- * 
- * @param set 
- * @param element 
+ *
+ * @param set
+ * @param element
  * @return char 1 if an element was overwritten, 0 otherwise
  */
 char hashset_add(hashset *set, void *element);
 
 /**
  * @brief Whether an element is contained in the set
- * 
- * @param set 
- * @param element 
- * @return char 
+ *
+ * @param set
+ * @param element
+ * @return char
  */
 char hashset_contains(const hashset *set, const void *element);
 
 /**
  * @brief Get an element from the set
- * 
- * @param set 
- * @param element 
- * @return void* 
+ *
+ * @param set
+ * @param element
+ * @return void*
  */
 void *hashset_get(const hashset *set, const void *element);
 
 /**
  * @brief Free the hashset and all elements within
- * 
- * @param set 
+ *
+ * @param set
  */
 void free_hashset(hashset *set);
 

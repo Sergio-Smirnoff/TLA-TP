@@ -58,7 +58,7 @@ typedef struct ComputationResult
     boolean succeed;
     transformer_list *list;
     automaton *automaton;
-    char* errorMessage;
+    char *errorMessage;
 } ComputationResult;
 
 // Checks the tree and builds lexemes table
