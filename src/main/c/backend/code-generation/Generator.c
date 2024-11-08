@@ -609,8 +609,8 @@ char* _computeStatementExpression(StatementExpression* statementExpression) {
             result = _computeAssignment(statementExpression->assignment);
             break;
         }
-        case invocation: {
-            result = _computeMethodInvocation(statementExpression->method_invocation);
+        case vaccess: {
+            result = _computeVarAccess(statementExpression->var_access);
             break;
         }
         case assigParam: {

@@ -598,13 +598,14 @@ StatementExpression* JavaAsignmentSemanticAction(Assignment* assignment){
 	return statementExpression;
 }
 
-StatementExpression* JavaMethodInvocationSemanticAction(MethodInvocation* method_invocation){
+StatementExpression *JavaVAccessDefaultSemanticAction(VarAccess * var_access){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	StatementExpression * statementExpression = calloc(1, sizeof(StatementExpression));
-	statementExpression->method_invocation = method_invocation;
-	statementExpression->type = invocation;
+	statementExpression->var_access = var_access;
+	statementExpression->type = vaccess;
 	return statementExpression;
 }
+
 StatementExpression* JavaAsignmentParamSemanticAction(Param* param, char* var_name, Token java_assignment, Expression* exp){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	StatementExpression * statementExpression = calloc(1, sizeof(StatementExpression));

@@ -140,7 +140,7 @@ struct IfThenStatement{
 
 typedef enum StatementExpressionType{
 	assignation,
-	invocation,
+	vaccess,
 	assigParam,
 }StatementExpressionType;
 
@@ -148,7 +148,7 @@ typedef enum StatementExpressionType{
 struct StatementExpression{
 	union{
 		Assignment* assignment;
-		MethodInvocation* method_invocation;
+		VarAccess* var_access;
 		struct{
 			Param* param;
 			char* var_name;

@@ -83,7 +83,7 @@ IfThenStatement* JavaIfThenStructureSemanticAction(Expression* exp, Statement* i
 
 // StatementExpression
 StatementExpression* JavaAsignmentSemanticAction(Assignment* assignment);
-StatementExpression* JavaMethodInvocationSemanticAction(MethodInvocation* method_invocation);
+StatementExpression* JavaVAccessDefaultSemanticAction(VarAccess * var_access);
 StatementExpression* JavaAsignmentParamSemanticAction(Param* param, char* var_name, Token java_assignment, Expression* exp);
 
 // VarAccess

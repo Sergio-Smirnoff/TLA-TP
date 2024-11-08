@@ -288,7 +288,6 @@ Statement: ENDLINE																																									{ $$ = NULL; }
 
 ForInit: StatementExpressionList																																					{ $$ = ForInitExpressionListSemanticAction($1); }
 	| param VAR_NAME																																								{ $$ = JavaVarTypeDefinitionSemantictAction($1, $2, withParams); }
-	| VAR_NAME																																										{ $$ = JavaVarTypeDefinitionSemantictAction(NULL, $1, withoutParams); }
 	;
 
 StatementExpressionList: %empty																																						{ $$ = NULL; }
@@ -301,7 +300,7 @@ IfThenStatement: JAVA_IF OPEN_PARENTHESES Expression[expression] CLOSE_PARENTHES
 	;
 
 StatementExpression: Assignment																																						{ $$ = JavaAsignmentSemanticAction($1); }
-	| MethodInvocation																																								{ $$ = JavaMethodInvocationSemanticAction($1); }
+	| VarAccess																																										{ $$ = JavaVAccessDefaultSemanticAction($1); }
 	| param VAR_NAME JAVA_ASSIGNMENT Expression																																		{ $$ = JavaAsignmentParamSemanticAction($1, $2, $3, $4); }
 	;
 
