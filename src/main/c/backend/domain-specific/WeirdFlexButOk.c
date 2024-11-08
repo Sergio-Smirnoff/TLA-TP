@@ -46,10 +46,6 @@ static void _addToList(Lexeme_precursor *lexeme, Action *returner)
         current->returner = returner;
         current->next = NULL;
     }
-    else
-    {
-        fprintf(logFile, "Error: Lexeme is NULL. Bad built table.\n");
-    }
 }
 
 static void _freeTransformerList(struct transformer_list *list)
@@ -189,7 +185,6 @@ void _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returne
 {
     if (lexeme_precursor == NULL)
     {
-        fprintf(logFile, "You shouldn't be here mate\n");
         return;
     }
     switch (lexeme_precursor->precursor_type)
@@ -420,10 +415,6 @@ void _computeRegexClass(Regex_class *regexClass, uint64_t startIndex, uint64_t e
                 break;
             }
             aux2 = aux2->next;
-        }
-        if (regexClass->closure != NULL)
-        {
-            fprintf(logFile, "You shouldn't be here mate\n");
         }
         return;
     }
