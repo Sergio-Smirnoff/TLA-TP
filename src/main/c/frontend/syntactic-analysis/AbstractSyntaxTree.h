@@ -94,12 +94,12 @@ struct Statement{
 		IfThenStatement * ifThen;
 		struct{
 			Expression *expwhile;
-			Statement *statementwhile;
+			Block *blockwhile;
 		};
 		struct{
 			ForInit *forInit;
 			Expression *expfor;
-			Statement *statementfor;
+			Block *blockfor;
 			StatementExpressionList *statementExpList;
 		};
 	};
@@ -134,8 +134,8 @@ struct StatementExpressionList{
 
 struct IfThenStatement{
 	Expression* exp;
-	Statement* statement1;
-	Statement* statement2;
+	Block* ifblock;
+	Block* elseblock;
 };
 
 typedef enum StatementExpressionType{
@@ -292,10 +292,20 @@ struct ClassInstanceCreationExpression{
 	Primary* primary;
 };
 
+typedef enum UnqualifiedClassInstanceCreationExpression_type{
+	method,
+	parargs
+} UnqualifiedClassInstanceCreationExpression_type;
 
 struct UnqualifiedClassInstanceCreationExpression{
-	Param* param;
-	ArgumentList* arglist;
+	union{
+		struct{
+			Param* param;
+			ArgumentList* arglist;
+		};
+		MethodInvocation *invocation;
+	};
+	UnqualifiedClassInstanceCreationExpression_type type;
 };
 
 typedef enum Literal_type{

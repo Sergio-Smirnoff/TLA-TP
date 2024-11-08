@@ -1,0 +1,16 @@
+
+"(" -> (){
+    var.attribute.num = var.attribute.num + 1;
+    return OPEN;
+};
+
+")" -> (){
+    var.attribute.num = var.attribute.num - 1;
+    if(var.attribute.num < 0){
+        throw new IllegalStateException();
+    }
+    return CLOSE;
+};
+
+/* All other text is ignored */
+default;

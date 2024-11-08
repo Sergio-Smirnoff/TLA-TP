@@ -308,6 +308,15 @@ UnqualifiedClassInstanceCreationExpression* UnqualifiedClassSemanticAction(Param
 	UnqualifiedClassInstanceCreationExpression * unqualifiedClassInstanceCreationExpression = calloc(1, sizeof(UnqualifiedClassInstanceCreationExpression));
 	unqualifiedClassInstanceCreationExpression->param = param;
 	unqualifiedClassInstanceCreationExpression->arglist = list;
+	unqualifiedClassInstanceCreationExpression->type = parargs;
+	return unqualifiedClassInstanceCreationExpression;
+}
+
+UnqualifiedClassInstanceCreationExpression* UnqualifiedClassSemanticActionInvocation(MethodInvocation *invocation){
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	UnqualifiedClassInstanceCreationExpression * unqualifiedClassInstanceCreationExpression = calloc(1, sizeof(UnqualifiedClassInstanceCreationExpression));
+	unqualifiedClassInstanceCreationExpression->invocation = invocation;
+	unqualifiedClassInstanceCreationExpression->type = method;
 	return unqualifiedClassInstanceCreationExpression;
 }
 
@@ -568,23 +577,23 @@ Statement* IfStatementSemanticAction(IfThenStatement* ifs){
 	return statement;
 }
 
-Statement* WhileStatementSemanticAction(Expression* exp, Statement* state){
+Statement* WhileStatementSemanticAction(Expression* exp, Block* block){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Statement * statement = calloc(1, sizeof(Statement));
 	statement->expwhile = exp;
-	statement->statementwhile = state;
+	statement->blockwhile = block;
 	statement->type = While;
 
 	return statement;
 }
 
-Statement* ForStatementSemanticAction(ForInit* fors, Expression* exp, StatementExpressionList* list, Statement* state){
+Statement* ForStatementSemanticAction(ForInit* fors, Expression* exp, StatementExpressionList* list, Block* block){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Statement * statement = calloc(1, sizeof(Statement));
 	statement->forInit = fors;
 	statement->expfor = exp;
 	statement->statementExpList = list;
-	statement->statementfor = state;
+	statement->blockfor = block;
 	statement->type = For;
 	
 	return statement;
@@ -616,12 +625,12 @@ StatementExpression* JavaAsignmentParamSemanticAction(Param* param, char* var_na
 	return statementExpression;
 }
 
-IfThenStatement* JavaIfThenStructureSemanticAction(Expression* exp, Statement* ifStatement, Statement* elseStatement){
+IfThenStatement* JavaIfThenStructureSemanticAction(Expression* exp, Block* ifBlock, Block* elseBlock){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	IfThenStatement * ifThenStatement = calloc(1, sizeof(IfThenStatement));
 	ifThenStatement->exp = exp;
-	ifThenStatement->statement1 = ifStatement;
-	ifThenStatement->statement2 = elseStatement;
+	ifThenStatement->ifblock = ifBlock;
+	ifThenStatement->elseblock = elseBlock;
 	return ifThenStatement;
 }
 
