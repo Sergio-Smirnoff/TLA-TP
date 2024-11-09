@@ -216,13 +216,13 @@ rule: VAR_NAME[def] OPEN_BRACKET regexes[regex] CLOSE_BRACKET ENDLINE	    						
 	;
 
 lexeme_precursor: lexeme lexeme_precursor																																			{ $$ = LexemePrecursorSemanticAction($1, $2); }
-	| OPEN_PARENTHESES lexeme_precursor[precursor] CLOSE_PARENTHESES closure[clos] 																									{ $$ = LexemeClosureSemanticAction($precursor, $clos);}
 	| lexeme																																										{ $$ = LexemePrecursorSemanticAction($1, NULL); }
 	| DEFAULT[string]																																								{ $$ = LexemeDefaultSemanticAction(); }
 	;
 
 lexeme: OPEN_BRACKET regexes[regex] CLOSE_BRACKET closure[closure_p]																												{ $$ = LexemeSemanticAction(NULL, $regex, $closure_p, regexes, NULL); }
 	| OPEN_BRACES VAR_NAME[id] CLOSE_BRACES closure[closure_p]																														{ $$ = LexemeSemanticAction($id, NULL, $closure_p, name, currentCompilerState()); }
+	| OPEN_PARENTHESES lexeme_precursor[precursor] CLOSE_PARENTHESES closure[clos] 																									{ $$ = LexemeClosureSemanticAction($precursor, $clos);}
 	| STR[string]																																									{ $$ = LexemeStringSemanticAction($string); }
 	;
 

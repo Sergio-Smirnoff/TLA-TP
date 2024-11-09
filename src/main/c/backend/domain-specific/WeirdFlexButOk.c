@@ -22,8 +22,8 @@ void _ruleset(Ruleset *my_ruleset);
 void _computeRule(Rule *my_rule);
 void _regexContent(Regexes *regexes, uint64_t startIndex, uint64_t endIndex);
 void _computeRegexClass(Regex_class *regexClass, uint64_t startIndex, uint64_t endIndex);
-void _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returner, uint64_t currentIndex, uint64_t endIndex);
-uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner, boolean isEndOfChain);
+uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returner, uint64_t currentIndex, ssize_t returnToThisState);
+uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner, boolean isEndOfChain, ssize_t returnToThisState);
 
 static void _addToList(Lexeme_precursor *lexeme, Action *returner)
 {
@@ -165,7 +165,7 @@ void buildAutomaton(ComputationResult *computationResult)
         }
         if (aux->lexeme != NULL)
         {
-            _computeLexemePrecursor(aux->lexeme, aux->returner, 0, 0);
+            _computeLexemePrecursor(aux->lexeme, aux->returner, 0, -1);
         }
         else
         {
@@ -181,11 +181,11 @@ void buildAutomaton(ComputationResult *computationResult)
     return;
 }
 
-void _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returner, uint64_t currentIndex, uint64_t endIndex)
+uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returner, uint64_t currentIndex, ssize_t returnToThisState)
 {
     if (lexeme_precursor == NULL)
     {
-        return;
+        return currentIndex;
     }
     switch (lexeme_precursor->precursor_type)
     {
@@ -194,7 +194,7 @@ void _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returne
         {
             result->succeed = false;
             result->errorMessage = strdup("There can't be more than one default lexeme");
-            return;
+            return currentIndex;
         }
         else
         {
@@ -207,40 +207,22 @@ void _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returne
                     set_transition(automat, 0, defaultStateIndex, c);
                 }
             }
-            return;
+            return defaultStateIndex;
         }
-        return;
     case nonliterals:
         if (lexeme_precursor->lex_prec == NULL)
         {
-            _computeLexeme(lexeme_precursor->lex, currentIndex, returner, 1);
+            return _computeLexeme(lexeme_precursor->lex, currentIndex, returner, 1, returnToThisState);
         }
         else
         {
-            uint64_t finalState = _computeLexeme(lexeme_precursor->lex, currentIndex, NULL, 0);
-            _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, finalState, endIndex);
-        }
-        return;
-    case lexeme_closure:
-        uint64_t finalState = currentIndex;
-        if (lexeme_precursor->closure == NULL)
-        {
-
-            _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, currentIndex, endIndex);
-        }
-        else
-        {
-            if (lexeme_precursor->closure->closure == PLUS)
-            {
-                finalState = new_state(automat, 0, NULL);
-                _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, currentIndex, endIndex);
-            }
-            _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, finalState, endIndex);
+            uint64_t finalState = _computeLexeme(lexeme_precursor->lex, currentIndex, NULL, 0, returnToThisState);
+            return _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, finalState, returnToThisState);
         }
     }
 }
 
-uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner, boolean isEndOfChain)
+uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner, boolean isEndOfChain, ssize_t returnToThisState)
 {
     uint64_t finalState = currentIndex;
     Regexes *node;
@@ -269,8 +251,15 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
         {
             if (!s[1])
             {
-                nextStateIndex = new_state(automat, 1, returner);
-                set_transition(automat, currentStateIndex, nextStateIndex, *s);
+                if (returnToThisState == -1)
+                {
+                    nextStateIndex = new_state(automat, 1, returner);
+                    set_transition(automat, currentStateIndex, nextStateIndex, *s);
+                }
+                else
+                {
+                    set_transition(automat, currentStateIndex, returnToThisState, *s);
+                }
             }
             else
             {
@@ -316,25 +305,81 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
                     }
                     if (!s[1])
                     {
-                        nextStateIndex = new_state(automat, 1, returner);
-                        set_transition(automat, currentStateIndex, nextStateIndex, *s);
+                        if (returnToThisState == -1)
+                        {
+                            nextStateIndex = new_state(automat, 1, returner);
+                            set_transition(automat, currentStateIndex, nextStateIndex, *s);
+                        }
+                        else
+                        {
+                            set_transition(automat, currentStateIndex, returnToThisState, *s);
+                        }
                     }
                     else
                     {
-                        nextStateIndex = new_state(automat, 0, NULL);
-                        set_transition(automat, currentStateIndex, nextStateIndex, *s);
+                        if (returnToThisState == -1)
+                        {
+                            nextStateIndex = new_state(automat, 0, NULL);
+                            set_transition(automat, currentStateIndex, nextStateIndex, *s);
+                        }
+                        else
+                        {
+                            set_transition(automat, currentStateIndex, returnToThisState, *s);
+                        }
                     }
                 }
                 else
                 {
-                    nextStateIndex = new_state(automat, 0, NULL);
-                    set_transition(automat, currentStateIndex, nextStateIndex, *s);
+                    if (returnToThisState == -1)
+                    {
+                        nextStateIndex = new_state(automat, 0, NULL);
+                        set_transition(automat, currentStateIndex, nextStateIndex, *s);
+                    }else{
+                        set_transition(automat, currentStateIndex, returnToThisState, *s);
+                    }
                 }
             }
             s++;
             currentStateIndex = nextStateIndex;
         }
         break;
+    case precursor_closure:
+        if (lexeme->closure == NULL)
+        {
+            if (isEndOfChain)
+            {
+                finalState = new_state(automat, 1, returner);
+            }
+            else
+            {
+                finalState = new_state(automat, 0, NULL);
+            }
+            _computeLexemePrecursor(lexeme->precursor, returner, finalState, -1);
+        }
+        else
+        {
+            if (lexeme->closure->closure == PLUS)
+            {
+                if (isEndOfChain)
+                {
+                    finalState = new_state(automat, 1, returner);
+                }
+                else
+                {
+                    finalState = new_state(automat, 0, NULL);
+                }
+                finalState = _computeLexemePrecursor(lexeme->precursor, returner, finalState, -1);
+            }
+            else
+            {
+                if (isEndOfChain)
+                {
+                    set_token(automat, currentIndex, returner);
+                }
+            }
+            _computeLexemePrecursor(lexeme->precursor, returner, finalState, finalState);
+        }
+        return finalState;
     }
     if (lexeme->closure == NULL)
     {

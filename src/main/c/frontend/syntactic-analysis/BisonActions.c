@@ -123,14 +123,14 @@ Lexeme_precursor *LexemeDefaultSemanticAction()
 	return new_lexeme_precursor;
 }
 
-Lexeme_precursor *LexemeClosureSemanticAction(Lexeme_precursor *lex_prec, Closure *closure)
+Lexeme *LexemeClosureSemanticAction(Lexeme_precursor *lex_prec, Closure *closure)
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Lexeme_precursor *new_lexeme_precursor = calloc(1, sizeof(Lexeme_precursor));
-	new_lexeme_precursor->precursor_type = lexeme_closure;
-	new_lexeme_precursor->lex_prec = lex_prec;
-	new_lexeme_precursor->closure = closure;
-	return new_lexeme_precursor;
+	Lexeme *new_lexeme = calloc(1, sizeof(Lexeme));
+	new_lexeme->type = precursor_closure;
+	new_lexeme->precursor = lex_prec;
+	new_lexeme->closure = closure;
+	return new_lexeme;
 }
 
 Lexeme *LexemeSemanticAction(char *string, Regexes *regex_class, Closure *closure, Lexeme_type type, CompilerState *compilerState)

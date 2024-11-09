@@ -32,11 +32,11 @@ Rule *RuleNewRegexSemanticAction(char *our_regex_id, Regexes *regex_class, Compi
 // lexeme precursor
 Lexeme_precursor *LexemePrecursorSemanticAction(Lexeme *lex, Lexeme_precursor *lex_prec);
 Lexeme_precursor *LexemeDefaultSemanticAction();
-Lexeme_precursor *LexemeClosureSemanticAction(Lexeme_precursor *lex_prec, Closure *closure);
 
 // lexeme
 Lexeme *LexemeSemanticAction(char *string, Regexes *regex_class, Closure *closure, Lexeme_type type, CompilerState *compilerState);
 Lexeme *LexemeStringSemanticAction(char *string);
+Lexeme *LexemeClosureSemanticAction(Lexeme_precursor *lex_prec, Closure *closure);
 
 // closure
 Closure *ClosureSemanticAction(Token string);
