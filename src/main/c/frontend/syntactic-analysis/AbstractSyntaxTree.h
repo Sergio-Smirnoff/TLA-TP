@@ -363,7 +363,6 @@ typedef enum Lexeme_type
 {
 	regexes,
 	name,
-	default_lexeme,
 	string_lexeme
 } Lexeme_type;
 
@@ -371,14 +370,9 @@ struct Lexeme
 {
 	union
 	{
-		struct
-		{
-			Regexes *regexes;
-		};
-		struct
-		{
-			char *our_regex_id;
-		};
+		Regexes *regexes;
+		char *our_regex_id;
+		char *string;
 	};
 	Closure *closure;
 	Lexeme_type type;
@@ -386,24 +380,18 @@ struct Lexeme
 
 typedef enum Lexeme_precursor_type
 {
-	literals,
-	nonliterals
+	default_t,
+	nonliterals,
+	lexeme_closure
 } Lexeme_precursor_type;
 
 struct Lexeme_precursor
 {
+	Lexeme_precursor *lex_prec;
 	union
 	{
-		struct
-		{
-			Lexeme *lex;
-			Lexeme_precursor *lex_prec;
-		};
-		struct
-		{
-			char *string;
-			Lexeme_type type;
-		};
+		Lexeme *lex;
+		Closure *closure;
 	};
 	Lexeme_precursor_type precursor_type;
 };

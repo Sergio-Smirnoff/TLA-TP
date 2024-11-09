@@ -22,7 +22,7 @@ void _ruleset(Ruleset *my_ruleset);
 void _computeRule(Rule *my_rule);
 void _regexContent(Regexes *regexes, uint64_t startIndex, uint64_t endIndex);
 void _computeRegexClass(Regex_class *regexClass, uint64_t startIndex, uint64_t endIndex);
-void _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returner, uint64_t currentIndex);
+void _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returner, uint64_t currentIndex, uint64_t endIndex);
 uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner, boolean isEndOfChain);
 
 static void _addToList(Lexeme_precursor *lexeme, Action *returner)
@@ -165,7 +165,7 @@ void buildAutomaton(ComputationResult *computationResult)
         }
         if (aux->lexeme != NULL)
         {
-            _computeLexemePrecursor(aux->lexeme, aux->returner, 0);
+            _computeLexemePrecursor(aux->lexeme, aux->returner, 0, 0);
         }
         else
         {
@@ -181,7 +181,7 @@ void buildAutomaton(ComputationResult *computationResult)
     return;
 }
 
-void _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returner, uint64_t currentIndex)
+void _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returner, uint64_t currentIndex, uint64_t endIndex)
 {
     if (lexeme_precursor == NULL)
     {
@@ -189,30 +189,80 @@ void _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returne
     }
     switch (lexeme_precursor->precursor_type)
     {
-    case literals:
-        if (lexeme_precursor->type == default_lexeme)
+    case default_t:
+        if (has_default)
         {
-            if (has_default)
-            {
-                result->succeed = false;
-                result->errorMessage = strdup("There can't be more than one default lexeme");
-                return;
-            }
-            else
-            {
-                has_default = true;
-                uint64_t defaultStateIndex = new_state(automat, 1, returner);
-                for (unsigned char c = 9; c < 127; c++)
-                {
-                    if (!(c == 11 || c == 12 || (c >= 14 && c <= 31)))
-                    {
-                        set_transition(automat, 0, defaultStateIndex, c);
-                    }
-                }
-                return;
-            }
+            result->succeed = false;
+            result->errorMessage = strdup("There can't be more than one default lexeme");
+            return;
         }
-        char *s = lexeme_precursor->string;
+        else
+        {
+            has_default = true;
+            uint64_t defaultStateIndex = new_state(automat, 1, returner);
+            for (unsigned char c = 9; c < 127; c++)
+            {
+                if (!(c == 11 || c == 12 || (c >= 14 && c <= 31)))
+                {
+                    set_transition(automat, 0, defaultStateIndex, c);
+                }
+            }
+            return;
+        }
+        return;
+    case nonliterals:
+        if (lexeme_precursor->lex_prec == NULL)
+        {
+            _computeLexeme(lexeme_precursor->lex, currentIndex, returner, 1);
+        }
+        else
+        {
+            uint64_t finalState = _computeLexeme(lexeme_precursor->lex, currentIndex, NULL, 0);
+            _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, finalState, endIndex);
+        }
+        return;
+    case lexeme_closure:
+        uint64_t finalState = currentIndex;
+        if (lexeme_precursor->closure == NULL)
+        {
+
+            _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, currentIndex, endIndex);
+        }
+        else
+        {
+            if (lexeme_precursor->closure->closure == PLUS)
+            {
+                finalState = new_state(automat, 0, NULL);
+                _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, currentIndex, endIndex);
+            }
+            _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, finalState, endIndex);
+        }
+    }
+}
+
+uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner, boolean isEndOfChain)
+{
+    uint64_t finalState = currentIndex;
+    Regexes *node;
+    switch (lexeme->type)
+    {
+    case regexes:
+        node = lexeme->regexes;
+        break;
+    case name:
+        Valid_Regex_List_Node *aux2 = validRegexList->head;
+        while (aux2 != NULL)
+        {
+            if (strcmp(aux2->regex_id, lexeme->our_regex_id) == 0)
+            {
+                node = aux2->regex;
+                break;
+            }
+            aux2 = aux2->next;
+        }
+        break;
+    case string_lexeme:
+        char *s = lexeme->string;
         uint64_t currentStateIndex = currentIndex;
         uint64_t nextStateIndex;
         while (*s)
@@ -283,41 +333,6 @@ void _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returne
             }
             s++;
             currentStateIndex = nextStateIndex;
-        }
-        return;
-    case nonliterals:
-        if (lexeme_precursor->lex_prec == NULL)
-        {
-            _computeLexeme(lexeme_precursor->lex, currentIndex, returner, 1);
-        }
-        else
-        {
-            uint64_t finalState = _computeLexeme(lexeme_precursor->lex, currentIndex, NULL, 0);
-            _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, finalState);
-        }
-        return;
-    }
-}
-
-uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner, boolean isEndOfChain)
-{
-    uint64_t finalState = currentIndex;
-    Regexes *node;
-    switch (lexeme->type)
-    {
-    case regexes:
-        node = lexeme->regexes;
-        break;
-    case name:
-        Valid_Regex_List_Node *aux2 = validRegexList->head;
-        while (aux2 != NULL)
-        {
-            if (strcmp(aux2->regex_id, lexeme->our_regex_id) == 0)
-            {
-                node = aux2->regex;
-                break;
-            }
-            aux2 = aux2->next;
         }
         break;
     }

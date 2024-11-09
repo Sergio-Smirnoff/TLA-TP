@@ -115,13 +115,21 @@ Lexeme_precursor *LexemePrecursorSemanticAction(Lexeme *lex, Lexeme_precursor *l
 	return new_lexeme_precursor;
 }
 
-Lexeme_precursor *LexemeStringSemanticAction(char *string, Lexeme_type type)
+Lexeme_precursor *LexemeDefaultSemanticAction()
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Lexeme_precursor *new_lexeme_precursor = calloc(1, sizeof(Lexeme_precursor));
-	new_lexeme_precursor->string = string;
-	new_lexeme_precursor->type = type;
-	new_lexeme_precursor->precursor_type = literals;
+	new_lexeme_precursor->precursor_type = default_t;
+	return new_lexeme_precursor;
+}
+
+Lexeme_precursor *LexemeClosureSemanticAction(Lexeme_precursor *lex_prec, Closure *closure)
+{
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Lexeme_precursor *new_lexeme_precursor = calloc(1, sizeof(Lexeme_precursor));
+	new_lexeme_precursor->precursor_type = lexeme_closure;
+	new_lexeme_precursor->lex_prec = lex_prec;
+	new_lexeme_precursor->closure = closure;
 	return new_lexeme_precursor;
 }
 
@@ -180,6 +188,14 @@ Lexeme *LexemeSemanticAction(char *string, Regexes *regex_class, Closure *closur
 
 	lexeme->closure = closure;
 	lexeme->type = type;
+	return lexeme;
+}
+
+Lexeme *LexemeStringSemanticAction(char *string){
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Lexeme *lexeme = calloc(1, sizeof(Closure));
+	lexeme->string = string;
+	lexeme->type=string_lexeme;
 	return lexeme;
 }
 
