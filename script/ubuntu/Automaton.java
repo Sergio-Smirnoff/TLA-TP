@@ -232,21 +232,15 @@ public abstract class Automaton {
             throw new IllegalStateException();
         initialized = true;
         /*0*/Automaton.newState((Function<StateTracker, Token>) null);
-        /*1*/Automaton.newState(var -> MANY_AB);
-        /*2*/Automaton.newState((Function<StateTracker, Token>) null);
-        /*3*/Automaton.newState(var -> MANY_AB);
-        /*4*/Automaton.newState((Function<StateTracker, Token>) null);
-        /*5*/Automaton.newState(var -> MANY_AB);
+        /*1*/Automaton.newState((Function<StateTracker, Token>) null);
+        /*2*/Automaton.newState(var -> SOME_AB_MAYBE_ONE_CD);
+        /*3*/Automaton.newState(var -> SOME_AB_MAYBE_ONE_CD);
 
 
-        Automaton.setTransition(1, 2, 'a');
+        Automaton.setTransition(0, 1, 'a');
+        Automaton.setTransition(1, 3, 'a');
         Automaton.setTransition(2, 2, 'a');
-        Automaton.setTransition(2, 3, 'b');
-        Automaton.setTransition(3, 4, 'a');
-        Automaton.setTransition(3, 3, 'b');
-        Automaton.setTransition(4, 4, 'a');
-        Automaton.setTransition(4, 5, 'b');
-        Automaton.setTransition(5, 5, 'b');
+        Automaton.setTransition(3, 3, 'a');
 
     }
 }

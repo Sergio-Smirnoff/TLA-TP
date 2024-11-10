@@ -22,8 +22,8 @@ void _ruleset(Ruleset *my_ruleset);
 void _computeRule(Rule *my_rule);
 void _regexContent(Regexes *regexes, uint64_t startIndex, uint64_t endIndex);
 void _computeRegexClass(Regex_class *regexClass, uint64_t startIndex, uint64_t endIndex);
-uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returner, uint64_t currentIndex, ssize_t returnToThisState);
-uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner, boolean isEndOfChain, ssize_t returnToThisState);
+uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returner, uint64_t currentIndex);
+uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner, boolean isEndOfChain);
 
 static void _addToList(Lexeme_precursor *lexeme, Action *returner)
 {
@@ -165,7 +165,7 @@ void buildAutomaton(ComputationResult *computationResult)
         }
         if (aux->lexeme != NULL)
         {
-            _computeLexemePrecursor(aux->lexeme, aux->returner, 0, -1);
+            _computeLexemePrecursor(aux->lexeme, aux->returner, 0);
         }
         else
         {
@@ -181,7 +181,7 @@ void buildAutomaton(ComputationResult *computationResult)
     return;
 }
 
-uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returner, uint64_t currentIndex, ssize_t returnToThisState)
+uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returner, uint64_t currentIndex)
 {
     if (lexeme_precursor == NULL)
     {
@@ -212,17 +212,17 @@ uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *ret
     case nonliterals:
         if (lexeme_precursor->lex_prec == NULL)
         {
-            return _computeLexeme(lexeme_precursor->lex, currentIndex, returner, 1, returnToThisState);
+            return _computeLexeme(lexeme_precursor->lex, currentIndex, returner, 1);
         }
         else
         {
-            uint64_t finalState = _computeLexeme(lexeme_precursor->lex, currentIndex, NULL, 0, returnToThisState);
-            return _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, finalState, returnToThisState);
+            uint64_t finalState = _computeLexeme(lexeme_precursor->lex, currentIndex, NULL, 0);
+            return _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, finalState);
         }
     }
 }
 
-uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner, boolean isEndOfChain, ssize_t returnToThisState)
+uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner, boolean isEndOfChain)
 {
     uint64_t finalState = currentIndex;
     Regexes *node;
@@ -251,15 +251,8 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
         {
             if (!s[1])
             {
-                if (returnToThisState == -1)
-                {
-                    nextStateIndex = new_state(automat, 1, returner);
-                    set_transition(automat, currentStateIndex, nextStateIndex, *s);
-                }
-                else
-                {
-                    set_transition(automat, currentStateIndex, returnToThisState, *s);
-                }
+                nextStateIndex = new_state(automat, 1, returner);
+                set_transition(automat, currentStateIndex, nextStateIndex, *s);
             }
             else
             {
@@ -305,38 +298,19 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
                     }
                     if (!s[1])
                     {
-                        if (returnToThisState == -1)
-                        {
-                            nextStateIndex = new_state(automat, 1, returner);
-                            set_transition(automat, currentStateIndex, nextStateIndex, *s);
-                        }
-                        else
-                        {
-                            set_transition(automat, currentStateIndex, returnToThisState, *s);
-                        }
+                        nextStateIndex = new_state(automat, 1, returner);
+                        set_transition(automat, currentStateIndex, nextStateIndex, *s);
                     }
                     else
                     {
-                        if (returnToThisState == -1)
-                        {
-                            nextStateIndex = new_state(automat, 0, NULL);
-                            set_transition(automat, currentStateIndex, nextStateIndex, *s);
-                        }
-                        else
-                        {
-                            set_transition(automat, currentStateIndex, returnToThisState, *s);
-                        }
+                        nextStateIndex = new_state(automat, 0, NULL);
+                        set_transition(automat, currentStateIndex, nextStateIndex, *s);
                     }
                 }
                 else
                 {
-                    if (returnToThisState == -1)
-                    {
-                        nextStateIndex = new_state(automat, 0, NULL);
-                        set_transition(automat, currentStateIndex, nextStateIndex, *s);
-                    }else{
-                        set_transition(automat, currentStateIndex, returnToThisState, *s);
-                    }
+                    nextStateIndex = new_state(automat, 0, NULL);
+                    set_transition(automat, currentStateIndex, nextStateIndex, *s);
                 }
             }
             s++;
@@ -346,6 +320,36 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
     case precursor_closure:
         if (lexeme->closure == NULL)
         {
+            return _computeLexemePrecursor(lexeme->precursor, returner, currentIndex);
+        }
+        else
+        {
+            uint64_t aux = finalState;
+            finalState = _computeLexemePrecursor(lexeme->precursor, returner, finalState);
+            set_transition(automat, finalState, aux, LAMBDA);
+            if (lexeme->closure->closure == STAR)
+            {
+                set_transition(automat, aux, finalState, LAMBDA);
+            }
+        }
+        return finalState;
+    }
+    if (lexeme->closure == NULL)
+    {
+        if (isEndOfChain)
+        {
+            finalState = new_state(automat, 1, returner);
+        }
+        else
+        {
+            finalState = new_state(automat, 0, NULL);
+        }
+        _regexContent(node, currentIndex, finalState);
+    }
+    else
+    {
+        if (lexeme->closure->closure == PLUS)
+        {
             if (isEndOfChain)
             {
                 finalState = new_state(automat, 1, returner);
@@ -354,62 +358,33 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
             {
                 finalState = new_state(automat, 0, NULL);
             }
-            _computeLexemePrecursor(lexeme->precursor, returner, finalState, -1);
+            _regexContent(node, currentIndex, finalState);
         }
         else
         {
-            if (lexeme->closure->closure == PLUS)
+            if (isEndOfChain)
             {
-                if (isEndOfChain)
-                {
-                    finalState = new_state(automat, 1, returner);
-                }
-                else
-                {
-                    finalState = new_state(automat, 0, NULL);
-                }
-                finalState = _computeLexemePrecursor(lexeme->precursor, returner, finalState, -1);
+                set_token(automat, currentIndex, returner);
             }
-            else
-            {
-                if (isEndOfChain)
-                {
-                    set_token(automat, currentIndex, returner);
-                }
-            }
-            _computeLexemePrecursor(lexeme->precursor, returner, finalState, finalState);
         }
-        return finalState;
+        _regexContent(node, finalState, finalState);
     }
-
-    if (lexeme->closure == NULL)
-    {
-        finalState = isEndOfChain ? new_state(automat, 1, returner) : new_state(automat, 0, NULL);
-        _regexContent(node, currentIndex, finalState);
-        return finalState;
-    }
-
-    if (lexeme->closure->closure == PLUS)
-    {
-        finalState = isEndOfChain ? new_state(automat, 1, returner) : new_state(automat, 0, NULL);
-        _regexContent(node, currentIndex, finalState);
-    }
-
-    if (lexeme->closure->closure == STAR && isEndOfChain)
-    {
-        set_token(automat, currentIndex, returner);
-    }
-
-    _regexContent(node, finalState, finalState);
 
     return finalState;
 }
 
 void _regexContent(Regexes *regexes, uint64_t startIndex, uint64_t endIndex)
 {
-    _computeRegexClass(regexes->regexClass, startIndex, endIndex);
-    if (regexes->regexes != NULL)
+    if (regexes->regexes == NULL)
+    {
+        _computeRegexClass(regexes->regexClass, startIndex, endIndex);
+    }
+    else
+    {
+        _computeRegexClass(regexes->regexClass, startIndex, endIndex);
         _regexContent(regexes->regexes, startIndex, endIndex);
+        return;
+    }
 }
 
 void _computeRegexClass(Regex_class *regexClass, uint64_t startIndex, uint64_t endIndex)
