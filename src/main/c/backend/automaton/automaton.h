@@ -6,6 +6,10 @@
 
 typedef void *token_t;
 #define UNKNOWN_TOKEN (token_t)1
+enum reserved_matchers{
+    UNINITIALIZED_BOUND = -1,
+    LAMBDA = -2
+};
 
 typedef struct rule
 {
@@ -129,7 +133,9 @@ char accepts(const automaton *a, const char *string);
  * @param automaton
  * @return automaton
  */
-automaton *get_deterministic_equivalent(const automaton *automaton);
+automaton *get_deterministic_equivalent(automaton *automaton);
+
+void solve_lambda_transitions(automaton *a);
 
 /**
  * @brief Writes to a file descriptor Java syntax code for initializing a clone of an automaton
