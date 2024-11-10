@@ -129,7 +129,7 @@ char set_state_transition(automaton_state *from, uint64_t to_index, char matcher
     rule *r;
     if ((r = find_rule(from, matcher)) != NULL)
     {
-        if(array_contains(r->next_indices, r->next_indices_size, to_index))
+        if (array_contains(r->next_indices, r->next_indices_size, to_index))
             return 0;
         check_resize_rule(r);
         r->next_indices[r->next_indices_size++] = to_index;
@@ -457,7 +457,10 @@ char remove_transitions_by_matcher(automaton_state *s, char matcher)
     for (uint64_t i = 0; i < s->delta_size; i++)
     {
         if (s->delta[i].matcher == matcher)
+        {
             removed = 1;
+            free(s->delta[i].next_indices);
+        }
         if (i < s->delta_size - 1)
             s->delta[i] = s->delta[i + removed];
     }
