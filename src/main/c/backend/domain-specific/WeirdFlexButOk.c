@@ -381,57 +381,35 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
         }
         return finalState;
     }
+
     if (lexeme->closure == NULL)
     {
-        if (isEndOfChain)
-        {
-            finalState = new_state(automat, 1, returner);
-        }
-        else
-        {
-            finalState = new_state(automat, 0, NULL);
-        }
+        finalState = isEndOfChain ? new_state(automat, 1, returner) : new_state(automat, 0, NULL);
+        _regexContent(node, currentIndex, finalState);
+        return finalState;
+    }
+
+    if (lexeme->closure->closure == PLUS)
+    {
+        finalState = isEndOfChain ? new_state(automat, 1, returner) : new_state(automat, 0, NULL);
         _regexContent(node, currentIndex, finalState);
     }
-    else
+
+    if (lexeme->closure->closure == STAR && isEndOfChain)
     {
-        if (lexeme->closure->closure == PLUS)
-        {
-            if (isEndOfChain)
-            {
-                finalState = new_state(automat, 1, returner);
-            }
-            else
-            {
-                finalState = new_state(automat, 0, NULL);
-            }
-            _regexContent(node, currentIndex, finalState);
-        }
-        else
-        {
-            if (isEndOfChain)
-            {
-                set_token(automat, currentIndex, returner);
-            }
-        }
-        _regexContent(node, finalState, finalState);
+        set_token(automat, currentIndex, returner);
     }
+
+    _regexContent(node, finalState, finalState);
 
     return finalState;
 }
 
 void _regexContent(Regexes *regexes, uint64_t startIndex, uint64_t endIndex)
 {
-    if (regexes->regexes == NULL)
-    {
-        _computeRegexClass(regexes->regexClass, startIndex, endIndex);
-    }
-    else
-    {
-        _computeRegexClass(regexes->regexClass, startIndex, endIndex);
+    _computeRegexClass(regexes->regexClass, startIndex, endIndex);
+    if (regexes->regexes != NULL)
         _regexContent(regexes->regexes, startIndex, endIndex);
-        return;
-    }
 }
 
 void _computeRegexClass(Regex_class *regexClass, uint64_t startIndex, uint64_t endIndex)
