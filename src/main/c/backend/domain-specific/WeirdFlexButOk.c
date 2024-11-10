@@ -217,8 +217,32 @@ uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *ret
         else
         {
             uint64_t finalState = _computeLexeme(lexeme_precursor->lex, currentIndex, NULL, 0);
+            unset_token(automat, finalState);
             return _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, finalState);
         }
+    }
+}
+
+char _mapEscapedChar(char c)
+{
+    switch (c)
+    {
+    case 'a':
+        return '\a';
+    case 'b':
+        return '\b';
+    case 't':
+        return '\t';
+    case 'n':
+        return '\n';
+    case 'v':
+        return '\v';
+    case 'f':
+        return '\f';
+    case 'r':
+        return '\r';
+    default:
+        return 0;
     }
 }
 
@@ -249,70 +273,15 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
         uint64_t nextStateIndex;
         while (*s)
         {
-            if (!s[1])
+            if (s[0] == '\\' && s[1])
             {
-                nextStateIndex = new_state(automat, 1, returner);
-                set_transition(automat, currentStateIndex, nextStateIndex, *s);
+                s++;
+                *s = _mapEscapedChar(*s);
             }
-            else
-            {
-                if (*s == '\\')
-                {
-                    s++;
-                    switch (*s)
-                    {
-                    case 'a':
-                        *s = '\a';
-                        break;
+            nextStateIndex = s[1] ? new_state(automat, 0, NULL) : new_state(automat, 1, returner);
+            set_transition(automat, currentStateIndex, nextStateIndex, *s);
+            set_transition(automat, currentStateIndex, nextStateIndex, *s);
 
-                    case 'b':
-                        *s = '\b';
-                        break;
-
-                    case 't':
-                        *s = '\t';
-                        break;
-
-                    case 'n':
-                        *s = '\n';
-                        break;
-
-                    case 'v':
-                        *s = '\v';
-                        break;
-
-                    case 'f':
-                        *s = '\f';
-                        break;
-
-                    case 'r':
-                        *s = '\r';
-                        break;
-
-                    case '\0':
-                        result->succeed = false;
-                        result->errorMessage = strdup("There can't be more than one default lexeme");
-                        break;
-                    default:
-                        break;
-                    }
-                    if (!s[1])
-                    {
-                        nextStateIndex = new_state(automat, 1, returner);
-                        set_transition(automat, currentStateIndex, nextStateIndex, *s);
-                    }
-                    else
-                    {
-                        nextStateIndex = new_state(automat, 0, NULL);
-                        set_transition(automat, currentStateIndex, nextStateIndex, *s);
-                    }
-                }
-                else
-                {
-                    nextStateIndex = new_state(automat, 0, NULL);
-                    set_transition(automat, currentStateIndex, nextStateIndex, *s);
-                }
-            }
             s++;
             currentStateIndex = nextStateIndex;
         }
@@ -336,55 +305,32 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
     }
     if (lexeme->closure == NULL)
     {
-        if (isEndOfChain)
-        {
-            finalState = new_state(automat, 1, returner);
-        }
-        else
-        {
-            finalState = new_state(automat, 0, NULL);
-        }
+        finalState = isEndOfChain ? new_state(automat, 1, returner) : new_state(automat, 0, NULL);
+        _regexContent(node, currentIndex, finalState);
+        return finalState;
+    }
+
+    if (lexeme->closure->closure == PLUS)
+    {
+        finalState = isEndOfChain ? new_state(automat, 1, returner) : new_state(automat, 0, NULL);
         _regexContent(node, currentIndex, finalState);
     }
-    else
+
+    if (lexeme->closure->closure == STAR && isEndOfChain)
     {
-        if (lexeme->closure->closure == PLUS)
-        {
-            if (isEndOfChain)
-            {
-                finalState = new_state(automat, 1, returner);
-            }
-            else
-            {
-                finalState = new_state(automat, 0, NULL);
-            }
-            _regexContent(node, currentIndex, finalState);
-        }
-        else
-        {
-            if (isEndOfChain)
-            {
-                set_token(automat, currentIndex, returner);
-            }
-        }
-        _regexContent(node, finalState, finalState);
+        set_token(automat, currentIndex, returner);
     }
+
+    _regexContent(node, finalState, finalState);
 
     return finalState;
 }
 
 void _regexContent(Regexes *regexes, uint64_t startIndex, uint64_t endIndex)
 {
-    if (regexes->regexes == NULL)
-    {
-        _computeRegexClass(regexes->regexClass, startIndex, endIndex);
-    }
-    else
-    {
-        _computeRegexClass(regexes->regexClass, startIndex, endIndex);
+    _computeRegexClass(regexes->regexClass, startIndex, endIndex);
+    if (regexes->regexes != NULL)
         _regexContent(regexes->regexes, startIndex, endIndex);
-        return;
-    }
 }
 
 void _computeRegexClass(Regex_class *regexClass, uint64_t startIndex, uint64_t endIndex)

@@ -89,6 +89,16 @@ char set_token(automaton *a, uint64_t state_index, token_t token)
     return 1;
 }
 
+token_t unset_token(automaton *a, uint64_t state_index){
+    if (state_index >= a->states_size || !a->states[state_index]->throws_token)
+        return (token_t)0;
+    if(!a->states[state_index]->throws_token)
+        return (token_t)0;
+    a->states[state_index]->throws_token = 0;
+    return a->states[state_index]->token;
+}
+
+
 void resize_state(automaton_state *s)
 {
     s->delta_dim *= 2;

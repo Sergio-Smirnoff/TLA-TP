@@ -1,1 +1,1 @@
-[a]+[a]+ -> SOME_AB_MAYBE_ONE_CD;
+([a]+[b]+)+([c]+[d]+)* -> SOME_AB_MAYBE_SOME_CD;

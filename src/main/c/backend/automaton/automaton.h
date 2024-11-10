@@ -159,6 +159,8 @@ void write_java_initialization(const automaton *a, int file_descriptor);
  */
 char set_token(automaton *a, uint64_t state_index, token_t token);
 
+token_t unset_token(automaton *a, uint64_t state_index);
+
 void free_state(automaton_state *state);
 void free_automaton(automaton *automaton);
 

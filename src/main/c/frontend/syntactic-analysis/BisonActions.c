@@ -193,7 +193,7 @@ Lexeme *LexemeSemanticAction(char *string, Regexes *regex_class, Closure *closur
 
 Lexeme *LexemeStringSemanticAction(char *string){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Lexeme *lexeme = calloc(1, sizeof(Closure));
+	Lexeme *lexeme = calloc(1, sizeof(Lexeme));
 	lexeme->string = string;
 	lexeme->type=string_lexeme;
 	return lexeme;
