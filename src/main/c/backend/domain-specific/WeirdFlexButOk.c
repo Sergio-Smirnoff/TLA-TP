@@ -316,7 +316,7 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
             s++;
             currentStateIndex = nextStateIndex;
         }
-        break;
+        return currentStateIndex;
     case precursor_closure:
         if (lexeme->closure == NULL)
         {
