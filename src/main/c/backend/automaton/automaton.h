@@ -21,7 +21,7 @@ typedef struct rule
 
 typedef struct automaton_state
 {
-    rule *delta;
+    rule **delta;
     uint64_t delta_size;
     uint64_t delta_dim;
     uint8_t throws_token;

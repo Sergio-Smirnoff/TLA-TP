@@ -89,15 +89,15 @@ char set_token(automaton *a, uint64_t state_index, token_t token)
     return 1;
 }
 
-token_t unset_token(automaton *a, uint64_t state_index){
+token_t unset_token(automaton *a, uint64_t state_index)
+{
     if (state_index >= a->states_size || !a->states[state_index]->throws_token)
         return (token_t)0;
-    if(!a->states[state_index]->throws_token)
+    if (!a->states[state_index]->throws_token)
         return (token_t)0;
     a->states[state_index]->throws_token = 0;
     return a->states[state_index]->token;
 }
-
 
 void resize_state(automaton_state *s)
 {
@@ -127,9 +127,9 @@ rule *find_rule(const automaton_state *s, char symbol)
 {
     uint64_t size = s->delta_size;
     for (uint64_t i = 0; i < size; i++)
-        if (s->delta[i].matcher == symbol)
+        if (s->delta[i]->matcher == symbol)
         {
-            return s->delta + i;
+            return s->delta[i];
         }
     return NULL;
 }
@@ -147,11 +147,13 @@ char set_state_transition(automaton_state *from, uint64_t to_index, char matcher
     }
 
     check_resize_state(from);
-    from->delta[from->delta_size].matcher = matcher;
-    from->delta[from->delta_size].next_indices_dim = 1;
-    from->delta[from->delta_size].next_indices_size = 1;
-    from->delta[from->delta_size].next_indices = malloc(sizeof(uint64_t) * 1);
-    from->delta[from->delta_size++].next_indices[0] = to_index;
+    rule *new_rule = malloc(sizeof(rule) * 1);
+    from->delta[from->delta_size++] = new_rule;
+    new_rule->matcher = matcher;
+    new_rule->next_indices_dim = 1;
+    new_rule->next_indices_size = 1;
+    new_rule->next_indices = malloc(sizeof(uint64_t) * 1);
+    new_rule->next_indices[0] = to_index;
     return 1;
 }
 
@@ -284,7 +286,10 @@ automaton_state *get_state(const automaton *a, uint64_t index)
 void free_state(automaton_state *s)
 {
     for (uint64_t i = 0; i < s->delta_size; i++)
-        free(s->delta[i].next_indices);
+    {
+        free(s->delta[i]->next_indices);
+        free(s->delta[i]);
+    }
     free(s->delta);
     free(s);
 }
@@ -392,13 +397,13 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
                 continue;
             for (uint64_t rule_index = 0; rule_index < current_state->delta_size; rule_index++)
             {
-                rule current_rule = current_state->delta[rule_index];
-                if (current_rule.matcher == matcher)
+                rule *current_rule = current_state->delta[rule_index];
+                if (current_rule->matcher == matcher)
                 {
-                    for (uint64_t transition_index = 0; transition_index < current_rule.next_indices_size; transition_index++)
+                    for (uint64_t transition_index = 0; transition_index < current_rule->next_indices_size; transition_index++)
                     {
-                        if (!array_contains(state_indices, state_indices_size, current_rule.next_indices[transition_index]))
-                            state_indices[state_indices_size++] = current_rule.next_indices[transition_index];
+                        if (!array_contains(state_indices, state_indices_size, current_rule->next_indices[transition_index]))
+                            state_indices[state_indices_size++] = current_rule->next_indices[transition_index];
                     }
                 }
             }
@@ -466,10 +471,11 @@ char remove_transitions_by_matcher(automaton_state *s, char matcher)
     char removed = 0;
     for (uint64_t i = 0; i < s->delta_size; i++)
     {
-        if (s->delta[i].matcher == matcher)
+        if (s->delta[i]->matcher == matcher)
         {
             removed = 1;
-            free(s->delta[i].next_indices);
+            free(s->delta[i]->next_indices);
+            free(s->delta[i]);
         }
         if (i < s->delta_size - 1)
             s->delta[i] = s->delta[i + removed];
@@ -490,9 +496,9 @@ void merge_lambda_rules(automaton *a, automaton_state *to, uint64_t to_index, ui
     }
 
     for (uint64_t rule_index = 0; rule_index < from->delta_size; rule_index++)
-        if (from->delta[rule_index].matcher != LAMBDA)
-            for (uint64_t next_state_index = 0; next_state_index < from->delta[rule_index].next_indices_size; next_state_index++)
-                set_transition(a, to_index, from->delta[rule_index].next_indices[next_state_index], from->delta[rule_index].matcher);
+        if (from->delta[rule_index]->matcher != LAMBDA)
+            for (uint64_t next_state_index = 0; next_state_index < from->delta[rule_index]->next_indices_size; next_state_index++)
+                set_transition(a, to_index, from->delta[rule_index]->next_indices[next_state_index], from->delta[rule_index]->matcher);
 
     rule *lambda_rule = find_rule(from, LAMBDA);
     if (lambda_rule != NULL)
@@ -606,7 +612,7 @@ automaton_state *get_next_state(automaton_iterator *iterator)
 rule *get_next_rule(state_iterator *iterator)
 {
     if (has_next_rule(iterator))
-        return &iterator->state->delta[iterator->rule_index++];
+        return iterator->state->delta[iterator->rule_index++];
     return NULL;
 }
 

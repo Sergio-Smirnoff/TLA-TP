@@ -291,15 +291,13 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
         {
             return _computeLexemePrecursor(lexeme->precursor, returner, currentIndex);
         }
-        else
+        
+        uint64_t aux = finalState;
+        finalState = _computeLexemePrecursor(lexeme->precursor, returner, finalState);
+        set_transition(automat, finalState, aux, LAMBDA);
+        if (lexeme->closure->closure == STAR)
         {
-            uint64_t aux = finalState;
-            finalState = _computeLexemePrecursor(lexeme->precursor, returner, finalState);
-            set_transition(automat, finalState, aux, LAMBDA);
-            if (lexeme->closure->closure == STAR)
-            {
-                set_transition(automat, aux, finalState, LAMBDA);
-            }
+            set_transition(automat, aux, finalState, LAMBDA);
         }
         return finalState;
     }
