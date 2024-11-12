@@ -12,7 +12,6 @@ static transformer_list *current = NULL;
 static Valid_Regex_List *validRegexList;
 static automaton *automat;
 static ComputationResult *result;
-static boolean has_default = false;
 
 /** PRIVATE FUNCTIONS */
 static void _addToList(Lexeme_precursor *lexeme, Action *returner);
@@ -22,8 +21,8 @@ void _ruleset(Ruleset *my_ruleset);
 void _computeRule(Rule *my_rule);
 void _regexContent(Regexes *regexes, uint64_t startIndex, uint64_t endIndex);
 void _computeRegexClass(Regex_class *regexClass, uint64_t startIndex, uint64_t endIndex);
-uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returner, uint64_t currentIndex);
-uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner, boolean isEndOfChain);
+uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returner, uint64_t currentIndex, boolean useToken);
+uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner, boolean isEndOfChain, boolean useToken);
 
 static void _addToList(Lexeme_precursor *lexeme, Action *returner)
 {
@@ -165,7 +164,7 @@ void buildAutomaton(ComputationResult *computationResult)
         }
         if (aux->lexeme != NULL)
         {
-            _computeLexemePrecursor(aux->lexeme, aux->returner, 0);
+            _computeLexemePrecursor(aux->lexeme, aux->returner, 0, 1);
         }
         else
         {
@@ -181,7 +180,7 @@ void buildAutomaton(ComputationResult *computationResult)
     return;
 }
 
-uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returner, uint64_t currentIndex)
+uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returner, uint64_t currentIndex, boolean useToken)
 {
     if (lexeme_precursor == NULL)
     {
@@ -190,35 +189,24 @@ uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *ret
     switch (lexeme_precursor->precursor_type)
     {
     case default_t:
-        if (has_default)
+        uint64_t defaultStateIndex = useToken ? new_state(automat, 1, returner) : new_state(automat, 0, NULL);
+        for (unsigned char c = 9; c < 127; c++)
         {
-            result->succeed = false;
-            result->errorMessage = strdup("There can't be more than one default lexeme");
-            return currentIndex;
-        }
-        else
-        {
-            has_default = true;
-            uint64_t defaultStateIndex = new_state(automat, 1, returner);
-            for (unsigned char c = 9; c < 127; c++)
+            if (!(c == 11 || c == 12 || (c >= 14 && c <= 31)))
             {
-                if (!(c == 11 || c == 12 || (c >= 14 && c <= 31)))
-                {
-                    set_transition(automat, 0, defaultStateIndex, c);
-                }
+                set_transition(automat, currentIndex, defaultStateIndex, c);
             }
-            return defaultStateIndex;
         }
+        return defaultStateIndex;
     case nonliterals:
         if (lexeme_precursor->lex_prec == NULL)
         {
-            return _computeLexeme(lexeme_precursor->lex, currentIndex, returner, 1);
+            return _computeLexeme(lexeme_precursor->lex, currentIndex, returner, 1, useToken);
         }
         else
         {
-            uint64_t finalState = _computeLexeme(lexeme_precursor->lex, currentIndex, NULL, 0);
-            unset_token(automat, finalState);
-            return _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, finalState);
+            uint64_t finalState = _computeLexeme(lexeme_precursor->lex, currentIndex, NULL, 0, 0);
+            return _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, finalState, useToken);
         }
     }
 }
@@ -246,7 +234,7 @@ char _mapEscapedChar(char c)
     }
 }
 
-uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner, boolean isEndOfChain)
+uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner, boolean isEndOfChain, boolean useToken)
 {
     uint64_t finalState = currentIndex;
     Regexes *node;
@@ -289,32 +277,38 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
     case precursor_closure:
         if (lexeme->closure == NULL)
         {
-            return _computeLexemePrecursor(lexeme->precursor, returner, currentIndex);
+            return _computeLexemePrecursor(lexeme->precursor, returner, currentIndex, useToken);
         }
-        
-        uint64_t aux = finalState;
-        finalState = _computeLexemePrecursor(lexeme->precursor, returner, finalState);
-        set_transition(automat, finalState, aux, LAMBDA);
-        if (lexeme->closure->closure == STAR)
+
+        if (lexeme->closure->closure == PLUS)
         {
-            set_transition(automat, aux, finalState, LAMBDA);
+            currentIndex = _computeLexemePrecursor(lexeme->precursor, returner, currentIndex, 0);
         }
+        else
+        {
+            uint64_t aux = new_state(automat, 0, NULL);
+            set_transition(automat, currentIndex, aux, LAMBDA);
+            currentIndex = aux;
+        }
+        finalState = _computeLexemePrecursor(lexeme->precursor, returner, currentIndex, useToken);
+        set_transition(automat, finalState, currentIndex, LAMBDA);
+        set_transition(automat, currentIndex, finalState, LAMBDA);
         return finalState;
     }
     if (lexeme->closure == NULL)
     {
-        finalState = isEndOfChain ? new_state(automat, 1, returner) : new_state(automat, 0, NULL);
+        finalState = isEndOfChain && useToken ? new_state(automat, 1, returner) : new_state(automat, 0, NULL);
         _regexContent(node, currentIndex, finalState);
         return finalState;
     }
 
     if (lexeme->closure->closure == PLUS)
     {
-        finalState = isEndOfChain ? new_state(automat, 1, returner) : new_state(automat, 0, NULL);
+        finalState = isEndOfChain && useToken ? new_state(automat, 1, returner) : new_state(automat, 0, NULL);
         _regexContent(node, currentIndex, finalState);
     }
 
-    if (lexeme->closure->closure == STAR && isEndOfChain)
+    if (lexeme->closure->closure == STAR && isEndOfChain && useToken)
     {
         set_token(automat, currentIndex, returner);
     }
