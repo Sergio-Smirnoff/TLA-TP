@@ -494,7 +494,6 @@ void merge_lambda_rules(automaton *a, automaton_state *to, uint64_t to_index, ui
         to->throws_token = 1;
         to->token = from->token;
     }
-
     for (uint64_t rule_index = 0; rule_index < from->delta_size; rule_index++)
         if (from->delta[rule_index]->matcher != LAMBDA)
             for (uint64_t next_state_index = 0; next_state_index < from->delta[rule_index]->next_indices_size; next_state_index++)
@@ -505,10 +504,10 @@ void merge_lambda_rules(automaton *a, automaton_state *to, uint64_t to_index, ui
     {
         for (uint64_t next_state_index = 0; next_state_index < lambda_rule->next_indices_size; next_state_index++)
         {
-            if (!array_contains(ignore_state_indices, ignore_state_indices_size, next_state_index))
+            if (!array_contains(ignore_state_indices, ignore_state_indices_size, lambda_rule->next_indices[next_state_index]))
             {
-                ignore_state_indices[ignore_state_indices_size++] = from_index;
-                merge_lambda_rules(a, to, to_index, next_state_index, ignore_state_indices, 1);
+                ignore_state_indices[ignore_state_indices_size++] = lambda_rule->next_indices[next_state_index];
+                merge_lambda_rules(a, to, to_index, lambda_rule->next_indices[next_state_index], ignore_state_indices, ignore_state_indices_size);
             }
         }
     }
