@@ -174,7 +174,9 @@ void buildAutomaton(ComputationResult *computationResult)
         }
         aux = aux->next;
     }
+    print_automaton(automat);
     automaton *dfa = get_deterministic_equivalent(automat);
+    print_automaton(automat);
     free_automaton(automat);
     computationResult->automaton = dfa;
     return;
@@ -266,7 +268,7 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
                 s++;
                 *s = _mapEscapedChar(*s);
             }
-            nextStateIndex = s[1] ? new_state(automat, 0, NULL) : new_state(automat, 1, returner);
+            nextStateIndex = s[1] || !useToken ? new_state(automat, 0, NULL) : new_state(automat, 1, returner);
             set_transition(automat, currentStateIndex, nextStateIndex, *s);
             set_transition(automat, currentStateIndex, nextStateIndex, *s);
 
@@ -282,18 +284,18 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
 
         if (lexeme->closure->closure == PLUS)
         {
-            currentIndex = _computeLexemePrecursor(lexeme->precursor, returner, currentIndex, 0);
+            currentIndex = _computeLexemePrecursor(lexeme->precursor, NULL, currentIndex, 0);
         }
-        else
-        {
-            uint64_t aux = new_state(automat, 0, NULL);
-            set_transition(automat, currentIndex, aux, LAMBDA);
-            currentIndex = aux;
-        }
-        finalState = _computeLexemePrecursor(lexeme->precursor, returner, currentIndex, useToken);
-        set_transition(automat, finalState, currentIndex, LAMBDA);
-        set_transition(automat, currentIndex, finalState, LAMBDA);
-        return finalState;
+
+        uint64_t aux = new_state(automat, 0, NULL);
+        set_transition(automat, currentIndex, aux, LAMBDA);
+
+        finalState = _computeLexemePrecursor(lexeme->precursor, NULL, aux, 0);
+        uint64_t newFinal = useToken ? new_state(automat, 1, returner) : new_state(automat, 0, NULL);
+        set_transition(automat, finalState, aux, LAMBDA);
+        set_transition(automat, finalState, newFinal, LAMBDA);
+        set_transition(automat, currentIndex, newFinal, LAMBDA);
+        return newFinal;
     }
     if (lexeme->closure == NULL)
     {
