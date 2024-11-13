@@ -15,7 +15,6 @@ static ComputationResult *result;
 
 /** PRIVATE FUNCTIONS */
 static void _addToList(Lexeme_precursor *lexeme, Action *returner);
-static void _freeTransformerList(struct transformer_list *list);
 static char *_strConcat(char *str1, char *str2);
 void _ruleset(Ruleset *my_ruleset);
 void _computeRule(Rule *my_rule);
@@ -47,21 +46,6 @@ static void _addToList(Lexeme_precursor *lexeme, Action *returner)
     }
 }
 
-static void _freeTransformerList(struct transformer_list *list)
-{
-    transformer_list *aux = list;
-    while (aux != NULL)
-    {
-        transformer_list *to_free = aux;
-        aux = aux->next;
-        if (to_free->returner != NULL)
-        {
-            free(to_free->returner);
-        }
-        free(to_free);
-    }
-}
-
 static char *_strConcat(char *str1, char *str2)
 {
     char *aux = calloc((strlen(str1) + strlen(str2) + 1), sizeof(char));
@@ -83,7 +67,6 @@ void shutdownWeirdFlexModule()
     {
         destroyLogger(_logger);
     }
-    _freeTransformerList(list);
 }
 
 ComputationResult *computeProgram(Program *tree, Valid_Regex_List *regexList)
