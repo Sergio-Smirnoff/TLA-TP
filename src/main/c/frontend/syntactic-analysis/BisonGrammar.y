@@ -232,7 +232,7 @@ rule: VAR_NAME[def] OPEN_BRACKET regexes[regex] CLOSE_BRACKET ENDLINE	    						
 
 lexeme_precursor: lexeme lexeme_precursor																																			{ $$ = LexemePrecursorSemanticAction($1, $2, concatenation); }
 	| lexeme PIPE lexeme_precursor																																					{ $$ = LexemePrecursorSemanticAction($1, $3, summation); }
-	| lexeme																																										{ $$ = LexemePrecursorSemanticAction($1, NULL, 0); }
+	| lexeme																																										{ $$ = LexemePrecursorSemanticAction($1, NULL, end); }
 	| DEFAULT[string]																																								{ $$ = LexemeDefaultSemanticAction(); }
 	;
 

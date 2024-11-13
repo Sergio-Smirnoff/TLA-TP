@@ -94,6 +94,7 @@ const int main(const int count, const char ** arguments) {
 	}
 
 	logDebugging(logger, "Releasing modules resources...");
+	releaseProgram(program);
 	shutdownGeneratorModule();
 	shutdownWeirdFlexModule();
 	shutdownAbstractSyntaxTreeModule();
