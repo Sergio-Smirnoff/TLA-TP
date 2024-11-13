@@ -174,9 +174,7 @@ void buildAutomaton(ComputationResult *computationResult)
         }
         aux = aux->next;
     }
-    print_automaton(automat);
     automaton *dfa = get_deterministic_equivalent(automat);
-    print_automaton(automat);
     free_automaton(automat);
     computationResult->automaton = dfa;
     return;
@@ -207,8 +205,19 @@ uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *ret
         }
         else
         {
-            uint64_t finalState = _computeLexeme(lexeme_precursor->lex, currentIndex, NULL, 0, 0);
-            return _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, finalState, useToken);
+            if (lexeme_precursor->chain_type == concatenation)
+            {
+                uint64_t finalState = _computeLexeme(lexeme_precursor->lex, currentIndex, NULL, 0, 0);
+                return _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, finalState, useToken);
+            }
+            else if(lexeme_precursor->chain_type == summation)
+            {
+                uint64_t finalState = new_state(automat, 0, NULL);
+                set_transition(automat, _computeLexeme(lexeme_precursor->lex, currentIndex, returner, 0, useToken), finalState, LAMBDA);
+                set_transition(automat, _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, currentIndex, useToken), finalState, LAMBDA);
+                return finalState;
+            }
+            return currentIndex;
         }
     }
 }

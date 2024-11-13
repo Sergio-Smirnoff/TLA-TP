@@ -387,11 +387,17 @@ typedef enum Lexeme_precursor_type
 	nonliterals
 } Lexeme_precursor_type;
 
+typedef enum Lexeme_chain_type{
+	concatenation,
+	summation
+} Lexeme_chain_type;
+
 struct Lexeme_precursor
 {
 	Lexeme_precursor *lex_prec;
 	Lexeme *lex;
 	Lexeme_precursor_type precursor_type;
+	Lexeme_chain_type chain_type;
 };
 
 struct Type

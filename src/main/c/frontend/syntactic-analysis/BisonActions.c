@@ -107,14 +107,14 @@ Rule *RuleNewRegexSemanticAction(char *our_regex_id, Regexes *regexes, CompilerS
 	return rule;
 }
 
-// Lexeme precursor
-Lexeme_precursor *LexemePrecursorSemanticAction(Lexeme *lex, Lexeme_precursor *lex_prec)
+Lexeme_precursor *LexemePrecursorSemanticAction(Lexeme *lex, Lexeme_precursor *lex_prec, Lexeme_chain_type chain_type)
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Lexeme_precursor *new_lexeme_precursor = calloc(1, sizeof(Lexeme_precursor));
 	new_lexeme_precursor->lex = lex;
 	new_lexeme_precursor->lex_prec = lex_prec;
 	new_lexeme_precursor->precursor_type = nonliterals;
+	new_lexeme_precursor->chain_type = chain_type;
 	return new_lexeme_precursor;
 }
 

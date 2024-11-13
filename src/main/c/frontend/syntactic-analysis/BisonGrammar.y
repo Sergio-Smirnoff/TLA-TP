@@ -107,6 +107,7 @@
 %token <token> CLOSE_PARENTHESES
 %token <token> OPEN_BRACKET
 %token <token> CLOSE_BRACKET
+%token <token> PIPE
 
 %token <token> JAVA_RETURN
 %token <token> JAVA_IF
@@ -229,8 +230,9 @@ rule: VAR_NAME[def] OPEN_BRACKET regexes[regex] CLOSE_BRACKET ENDLINE	    						
 	| lexeme_precursor[lex] ENDLINE																																					{ $$ = RuleDefinitionSemanticAction($lex, NULL, ignore_lexeme); }
 	;
 
-lexeme_precursor: lexeme lexeme_precursor																																			{ $$ = LexemePrecursorSemanticAction($1, $2); }
-	| lexeme																																										{ $$ = LexemePrecursorSemanticAction($1, NULL); }
+lexeme_precursor: lexeme lexeme_precursor																																			{ $$ = LexemePrecursorSemanticAction($1, $2, concatenation); }
+	| lexeme PIPE lexeme_precursor																																					{ $$ = LexemePrecursorSemanticAction($1, $3, summation); }
+	| lexeme																																										{ $$ = LexemePrecursorSemanticAction($1, NULL, 0); }
 	| DEFAULT[string]																																								{ $$ = LexemeDefaultSemanticAction(); }
 	;
 

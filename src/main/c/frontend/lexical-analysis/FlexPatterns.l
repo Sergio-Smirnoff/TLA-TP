@@ -96,6 +96,7 @@
 "/"                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), DIV); }
 "%"                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), MOD); }
 ","                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), COMMA); }
+"|"                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), PIPE); }
 "}"                                             { Token token = CloseBracesLexeme(createLexicalAnalyzerContext()); return token; }
 "{"                                             { Token token = OpenBracesLexeme(createLexicalAnalyzerContext()); return token; }
 "-> "                                           { return ArrowLexeme(createLexicalAnalyzerContext()); }

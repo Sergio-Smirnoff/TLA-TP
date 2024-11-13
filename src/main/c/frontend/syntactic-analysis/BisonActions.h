@@ -30,7 +30,7 @@ Rule *RuleDefinitionSemanticAction(Lexeme_precursor *lexeme, Action *action, Rul
 Rule *RuleNewRegexSemanticAction(char *our_regex_id, Regexes *regex_class, CompilerState *compilerState);
 
 // lexeme precursor
-Lexeme_precursor *LexemePrecursorSemanticAction(Lexeme *lex, Lexeme_precursor *lex_prec);
+Lexeme_precursor *LexemePrecursorSemanticAction(Lexeme *lex, Lexeme_precursor *lex_prec, Lexeme_chain_type chain_type);
 Lexeme_precursor *LexemeDefaultSemanticAction();
 
 // lexeme
