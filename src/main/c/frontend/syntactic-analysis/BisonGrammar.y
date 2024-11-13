@@ -117,8 +117,22 @@
 %token <token> JAVA_GEQ
 %token <token> JAVA_GREATER
 %token <token> JAVA_LESSER
+
 %token <token> JAVA_EXACT_COMPARISON
+%token <token> JAVA_NOT_EXACT_COMPARISON
 %token <token> JAVA_ASSIGNMENT
+%token <token> JAVA_MULTIPLY_ASSIGN
+%token <token> JAVA_DIVIDE_ASSIGN
+%token <token> JAVA_MODULO_ASSIGN
+%token <token> JAVA_PLUS_ASSIGN
+%token <token> JAVA_MINUS_ASSIGN
+%token <token> JAVA_LEFT_SHIFT_ASSIGN
+%token <token> JAVA_RIGHT_SHIFT_ASSIGN
+%token <token> JAVA_UNSIGNED_RIGHT_SHIFT_ASSIGN
+%token <token> JAVA_AND_ASSIGN
+%token <token> JAVA_XOR_ASSIGN
+%token <token> JAVA_OR_ASSIGN
+
 %token <token> JAVA_DOT_OPERATOR
 %token <token> JAVA_DOTS_OPERATOR
 %token <token> JAVA_TERNARY_OPERATOR
@@ -194,8 +208,8 @@
 %left JAVA_LEQ
 %left JAVA_GREATER
 %left JAVA_GEQ
-%left JAVA_EXACT_COMPARISON
-%left JAVA_ASSIGNMENT   
+%left JAVA_EXACT_COMPARISON JAVA_NOT_EXACT_COMPARISON
+%left JAVA_ASSIGNMENT JAVA_MULTIPLY_ASSIGN JAVA_DIVIDE_ASSIGN JAVA_MODULO_ASSIGN JAVA_PLUS_ASSIGN JAVA_MINUS_ASSIGN JAVA_LEFT_SHIFT_ASSIGN JAVA_RIGHT_SHIFT_ASSIGN JAVA_UNSIGNED_RIGHT_SHIFT_ASSIGN JAVA_AND_ASSIGN JAVA_XOR_ASSIGN JAVA_OR_ASSIGN   
 %right JAVA_NOT              
 %left UPPERCASE LOWERCASE DIGIT SYMBOL ESCAPED_SYMBOL
 %left  OPEN_PARENTHESES
@@ -302,7 +316,19 @@ IfThenStatement: JAVA_IF OPEN_PARENTHESES Expression[expression] CLOSE_PARENTHES
 StatementExpression: Assignment																																						{ $$ = JavaAsignmentSemanticAction($1); }
 	| VarAccess																																										{ $$ = JavaVAccessDefaultSemanticAction($1); }
 	| type VAR_NAME JAVA_ASSIGNMENT Expression																																		{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_PLUS_ASSIGN Expression																																		{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_MINUS_ASSIGN Expression																																	{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_MULTIPLY_ASSIGN Expression																																	{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_DIVIDE_ASSIGN Expression																																	{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_MODULO_ASSIGN Expression																																	{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_LEFT_SHIFT_ASSIGN Expression																																{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_RIGHT_SHIFT_ASSIGN Expression																																{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_UNSIGNED_RIGHT_SHIFT_ASSIGN Expression																														{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_AND_ASSIGN Expression																																		{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_XOR_ASSIGN Expression																																		{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_OR_ASSIGN Expression																																		{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
 	;
+
 
 VarAccess: VAR_NAME																																									{ $$ = VarAccessVarSemanticAction($1); }
 	| VAR_NAME JAVA_DOT_OPERATOR VarAccess																																			{ $$ = VarAccessVarOperatorSemanticAction($1,$3); }
@@ -336,6 +362,7 @@ ConditionalAndExpression: EqualityExpression																																		{ 
 
 EqualityExpression: UnaryExpression												{ $$ = EqualityExpressionSemanticAction($1, NULL); }
 	| EqualityExpression JAVA_EXACT_COMPARISON UnaryExpression																														{ $$ = EqualityExpressionSemanticAction($3,$1); }
+	| EqualityExpression JAVA_NOT_EXACT_COMPARISON UnaryExpression																														{ $$ = EqualityExpressionSemanticAction($3,$1); }
 	;
 
 UnaryExpression:  UnaryExpression NumericComparison PostfixExpression																													{ $$ = UnaryExpressionNumericComparisonSintaticAction($1,$2,$3); }
@@ -361,8 +388,20 @@ PostfixExpression: Primary																																							{ $$ = PostfixE
 	| VarAccess DECREMENT																																							{ $$ = PostfixExpressionVAccessSemanticAction($1, $2); }
 	;
 
-Assignment: VarAccess JAVA_ASSIGNMENT Expression																																	{ $$ = AssignmentSemanticAction($1,$3); }
+Assignment: VarAccess JAVA_ASSIGNMENT Expression																																	{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_PLUS_ASSIGN Expression																																			{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_MINUS_ASSIGN Expression																																		{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_MULTIPLY_ASSIGN Expression																																		{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_DIVIDE_ASSIGN Expression																																		{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_MODULO_ASSIGN Expression																																		{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_LEFT_SHIFT_ASSIGN Expression																																	{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_RIGHT_SHIFT_ASSIGN Expression																																	{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_UNSIGNED_RIGHT_SHIFT_ASSIGN Expression																															{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_AND_ASSIGN Expression																																			{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_XOR_ASSIGN Expression																																			{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_OR_ASSIGN Expression																																			{ $$ = AssignmentSemanticAction($1, $2, $3); }
 	;
+
 
 Primary: Literal																							{ $$ = PrimaryLiteralSemanticAction($1); }
 	| OPEN_PARENTHESES Expression CLOSE_PARENTHESES															{ $$ = PrimaryExpressionSemanticAction($2); }

@@ -347,6 +347,9 @@ char *_computeNumericComparison(char *left, char *right, NumericComparison *numc
     case JAVA_EXACT_COMPARISON:
         operator= "==";
         break;
+    case JAVA_NOT_EXACT_COMPARISON:
+        operator= "!=";
+        break;
     case JAVA_LESSER:
         operator= "<";
         break;
@@ -566,12 +569,56 @@ char *_computeAssignment(Assignment *assignment)
     char *left = _computeVarAccess(assignment->vaccess);
 
     char *right = _computeExpression(assignment->expression);
+    
+    char *operator = NULL;
+    switch (assignment->token)
+    {
+        case JAVA_ASSIGNMENT:
+            operator = "=";
+            break;
+        case JAVA_PLUS_ASSIGN:
+            operator = "+=";
+            break;
+        case JAVA_MINUS_ASSIGN:
+            operator = "-=";
+            break;
+        case JAVA_MULTIPLY_ASSIGN:
+            operator = "*=";
+            break;
+        case JAVA_DIVIDE_ASSIGN:
+            operator = "/=";
+            break;
+        case JAVA_MODULO_ASSIGN:
+            operator = "%=";
+            break;
+        case JAVA_LEFT_SHIFT_ASSIGN:
+            operator = "<<=";
+            break;
+        case JAVA_RIGHT_SHIFT_ASSIGN:
+            operator = ">>=";
+            break;
+        case JAVA_UNSIGNED_RIGHT_SHIFT_ASSIGN:
+            operator = ">>>=";
+            break;
+        case JAVA_AND_ASSIGN:
+            operator = "&=";
+            break;
+        case JAVA_XOR_ASSIGN:
+            operator = "^=";
+            break;
+        case JAVA_OR_ASSIGN:
+            operator = "|=";
+            break;
+        default:
+            operator = "unknown";
+            break;
+    }
 
-    size_t len = strlen(left) + strlen(right) + strlen("=") + 3;
+    size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
 
     char *result = malloc(sizeof(char) * len);
 
-    snprintf(result, len, "%s = %s", left, right);
+    snprintf(result, len, "%s %s %s", left, operator, right);
 
     free(left);
     free(right);

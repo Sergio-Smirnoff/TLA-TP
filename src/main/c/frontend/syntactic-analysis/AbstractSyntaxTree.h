@@ -290,6 +290,7 @@ struct Assignment
 {
 	VarAccess *vaccess;
 	Expression *expression;
+	Token token;
 };
 
 typedef enum PrimaryType

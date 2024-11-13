@@ -128,7 +128,7 @@ PostfixExpression *PostfixExpressionVAccessSemanticAction(VarAccess *vaccess, To
 PostfixExpression *PostfixExpressionVAccessDefaultSemanticAction(VarAccess *vaccess);
 
 // Assignment
-Assignment *AssignmentSemanticAction(VarAccess *vaccess, Expression *exp);
+Assignment *AssignmentSemanticAction(VarAccess *vaccess, Token token, Expression *exp);
 
 // Primary
 Primary *PrimaryLiteralSemanticAction(Literal *literal);

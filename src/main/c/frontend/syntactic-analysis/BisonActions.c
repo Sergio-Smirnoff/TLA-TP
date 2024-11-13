@@ -692,13 +692,14 @@ PostfixExpression *PostfixExpressionVAccessDefaultSemanticAction(VarAccess *vacc
 }
 
 // Assignment
-Assignment *AssignmentSemanticAction(VarAccess *vaccess, Expression *exp)
+Assignment *AssignmentSemanticAction(VarAccess *vaccess, Token token, Expression *exp)
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Assignment *assignment = calloc(1, sizeof(Assignment));
 	assignment->vaccess = vaccess;
 	assignment->expression = exp;
-
+	assignment->token = token;
+	
 	return assignment;
 }
 
