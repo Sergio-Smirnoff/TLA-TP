@@ -48,11 +48,11 @@
 "!"                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), JAVA_NOT); }
 "."                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), JAVA_DOT_OPERATOR); }
 
-"String"                                        {  return FunctionParamLexeme(createLexicalAnalyzerContext(), STRING_TYPE);  }
-"Integer"                                       {  return FunctionParamLexeme(createLexicalAnalyzerContext(), INTEGER_TYPE); }
-"Double"                                        {  return FunctionParamLexeme(createLexicalAnalyzerContext(), DOUBLE_TYPE);  }
-"Boolean"                                       {  return FunctionParamLexeme(createLexicalAnalyzerContext(), BOOLEAN_TYPE); }
-"Token"                                         {  return FunctionParamLexeme(createLexicalAnalyzerContext(), TOKEN_TYPE);  }
+"String"                                        {  return FunctionTypeLexeme(createLexicalAnalyzerContext(), STRING_TYPE);  }
+"Integer"                                       {  return FunctionTypeLexeme(createLexicalAnalyzerContext(), INTEGER_TYPE); }
+"Double"                                        {  return FunctionTypeLexeme(createLexicalAnalyzerContext(), DOUBLE_TYPE);  }
+"Boolean"                                       {  return FunctionTypeLexeme(createLexicalAnalyzerContext(), BOOLEAN_TYPE); }
+"Token"                                         {  return FunctionTypeLexeme(createLexicalAnalyzerContext(), TOKEN_TYPE);  }
 
 "default"                                       { return DefaultLexeme(createLexicalAnalyzerContext()); }
 "\n"                                            { IgnoredLexemeAction(createLexicalAnalyzerContext()); }

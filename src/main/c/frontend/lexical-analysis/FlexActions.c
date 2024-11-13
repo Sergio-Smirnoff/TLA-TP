@@ -225,7 +225,7 @@ void BeginFunctionBodyLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
 	}
 }
 
-void BeginFunctionParamLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
+void BeginFunctionTypeLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
 {
 	if (_logIgnoredLexemes)
 	{
@@ -233,10 +233,10 @@ void BeginFunctionParamLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
 	}
 }
 
-// Function param functions:
-Token FunctionParamLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext, Token param)
+// Function type functions:
+Token FunctionTypeLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext, Token type)
 {
-	return SimpleTokenInsert(lexicalAnalyzerContext, param);
+	return SimpleTokenInsert(lexicalAnalyzerContext, type);
 }
 
 void EndFunctionBodyLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)

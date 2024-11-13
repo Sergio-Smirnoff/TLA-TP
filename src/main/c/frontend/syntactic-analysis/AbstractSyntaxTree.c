@@ -66,7 +66,7 @@ void releaseAction(Action * act) {
 	}
 }
 
-void releaseParam(Param * param) {
+void releaseParam(Type * param) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (param != NULL) {
 		free(param);

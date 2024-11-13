@@ -29,12 +29,12 @@
 Regex digit         [0-9];
 Regex letter        [a-zA-Z];
 
-{letter}[{letter}{digit}]* -> (){
+{letter}[{letter}{digit}]* -> {
                         Token tok = IDENT.setStringContent(var.getLexeme());
                         return tok;
  };
 
-{digit}+ -> (){
+{digit}+ -> {
                         var.attribute.num = Integer.parseInt(var.getLexeme());
                         return NUMBER;
 };

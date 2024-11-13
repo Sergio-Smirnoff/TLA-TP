@@ -41,22 +41,22 @@ Lexeme *LexemeClosureSemanticAction(Lexeme_precursor *lex_prec, Closure *closure
 // closure
 Closure *ClosureSemanticAction(Token string);
 
-// regexes
-Regexes *RegexesSemanticAction(Regex_class *regex_class, Regexes *regexes);
-
 // Regex_class
 Regex_class *SymbolRegexSemanticAction(Symbol *symbol);
 Regex_class *RegexClassRangeSemanticAction(Symbol *left_symbol, Symbol *right_symbol);
 Regex_class *CreatedClassSemanticAction(char *class_name, Closure *closure, CompilerState *compilerState);
 
+// regexes
+Regexes *RegexesSemanticAction(Regex_class *regex_class, Regexes *regexes);
+
 Symbol *RegexSymbolSemanticAction(char *string);
+
+// Types
+Type *TypeSemanticAction(Token stuff);
 
 // Action
 Action *ActionSemanticAction(char *var_name);
-Action *ActionJavaSemanticAction(Param *param, Block *body);
-
-// Params
-Param *ParamSemanticAction(Token stuff);
+Action *ActionJavaSemanticAction(Block *body);
 
 // Java
 // NumericComparison
@@ -75,7 +75,7 @@ Statement *ForStatementSemanticAction(ForInit *fors, Expression *exp, StatementE
 
 // ForInit
 ForInit *ForInitExpressionListSemanticAction(StatementExpressionList *list);
-ForInit *JavaVarTypeDefinitionSemantictAction(Param *param, char *var_name, ForInitType type);
+ForInit *JavaVarTypeDefinitionSemantictAction(Type *type, char *var_name, ForInitType for_type);
 
 // StatementExpressionList
 StatementExpressionList *StatementExpressionListSemanticAction(StatementExpression *exp, StatementExpressionList *list);
@@ -86,13 +86,13 @@ IfThenStatement *JavaIfThenStructureSemanticAction(Expression *exp, Block *ifs, 
 // StatementExpression
 StatementExpression *JavaAsignmentSemanticAction(Assignment *assignment);
 StatementExpression *JavaVAccessDefaultSemanticAction(VarAccess *var_access);
-StatementExpression *JavaAsignmentParamSemanticAction(Param *param, char *var_name, Token java_assignment, Expression *exp);
+StatementExpression *JavaAsignmentTypeSemanticAction(Type *type, char *var_name, Token java_assignment, Expression *exp);
 
 // VarAccess
 VarAccess *VarAccessMethodInvocationSemanticAction(MethodInvocation *method_invocation);
 VarAccess *VarAccessVarSemanticAction(char *var_name);
 VarAccess *VarAccessVarOperatorSemanticAction(char *var_name, VarAccess *vaccess);
-VarAccess *VarAccessParamOperatorSemanticAction(Param *param, VarAccess *vaccess);
+VarAccess *VarAccessTypeOperatorSemanticAction(Type *type, VarAccess *vaccess);
 
 // MethodInvocation
 MethodInvocation *InvocationSemanticAction(VarAccess *vaccess, ArgumentList *arglist);
@@ -119,7 +119,7 @@ EqualityExpression *EqualityExpressionSemanticAction(UnaryExpression *uexp, Equa
 UnaryExpression *UnaryExpressionNumericComparisonSintaticAction(UnaryExpression *uexp1, NumericComparison *numcomp, PostfixExpression *uexp2);
 UnaryExpression *UnaryExpressionDoubleTokenSintaticAction(UnaryExpression *uexp1, UnaryExpressionType type, PostfixExpression *uexp2);
 UnaryExpression *UnaryExpressionPostfixExpressionSintaticAction(PostfixExpression *pexp);
-UnaryExpression *UnaryExpressionParamSintaticAction(Param *param);
+UnaryExpression *UnaryExpressionTypeSintaticAction(Type *typ);
 UnaryExpression *UnaryExpressionSingleTokenSintaticAction(UnaryExpression *uexp, Token token);
 
 // PostfixExpression
@@ -141,7 +141,7 @@ ClassInstanceCreationExpression *VAccessInstanceCreationExpressionSemanticAction
 ClassInstanceCreationExpression *PrimaryInstanceCreationExpressionSemanticAction(Primary *primary, UnqualifiedClassInstanceCreationExpression *exp);
 
 // UnqualifiedClassInstanceCreationExpression
-UnqualifiedClassInstanceCreationExpression *UnqualifiedClassSemanticAction(Param *param, ArgumentList *list);
+UnqualifiedClassInstanceCreationExpression *UnqualifiedClassSemanticAction(Type *type, ArgumentList *list);
 UnqualifiedClassInstanceCreationExpression *UnqualifiedClassSemanticActionInvocation(MethodInvocation *invocation);
 
 // Literal

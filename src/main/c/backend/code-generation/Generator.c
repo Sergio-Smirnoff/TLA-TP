@@ -43,7 +43,7 @@ char *_computeVarAccess(VarAccess *varAccess);
 char *_computeArgumentList(ArgumentList *argumentList);
 char *_computePostfixExpression(PostfixExpression *postfixExpression);
 char *_computeUnaryExpression(UnaryExpression *unaryExpression);
-char *_computeParams(Param *params);
+char *_computeTypes(Type *type);
 
 //----------------Unary Expression Aux functions -----------------------------------------
 char *_computeNumericComparison(char *left, char *right, NumericComparison *numcomp);
@@ -77,16 +77,16 @@ char *_computeAction(Action *my_action);
 
 // Definitions:
 // Leaf-level functions
-char *_computeParams(Param *params)
+char *_computeTypes(Type *type)
 {
-    if (params == NULL)
+    if (type == NULL)
     {
         return strdup("");
     }
 
     char *result = NULL;
 
-    switch (params->stuff)
+    switch (type->stuff)
     {
     case STRING_TYPE:
         result = strdup("String");
@@ -169,17 +169,17 @@ char *_computeVarAccess(VarAccess *varAccess)
 
         // Case 4: Parameter-based access (e.g., par.VarAccess)
 
-        else if (varAccess->param != NULL)
+        else if (varAccess->type != NULL)
         {
             char *nestedResult = _computeVarAccess(varAccess->vaccess);
-            char *params = _computeParams(varAccess->param);
+            char *types = _computeTypes(varAccess->type);
 
-            size_t len = strlen(nestedResult) + strlen(params) + 2;
+            size_t len = strlen(nestedResult) + strlen(types) + 2;
             char *result = calloc(len, sizeof(char));
-            snprintf(result, len, "%s.%s", params, nestedResult);
+            snprintf(result, len, "%s.%s", types, nestedResult);
 
             free(nestedResult);
-            free(params);
+            free(types);
             return result;
         }
         else
@@ -306,19 +306,19 @@ char *_computeUnaryExpression(UnaryExpression *unaryExpression)
         result = _computePostfixExpression(unaryExpression->pexp);
         break;
 
-    case param:
+    case type:
     {
-        if (unaryExpression->param == NULL)
+        if (unaryExpression->obj_type == NULL)
         {
             result = strdup("()");
         }
         else
         {
-            char *params = _computeParams(unaryExpression->param);
-            size_t total = strlen(params) + 3;
+            char *types = _computeTypes(unaryExpression->obj_type);
+            size_t total = strlen(types) + 3;
             result = malloc(sizeof(char) * total);
-            snprintf(result, total, "(%s)", params);
-            free(params);
+            snprintf(result, total, "(%s)", types);
+            free(types);
         }
     }
     break;
@@ -653,17 +653,17 @@ char *_computeUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstanc
     }
     char *result;
     size_t total;
-    if (unqualifiedClassInstanceCreationExpression->type == parargs)
+    if (unqualifiedClassInstanceCreationExpression->unq_type == parargs)
     {
         char *arglistStr = _computeArgumentList(unqualifiedClassInstanceCreationExpression->arglist);
-        char *params = _computeParams(unqualifiedClassInstanceCreationExpression->param);
-        total = strlen(arglistStr) + strlen(params) + 7;
+        char *types = _computeTypes(unqualifiedClassInstanceCreationExpression->type);
+        total = strlen(arglistStr) + strlen(types) + 7;
         result = malloc(sizeof(char) * total);
 
-        snprintf(result, total, "new %s(%s)", params, arglistStr);
+        snprintf(result, total, "new %s(%s)", types, arglistStr);
 
         free(arglistStr);
-        free(params);
+        free(types);
     }
     else
     {
@@ -730,7 +730,7 @@ char *_computeStatementExpression(StatementExpression *statementExpression)
 
     char *result = NULL;
 
-    switch (statementExpression->type)
+    switch (statementExpression->state_type)
     {
     case assignation:
     {
@@ -742,16 +742,16 @@ char *_computeStatementExpression(StatementExpression *statementExpression)
         result = _computeVarAccess(statementExpression->var_access);
         break;
     }
-    case assigParam:
+    case assigType:
     {
         char *expStr = _computeExpression(statementExpression->exp);
-        char *paramStr = _computeParams(statementExpression->param);
+        char *typeStr = _computeTypes(statementExpression->type);
 
-        size_t totalLength = strlen(statementExpression->var_name) + strlen(expStr) + strlen(paramStr) + 5;
+        size_t totalLength = strlen(statementExpression->var_name) + strlen(expStr) + strlen(typeStr) + 5;
         result = malloc(sizeof(char) * totalLength);
-        snprintf(result, totalLength, "%s %s = %s", paramStr, statementExpression->var_name, expStr);
+        snprintf(result, totalLength, "%s %s = %s", typeStr, statementExpression->var_name, expStr);
 
-        free(paramStr);
+        free(typeStr);
         free(expStr);
         break;
     }
@@ -828,24 +828,24 @@ char *_computeIfThenStatement(IfThenStatement *ifThenStatement)
 
 char *_computeForInit(ForInit *forInit)
 {
-    switch (forInit->type)
+    switch (forInit->for_type)
     {
     case statementExpList:
     {
         return _computeStatementExpressionList(forInit->statementExpList);
     }
 
-    case withParams:
+    case withTypes:
     {
-        char *paramStr = _computeParams(forInit->param);
-        size_t totalLen = strlen(forInit->var_name_param) + strlen(paramStr) + 2;
+        char *typeStr = _computeTypes(forInit->type);
+        size_t totalLen = strlen(forInit->var_name_type) + strlen(typeStr) + 2;
         char *result = malloc(sizeof(char) * totalLen);
-        snprintf(result, totalLen, "%s %s", paramStr, forInit->var_name_param);
-        free(paramStr);
+        snprintf(result, totalLen, "%s %s", typeStr, forInit->var_name_type);
+        free(typeStr);
         return result;
     }
 
-    case withoutParams:
+    case withoutTypes:
     {
         return strdup(forInit->var_name);
     }
@@ -960,13 +960,11 @@ char *_computeAction(Action *my_action)
     else if (my_action->type == function_body)
     {
         char *block_str = _computeBlock(my_action->block);
-        char *params = _computeParams(my_action->param);
 
-        size_t totalLen = strlen(block_str) + strlen(params) + 6;
+        size_t totalLen = strlen(block_str) + 6;
         char *result = malloc(sizeof(char) * totalLen);
-        snprintf(result, totalLen, "{ %s %s }", params, block_str);
+        snprintf(result, totalLen, "{ %s }", block_str);
         free(block_str);
-        free(params);
         return result;
     }
     else

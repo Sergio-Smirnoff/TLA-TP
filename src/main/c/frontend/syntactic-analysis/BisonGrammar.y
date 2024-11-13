@@ -22,7 +22,7 @@
 	Symbol *symbol;
 	Action* action;
 	Closure* closure;
-	Param* param;
+	Type* type;
 	Rule* rule;
 	Ruleset* ruleset;
 	Program * program;
@@ -143,7 +143,7 @@
 %type <symbol> symbol
 %type <regexes> regexes
 %type <action> action
-%type <param> param
+%type <type> type
 %type <ruleset> ruleset
 %type <rule> rule
 %type <closure> closure
@@ -248,15 +248,14 @@ symbol: LOWERCASE 																																									{ $$ = RegexSymbolSem
 	;
 
 action: VAR_NAME																																									{ $$ = ActionSemanticAction($1); }
-	| OPEN_PARENTHESES param[param_p] CLOSE_PARENTHESES OPEN_BRACES Block[block] CLOSE_BRACES																							{ $$ = ActionJavaSemanticAction($param_p, $block); }
-	| OPEN_PARENTHESES CLOSE_PARENTHESES OPEN_BRACES Block[block] CLOSE_BRACES																										{ $$ = ActionJavaSemanticAction(NULL, $block); }
+	| OPEN_BRACES Block[block] CLOSE_BRACES																																			{ $$ = ActionJavaSemanticAction($block); }
 	;
 
-param: STRING_TYPE																																									{ $$ = ParamSemanticAction($1); }
-    | INTEGER_TYPE																																									{ $$ = ParamSemanticAction($1); }
-    | DOUBLE_TYPE																																									{ $$ = ParamSemanticAction($1); }
-	| BOOLEAN_TYPE																																									{ $$ = ParamSemanticAction($1); }
-	| TOKEN_TYPE																																									{ $$ = ParamSemanticAction($1); }
+type: STRING_TYPE																																									{ $$ = TypeSemanticAction($1); }
+    | INTEGER_TYPE																																									{ $$ = TypeSemanticAction($1); }
+    | DOUBLE_TYPE																																									{ $$ = TypeSemanticAction($1); }
+	| BOOLEAN_TYPE																																									{ $$ = TypeSemanticAction($1); }
+	| TOKEN_TYPE																																									{ $$ = TypeSemanticAction($1); }
 	;
 
 
@@ -288,7 +287,7 @@ Statement: ENDLINE																																									{ $$ = NULL; }
 	;
 
 ForInit: StatementExpressionList																																					{ $$ = ForInitExpressionListSemanticAction($1); }
-	| param VAR_NAME																																								{ $$ = JavaVarTypeDefinitionSemantictAction($1, $2, withParams); }
+	| type VAR_NAME																																								{ $$ = JavaVarTypeDefinitionSemantictAction($1, $2, withTypes); }
 	;
 
 StatementExpressionList: %empty																																						{ $$ = NULL; }
@@ -302,12 +301,12 @@ IfThenStatement: JAVA_IF OPEN_PARENTHESES Expression[expression] CLOSE_PARENTHES
 
 StatementExpression: Assignment																																						{ $$ = JavaAsignmentSemanticAction($1); }
 	| VarAccess																																										{ $$ = JavaVAccessDefaultSemanticAction($1); }
-	| param VAR_NAME JAVA_ASSIGNMENT Expression																																		{ $$ = JavaAsignmentParamSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_ASSIGNMENT Expression																																		{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
 	;
 
 VarAccess: VAR_NAME																																									{ $$ = VarAccessVarSemanticAction($1); }
 	| VAR_NAME JAVA_DOT_OPERATOR VarAccess																																			{ $$ = VarAccessVarOperatorSemanticAction($1,$3); }
-	| param JAVA_DOT_OPERATOR VarAccess																																				{ $$ = VarAccessParamOperatorSemanticAction($1,$3); }
+	| type JAVA_DOT_OPERATOR VarAccess																																				{ $$ = VarAccessTypeOperatorSemanticAction($1,$3); }
 	| MethodInvocation																																								{ $$ = VarAccessMethodInvocationSemanticAction($1); }
 	;
 
@@ -347,8 +346,8 @@ UnaryExpression:  UnaryExpression NumericComparison PostfixExpression											
 	| UnaryExpression MINUS PostfixExpression																																		{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,minus_t ,$3); }
 	| PostfixExpression																																								{ $$ = UnaryExpressionPostfixExpressionSintaticAction($1); }
 	| JAVA_NOT UnaryExpression																																						{ $$ = UnaryExpressionSingleTokenSintaticAction($2,$1); }
-	| OPEN_PARENTHESES param CLOSE_PARENTHESES																																		{ $$ = UnaryExpressionParamSintaticAction($2); }
-	| OPEN_PARENTHESES CLOSE_PARENTHESES																																			{ $$ = UnaryExpressionParamSintaticAction(NULL); }
+	| OPEN_PARENTHESES type CLOSE_PARENTHESES																																		{ $$ = UnaryExpressionTypeSintaticAction($2); }
+	| OPEN_PARENTHESES CLOSE_PARENTHESES																																			{ $$ = UnaryExpressionTypeSintaticAction(NULL); }
 	| DECREMENT UnaryExpression																																						{ $$ = UnaryExpressionSingleTokenSintaticAction($2,$1); }
 	| MINUS UnaryExpression																																							{ $$ = UnaryExpressionSingleTokenSintaticAction($2,$1); }
 	| INCREMENT UnaryExpression																																						{ $$ = UnaryExpressionSingleTokenSintaticAction($2,$1); }
@@ -375,7 +374,7 @@ ClassInstanceCreationExpression: UnqualifiedClassInstanceCreationExpression					
 	| Primary JAVA_DOT_OPERATOR UnqualifiedClassInstanceCreationExpression																											{ $$ = PrimaryInstanceCreationExpressionSemanticAction($1,$3); }
 	;
 
-UnqualifiedClassInstanceCreationExpression: JAVA_NEW param OPEN_PARENTHESES ArgumentList CLOSE_PARENTHESES																			{ $$ = UnqualifiedClassSemanticAction($2,$4); }
+UnqualifiedClassInstanceCreationExpression: JAVA_NEW type OPEN_PARENTHESES ArgumentList CLOSE_PARENTHESES																			{ $$ = UnqualifiedClassSemanticAction($2,$4); }
 	| JAVA_NEW MethodInvocation																																						{ $$ = UnqualifiedClassSemanticActionInvocation($2); }
 	;
 

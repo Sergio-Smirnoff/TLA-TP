@@ -88,20 +88,20 @@ Token DefaultLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext);
 // Actions functions:
 void BeginSimpleActionLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext);
 void BeginFunctionBodyLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext);
-void BeginFunctionParamLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext);
+void BeginFunctionTypeLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext);
 
 // Utility
 Token SimpleTokenInsert(LexicalAnalyzerContext *lexicalAnalyzerContext, Token token);
 Token SimpleStringInsert(LexicalAnalyzerContext *lexicalAnalyzerContext, Token token);
 
-// Function param functions:
+// Function type functions:
 /**
  * @brief Retorna el token recibido por param
  *
  * @param lexicalAnalyzerContext
  * @param token (opciones: STRING_TYPE, INTEGER_TYPE, DOUBLE_TYPE, BOOL_TYPE)
  */
-Token FunctionParamLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext, Token param);
+Token FunctionTypeLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext, Token type);
 // Se reutiliza BeginFunctionBodyLexeme
 
 // Function body functions:

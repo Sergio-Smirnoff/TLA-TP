@@ -18,7 +18,7 @@ typedef enum RegexType RegexType;
 
 typedef struct Program Program;
 typedef struct Closure Closure;
-typedef struct Param Param;
+typedef struct Type Type;
 typedef struct Lexeme Lexeme;
 typedef struct Lexeme_precursor Lexeme_precursor;
 typedef struct Action Action;
@@ -117,8 +117,8 @@ struct Statement
 typedef enum ForInitType
 {
 	statementExpList,
-	withParams,
-	withoutParams
+	withTypes,
+	withoutTypes
 } ForInitType;
 
 struct ForInit
@@ -128,12 +128,12 @@ struct ForInit
 		StatementExpressionList *statementExpList;
 		struct
 		{
-			Param *param;
-			char *var_name_param;
+			Type *type;
+			char *var_name_type;
 		};
 		char *var_name;
 	};
-	ForInitType type;
+	ForInitType for_type;
 };
 
 struct StatementExpressionList
@@ -153,7 +153,7 @@ typedef enum StatementExpressionType
 {
 	assignation,
 	vaccess,
-	assigParam,
+	assigType,
 } StatementExpressionType;
 
 struct StatementExpression
@@ -164,12 +164,12 @@ struct StatementExpression
 		VarAccess *var_access;
 		struct
 		{
-			Param *param;
+			Type *type;
 			char *var_name;
 			Expression *exp;
 		};
 	};
-	StatementExpressionType type;
+	StatementExpressionType state_type;
 };
 
 struct VarAccess
@@ -177,7 +177,7 @@ struct VarAccess
 	char *var_name;
 	VarAccess *vaccess;
 	Token token;
-	Param *param;
+	Type *type;
 	MethodInvocation *method_invocation;
 };
 
@@ -239,7 +239,7 @@ typedef enum GlobalUnaryExpressionType
 	numericComparison,
 	doubleToken,
 	postfixExpression,
-	param,
+	type,
 	singleToken
 } GlobalUnaryExpressionType;
 
@@ -269,7 +269,7 @@ struct UnaryExpression
 			PostfixExpression *uexp2_exp;
 		};
 		PostfixExpression *pexp;
-		Param *param;
+		Type *obj_type;
 		struct
 		{
 			Token token;
@@ -329,12 +329,12 @@ struct UnqualifiedClassInstanceCreationExpression
 	{
 		struct
 		{
-			Param *param;
+			Type *type;
 			ArgumentList *arglist;
 		};
 		MethodInvocation *invocation;
 	};
-	UnqualifiedClassInstanceCreationExpression_type type;
+	UnqualifiedClassInstanceCreationExpression_type unq_type;
 };
 
 typedef enum Literal_type
@@ -393,7 +393,7 @@ struct Lexeme_precursor
 	Lexeme_precursor_type precursor_type;
 };
 
-struct Param
+struct Type
 {
 	Token stuff;
 };
@@ -451,11 +451,7 @@ struct Action
 	union
 	{
 		char *varName;
-		struct
-		{
-			Param *param;
-			Block *block;
-		};
+		Block *block;
 	};
 	Action_type type;
 };
@@ -508,7 +504,7 @@ void releaseLexeme(Lexeme * lexeme);
 void releaseAction(Action * action);
 void releaseRegexClass(Regex_class * regex_class);
 void releaseClosure(Closure * closure);
-void releaseParam(Param * param);
+void releaseType(Type * type);
 void releaseLexemePrecursor(Lexeme_precursor * lexeme_precursor);*/
 // void releaseFunctionBody(Function_body * function_body);
 

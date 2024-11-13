@@ -1,6 +1,6 @@
 Regex digit      [0-9];
 
-{digit}+ -> (){
+{digit}+ -> {
     var.attribute.num = Integer.parseInt(var.getLexeme());
     return NUMBER;
 };
