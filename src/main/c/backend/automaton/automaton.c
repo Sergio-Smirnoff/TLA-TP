@@ -579,7 +579,6 @@ typedef struct minimization_table
     const automaton *source;
     automaton *result;
 } minimization_table;
-
 void print_minimization_table(const minimization_table *table);
 
 minimization_table *new_minimization_table(const automaton *source, automaton *result)
@@ -707,10 +706,7 @@ void remap_transitions(minimization_table *table, uint64_t previous_entry_index,
         {
             if (current_state_template->delta[rule_index]->next_indices[0] == moved_state_index)
             {
-                if (current_state->delta[rule_index]->next_indices[0] != previous_entry_index)
-                    printf("YOU MADE A MISTAKE\n");
-                else
-                    current_state->delta[rule_index]->next_indices[0] = new_entry_index;
+                current_state->delta[rule_index]->next_indices[0] = new_entry_index;
             }
         }
     }
@@ -725,7 +721,7 @@ char state_belongs_in_entry(const minimization_table *table, uint64_t state_inde
         return 0;
     for (uint64_t rule_index = 0; rule_index < table->source->states[state_index]->delta_size; rule_index++)
     {
-        if (find_state_in_minimization_table(table, table->source->states[state_index]->delta[rule_index]->next_indices[0]) != table->result->states[table->entries[entry_index]->state_index]->delta[rule_index]->next_indices[0])
+        if (table->source->states[state_index]->delta[rule_index]->matcher != table->result->states[table->entries[entry_index]->state_index]->delta[rule_index]->matcher || (find_state_in_minimization_table(table, table->source->states[state_index]->delta[rule_index]->next_indices[0]) != table->result->states[table->entries[entry_index]->state_index]->delta[rule_index]->next_indices[0]))
             return 0;
     }
     return 1;
@@ -735,10 +731,10 @@ uint64_t try_add_to_entries(minimization_table *table, const uint64_t *entry_ind
 {
     for (uint64_t entry_index = 0; entry_index < entry_indices_size; entry_index++)
     {
-        if (state_belongs_in_entry(table, state_index, entry_index))
+        if (state_belongs_in_entry(table, state_index, entry_indices[entry_index]))
         {
-            add_state_to_minimization_table_entry(table->entries[entry_index], state_index);
-            return entry_index;
+            add_state_to_minimization_table_entry(table->entries[entry_indices[entry_index]], state_index);
+            return entry_indices[entry_index];
         }
     }
     return -1;
@@ -847,7 +843,12 @@ automaton *get_minimal_equivalent(const automaton *dfa, compare_token are_equals
     {
         populate_minimization_table_entry(table, entry_index);
     }
-    while (check_transitions(table));
+    print_minimization_table(table);
+    while (check_transitions(table))
+    {
+        print_minimization_table(table);
+    }
+    print_minimization_table(table);
     free_minimization_table(table);
     return minimal_a;
 }
