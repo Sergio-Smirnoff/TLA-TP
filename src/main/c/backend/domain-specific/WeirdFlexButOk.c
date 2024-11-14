@@ -154,7 +154,8 @@ void buildAutomaton(ComputationResult *computationResult)
     transformer_list *aux = computationResult->list;
     result = computationResult;
     automat = new_automaton();
-    set_initial_state(automat, get_state(automat, new_state(automat, 0, NULL)));
+    uint64_t initial_state_index = new_state(automat,0,NULL);
+    set_initial_state(automat, initial_state_index);
     int i = 1;
     while (aux != NULL)
     {
@@ -164,7 +165,7 @@ void buildAutomaton(ComputationResult *computationResult)
         }
         if (aux->lexeme != NULL)
         {
-            _computeLexemePrecursor(aux->lexeme, aux->returner, 0, 1);
+            _computeLexemePrecursor(aux->lexeme, aux->returner, initial_state_index, 1);
         }
         else
         {
@@ -210,7 +211,7 @@ uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *ret
                 uint64_t finalState = _computeLexeme(lexeme_precursor->lex, currentIndex, NULL, 0, 0);
                 return _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, finalState, useToken);
             }
-            else if(lexeme_precursor->chain_type == summation)
+            else if (lexeme_precursor->chain_type == summation)
             {
                 uint64_t finalState = new_state(automat, 0, NULL);
                 set_transition(automat, _computeLexeme(lexeme_precursor->lex, currentIndex, returner, 0, useToken), finalState, LAMBDA);

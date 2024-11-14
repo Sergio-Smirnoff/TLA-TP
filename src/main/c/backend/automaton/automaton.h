@@ -33,7 +33,7 @@ typedef struct automaton_state
 
 typedef struct automaton
 {
-    automaton_state *initial_state;
+    uint64_t initial_state_index;
     automaton_state **states;
     uint64_t states_size;
     uint64_t states_dim;
@@ -76,7 +76,7 @@ uint64_t new_state_get_index(automaton *automaton, uint8_t throws_token, token_t
 
 automaton_state *get_state(const automaton *automaton, uint64_t index);
 
-void set_initial_state(automaton *automaton, automaton_state *initial_state);
+void set_initial_state(automaton *automaton, uint64_t initial_state_index);
 automaton *new_automaton();
 
 /**
