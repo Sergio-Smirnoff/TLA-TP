@@ -843,12 +843,8 @@ automaton *get_minimal_equivalent(const automaton *dfa, compare_token are_equals
     {
         populate_minimization_table_entry(table, entry_index);
     }
-    print_minimization_table(table);
     while (check_transitions(table))
-    {
-        print_minimization_table(table);
-    }
-    print_minimization_table(table);
+        ;
     free_minimization_table(table);
     return minimal_a;
 }
