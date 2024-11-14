@@ -366,7 +366,7 @@ uint64_t load_entry_column(delta_table *table, uint64_t *state_indices, uint64_t
     return table->entries_size++;
 }
 
-char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint64_t index)
+char populate_delta_table_entry(const automaton *a, automaton *dfa, delta_table *table, uint64_t index)
 {
     if (index >= table->entries_size || table->entries[index]->state_indices == NULL || !table->entries[index]->state_indices_size)
         return 0;
@@ -552,7 +552,7 @@ automaton *get_deterministic_equivalent(automaton *a)
     }
     for (uint64_t state_index = 0; table->entries_size > dfa->states_size; state_index++)
     {
-        populate_entry(a, dfa, table, state_index);
+        populate_delta_table_entry(a, dfa, table, state_index);
     }
 
     set_initial_state(dfa, dfa->states[0]);
@@ -560,6 +560,156 @@ automaton *get_deterministic_equivalent(automaton *a)
     free_delta_table(table);
 
     return dfa;
+}
+
+typedef struct minimization_table_entry
+{
+    uint64_t *state_indices;
+    uint64_t state_indices_size;
+    uint64_t state_indices_dim;
+    uint64_t state_index;
+} minimization_table_entry;
+
+typedef struct minimization_table
+{
+    minimization_table_entry **entries;
+    uint64_t entries_size;
+    uint64_t entries_dim;
+    const automaton *source;
+    automaton *result;
+} minimization_table;
+void print_minimization_table(const minimization_table *table, const automaton *source);
+
+minimization_table *new_minimization_table(const automaton *source, automaton *result)
+{
+    minimization_table *table = malloc(sizeof(minimization_table));
+    table->entries = malloc(sizeof(minimization_table_entry) * BLOCK);
+    table->entries_size = 0;
+    table->entries_dim = BLOCK;
+    table->source = source;
+    table->result = result;
+    return table;
+}
+
+uint64_t find_state_in_minimization_table_entry(const minimization_table_entry *entry, uint64_t state_index)
+{
+    for (uint64_t search_state_index = 0; search_state_index < entry->state_indices_size; search_state_index++)
+    {
+        if (entry->state_indices[search_state_index] == state_index)
+            return search_state_index;
+    }
+    return -1;
+}
+
+uint64_t find_state_in_minimization_table(const minimization_table *table, uint64_t state_index)
+{
+    for (uint64_t entry_index = 0; entry_index < table->entries_size; entry_index++)
+    {
+        if (find_state_in_minimization_table_entry(table->entries[entry_index], state_index) != -1)
+            return entry_index;
+    }
+    return -1;
+}
+
+void resize_minimization_table_entry(minimization_table_entry *entry)
+{
+    entry->state_indices_dim *= 2;
+    entry->state_indices = realloc(entry->state_indices, entry->state_indices_dim * sizeof(uint64_t));
+}
+
+void check_minimization_table_entry_resize(minimization_table_entry *entry)
+{
+    if (entry->state_indices_size == entry->state_indices_dim)
+        resize_minimization_table_entry(entry);
+}
+
+void resize_minimization_table(minimization_table *table)
+{
+    table->entries_dim *= 2;
+    table->entries = realloc(table->entries, table->entries_dim * sizeof(minimization_table_entry));
+}
+
+void check_minimization_table_resize(minimization_table *table)
+{
+    if (table->entries_size == table->entries_dim)
+        resize_minimization_table(table);
+}
+
+void add_state_to_minimization_table_entry(minimization_table_entry *entry, uint64_t state_index)
+{
+    check_minimization_table_entry_resize(entry);
+    entry->state_indices[entry->state_indices_size++] = state_index;
+}
+
+void new_minimization_table_entry(minimization_table *table, uint64_t first_state_index)
+{
+    uint64_t block = BLOCK > 0 ? BLOCK : 1;
+    minimization_table_entry *entry = malloc(sizeof(minimization_table_entry));
+    entry->state_indices = malloc(sizeof(uint64_t) * block);
+    entry->state_indices_dim = block;
+    entry->state_indices_size = 1;
+    entry->state_indices[0] = first_state_index;
+    automaton_state *source_state = get_state(table->source, first_state_index);
+    entry->state_index = new_state(table->result, throws_token(source_state), get_token(source_state));
+
+    check_minimization_table_resize(table);
+    table->entries[table->entries_size++] = entry;
+}
+
+
+void free_minimization_table_entry(minimization_table_entry *entry)
+{
+    free(entry->state_indices);
+    free(entry);
+}
+
+void free_minimization_table(minimization_table *table)
+{
+    for (uint64_t i = 0; i < table->entries_size; i++)
+        free_minimization_table_entry(table->entries[i]);
+    free(table->entries);
+    free(table);
+}
+
+void add_state_by_token_to_minimization_table(minimization_table *table, compare_token are_equals, uint64_t state_index)
+{
+    automaton_state *state = get_state(table->source, state_index);
+    for (uint64_t entry_index = 0; entry_index < table->entries_size; entry_index++)
+    {
+        automaton_state *entry_state = get_state(table->result, table->entries[entry_index]->state_index);
+        if (throws_token(entry_state) == throws_token(state) && ((!throws_token(entry_state) && !throws_token(state)) || are_equals(get_token(entry_state), get_token(state))))
+        {
+            add_state_to_minimization_table_entry(table->entries[entry_index], state_index);
+            return;
+        }
+    }
+    new_minimization_table_entry(table, state_index);
+}
+
+void populate_minimization_table_entry(minimization_table *table, uint64_t entry_index)
+{
+    automaton_state *templating_state = get_state(table->source, table->entries[entry_index]->state_indices[0]);
+    for (uint64_t rule_index = 0; rule_index < templating_state->delta_size; rule_index++)
+    {
+        set_transition(table->result, table->entries[entry_index]->state_index, find_state_in_minimization_table(table, templating_state->delta[rule_index]->next_indices[0]), templating_state->delta[rule_index]->matcher);
+    }
+}
+
+automaton *get_minimal_equivalent(const automaton *dfa, compare_token are_equals)
+{
+    automaton *minimal_a = new_automaton();
+    minimization_table *table = new_minimization_table(dfa, minimal_a);
+    for (uint64_t state_index = 0; state_index < dfa->states_size; state_index++)
+    {
+        add_state_by_token_to_minimization_table(table, are_equals, state_index);
+    }
+    for (uint64_t entry_index = 0; entry_index < table->entries_size; entry_index++)
+    {
+        populate_minimization_table_entry(table, entry_index);
+    }
+    print_minimization_table(table, dfa);
+    free_minimization_table(table);
+    return minimal_a;
 }
 
 char get_transition_matcher(rule *rule)
@@ -633,4 +783,21 @@ char throws_token(automaton_state *s)
 token_t get_token(automaton_state *s)
 {
     return s->token;
+}
+
+void print_minimization_table(const minimization_table *table, const automaton *source)
+{
+    printf("Printing minimization table\n");
+    for (uint64_t i = 0; i < table->entries_size; i++)
+    {
+        printf("Entry: %ld, Index: %ld: States: {", i, table->entries[i]->state_index);
+        for (uint64_t j = 0; j < table->entries[i]->state_indices_size; j++)
+        {
+            printf("%ld", table->entries[i]->state_indices[j]);
+            if (j < table->entries[i]->state_indices_size - 1)
+                printf(", ");
+        }
+        printf("}\n");
+    }
+    printf("\n");
 }

@@ -6,7 +6,8 @@
 
 typedef void *token_t;
 #define UNKNOWN_TOKEN (token_t)1
-enum reserved_matchers{
+enum reserved_matchers
+{
     UNINITIALIZED_BOUND = -1,
     LAMBDA = -2
 };
@@ -136,6 +137,17 @@ char accepts(const automaton *a, const char *string);
 automaton *get_deterministic_equivalent(automaton *automaton);
 
 void solve_lambda_transitions(automaton *a);
+
+typedef char (*compare_token)(token_t, token_t);
+
+/**
+ * @brief Get the minimal equivalent of a deterministic finite automaton
+ * 
+ * @param dfa 
+ * @param are_equals A function that returns 1 if two tokens are considered equal, 0 otherwise
+ * @return automaton* 
+ */
+automaton *get_minimal_equivalent(const automaton *dfa, compare_token are_equals);
 
 /**
  * @brief Writes to a file descriptor Java syntax code for initializing a clone of an automaton
