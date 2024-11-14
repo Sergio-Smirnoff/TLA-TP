@@ -9,6 +9,8 @@
 #include "shared/Logger.h"
 #include "shared/String.h"
 
+void freeRegexLists(CompilerState *compilerState);
+
 /**
  * The main entry-point of the entire application. If you use "strtok" to
  * parse anything inside this project instead of using Flex and Bison, I will
@@ -76,8 +78,6 @@ const int main(const int count, const char ** arguments) {
 		}
 		// ...end of the Backend. -----------------------------------------------------------------
 		// ----------------------------------------------------------------------------------------
-		logDebugging(logger, "Releasing AST resources...");
-		//releaseProgram(program);
 	} else {
 		if (compilerState.invalidRegexList->size > 0) {
 			Invalid_Regex_List_Node* current = compilerState.invalidRegexList->head;
@@ -93,8 +93,11 @@ const int main(const int count, const char ** arguments) {
 		compilationStatus = FAILED;
 	}
 
-	logDebugging(logger, "Releasing modules resources...");
+	logDebugging(logger, "Releasing AST resources...");
 	releaseProgram(program);
+	freeRegexLists(&compilerState);
+
+	logDebugging(logger, "Releasing modules resources...");
 	shutdownGeneratorModule();
 	shutdownWeirdFlexModule();
 	shutdownAbstractSyntaxTreeModule();
@@ -106,4 +109,28 @@ const int main(const int count, const char ** arguments) {
 
 	printf("Compilation %s.\n", compilationStatus == SUCCEED ? "succeeds" : "fails");
 	return compilationStatus;
+}
+
+void freeRegexLists(CompilerState *compilerState) {
+	Invalid_Regex_List_Node *currentInvalid = compilerState->invalidRegexList->head;
+	Invalid_Regex_List_Node *auxInvalid; 
+
+	while (currentInvalid != NULL) {
+		auxInvalid = currentInvalid;
+		currentInvalid = currentInvalid->next;
+		free(auxInvalid);
+	}
+
+	Valid_Regex_List_Node *currentValid = compilerState->validRegexList->head;
+	Valid_Regex_List_Node *auxValid;
+
+	while (currentValid != NULL)
+	{
+		auxValid = currentValid;
+		currentValid = currentValid->next;
+		free(auxValid);
+	}
+	
+	free(compilerState->invalidRegexList);
+	free(compilerState->validRegexList);
 }

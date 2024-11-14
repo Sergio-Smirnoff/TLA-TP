@@ -32,6 +32,7 @@ void _releaseLexeme(Lexeme *lexeme);
 
 // Multipurpose (Regexes and Lexemes)
 void _releaseSymbol(Symbol *symbol);
+void _releaseClousure(Closure *closure);
 
 // Actions
 void _releaseAction(Action *act);
@@ -107,7 +108,7 @@ void _releaseRegexClass(Regex_class *regex_class)
 
 		case variable:
 			free(regex_class->varName);
-			// Closure release not needed, it is an int
+			_releaseClousure(regex_class->closure);
 			break;
 
 		default:
@@ -156,12 +157,12 @@ void _releaseLexeme(Lexeme *lexeme)
 		{
 		case regexes:
 			_releaseRegexes(lexeme->regexes);
-			// Closure release not needed, it is an int
+			_releaseClousure(lexeme->closure);
 			break;
 
 		case name:
 			free(lexeme->our_regex_id);
-			// Closure release not needed, it is an int
+			_releaseClousure(lexeme->closure);
 			break;
 
 		case string_lexeme:
@@ -170,7 +171,7 @@ void _releaseLexeme(Lexeme *lexeme)
 
 		case precursor_closure:
 			_releaseLexemePrecursor(lexeme->precursor);
-			// Closure release not needed, it is an int
+			_releaseClousure(lexeme->closure);
 			break;
 		
 		default:
@@ -189,6 +190,12 @@ void _releaseSymbol(Symbol *symbol)
 	{
 		free(symbol->symbol_tok);
 		free(symbol);
+	}
+}
+
+void _releaseClousure(Closure *clousure) {
+	if(clousure != NULL) {
+		free(clousure);
 	}
 }
 

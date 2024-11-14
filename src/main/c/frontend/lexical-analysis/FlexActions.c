@@ -77,6 +77,7 @@ void BeginLineCommentLexemeAction(LexicalAnalyzerContext *lexicalAnalyzerContext
 	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
 void EndLineCommentLexemeAction(LexicalAnalyzerContext *lexicalAnalyzerContext)
@@ -85,6 +86,7 @@ void EndLineCommentLexemeAction(LexicalAnalyzerContext *lexicalAnalyzerContext)
 	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
 // Basic utility:
@@ -94,7 +96,8 @@ Token SimpleTokenInsert(LexicalAnalyzerContext *lexicalAnalyzerContext, Token to
 	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
-	lexicalAnalyzerContext->semanticValue->token = token;
+	// lexicalAnalyzerContext->semanticValue->token = token;
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 	return token;
 }
 
@@ -104,7 +107,8 @@ Token SimpleStringInsert(LexicalAnalyzerContext *lexicalAnalyzerContext, Token t
 	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
-	lexicalAnalyzerContext->semanticValue->string = lexicalAnalyzerContext->lexeme;
+	lexicalAnalyzerContext->semanticValue->string = strdup(lexicalAnalyzerContext->lexeme);
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 	return token;
 }
 
@@ -115,6 +119,7 @@ void BeginRegexLine(LexicalAnalyzerContext *lexicalAnalyzerContext)
 	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
 void BeginRegexNameLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
@@ -123,12 +128,14 @@ void BeginRegexNameLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
 	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
 Token VarNameLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
 {
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->string = lexicalAnalyzerContext->lexeme;
+	lexicalAnalyzerContext->semanticValue->string = strdup(lexicalAnalyzerContext->lexeme);
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 	return VAR_NAME;
 }
 
@@ -139,12 +146,14 @@ void BeginRegexContentLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
 	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
 Token RegexContentLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext, Token token)
 {
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->string = lexicalAnalyzerContext->lexeme;
+	lexicalAnalyzerContext->semanticValue->string = strdup(lexicalAnalyzerContext->lexeme);
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 	return token;
 }
 
@@ -155,12 +164,14 @@ void BeginStringLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
 	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
 Token StringLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
 {
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->string = lexicalAnalyzerContext->lexeme;
+	lexicalAnalyzerContext->semanticValue->string = strdup(lexicalAnalyzerContext->lexeme);
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 	return STR;
 }
 
@@ -170,6 +181,7 @@ void EndStringLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
 	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
 // Lexeme for regex classes functions:
@@ -179,6 +191,7 @@ void BeginClassLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
 	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
 // Lexeme for our classes functions:
@@ -188,12 +201,14 @@ void BeginOurClassLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
 	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
 Token ClauseOperator(LexicalAnalyzerContext *lexicalAnalyzerContext, Token clause)
 {
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	lexicalAnalyzerContext->semanticValue->token = clause;
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 	return clause;
 }
 
@@ -204,7 +219,8 @@ Token DefaultLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
 	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
-	lexicalAnalyzerContext->semanticValue->string = lexicalAnalyzerContext->lexeme;
+	lexicalAnalyzerContext->semanticValue->string = strdup(lexicalAnalyzerContext->lexeme);
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 	return DEFAULT;
 }
 
@@ -215,6 +231,7 @@ void BeginSimpleActionLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
 	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
 void BeginFunctionBodyLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
@@ -223,6 +240,7 @@ void BeginFunctionBodyLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
 	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
 void BeginFunctionTypeLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
@@ -231,6 +249,7 @@ void BeginFunctionTypeLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
 	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
 // Function type functions:
@@ -245,6 +264,7 @@ void EndFunctionBodyLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
 	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
 // Endline functions:
