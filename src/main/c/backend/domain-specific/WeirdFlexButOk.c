@@ -66,6 +66,13 @@ void shutdownWeirdFlexModule()
     if (_logger != NULL)
     {
         destroyLogger(_logger);
+        transformer_list *curr = list;
+        while (curr != NULL)
+        {
+            transformer_list *aux = curr->next;
+            free(curr);
+            curr = aux;
+        }
     }
 }
 
@@ -132,7 +139,8 @@ void _computeRule(Rule *my_rule)
     }
 }
 
-char compare_tokens(token_t t1, token_t t2){
+char compare_tokens(token_t t1, token_t t2)
+{
     return t1 == t2;
 }
 
