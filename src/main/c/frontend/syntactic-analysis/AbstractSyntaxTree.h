@@ -134,9 +134,10 @@ typedef enum Lexeme_precursor_type
 	nonliterals
 } Lexeme_precursor_type;
 
-typedef enum Lexeme_chain_type{
+typedef enum Lexeme_chain_type
+{
 	end,
-	concatenation, 		// cero is reserved for "NULL" case
+	concatenation, // cero is reserved for "NULL" case
 	summation
 } Lexeme_chain_type;
 
@@ -513,6 +514,6 @@ struct Type
 /**
  * Node recursive destructors.
  */
-void releaseProgram(Program * program);
+void releaseProgram(Program *program);
 
 #endif

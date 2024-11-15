@@ -7,12 +7,13 @@
 /**
  * The state of a lexical-analyzer context.
  */
-typedef struct {
+typedef struct
+{
 	unsigned int currentContext;
 	unsigned int length;
-	char * lexeme;
+	char *lexeme;
 	unsigned int line;
-	union SemanticValue * semanticValue;
+	union SemanticValue *semanticValue;
 } LexicalAnalyzerContext;
 
 /**
@@ -20,11 +21,11 @@ typedef struct {
  * the lexeme just consumed. The lexeme is a deep-copy of the original,
  * allocated in heap-memory.
  */
-LexicalAnalyzerContext * createLexicalAnalyzerContext();
+LexicalAnalyzerContext *createLexicalAnalyzerContext();
 
 /**
  * Destroy a lexical-analyzer context and its resources.
  */
-void destroyLexicalAnalyzerContext(LexicalAnalyzerContext * lexicalAnalyzerContext);
+void destroyLexicalAnalyzerContext(LexicalAnalyzerContext *lexicalAnalyzerContext);
 
 #endif

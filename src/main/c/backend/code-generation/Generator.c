@@ -197,7 +197,7 @@ char *_computeVarAccess(VarAccess *varAccess)
     // Case 2: Method invocation (e.g., a.b.c.d.method())
     if (varAccess->method_invocation != NULL)
     {
-        return  _computeMethodInvocation(varAccess->method_invocation);
+        return _computeMethodInvocation(varAccess->method_invocation);
     }
 
     return NULL;
@@ -252,26 +252,26 @@ char *_computePostfixExpression(PostfixExpression *postfixExpression)
 
         result = _computeVarAccess(postfixExpression->vaccess);
 
-    if (postfixExpression->token == INCREMENT)
-    {
-        size_t len = strlen(result) + 3;
-        char *newResult = malloc(len);
+        if (postfixExpression->token == INCREMENT)
+        {
+            size_t len = strlen(result) + 3;
+            char *newResult = malloc(len);
 
-        snprintf(newResult, len, "%s++", result);
+            snprintf(newResult, len, "%s++", result);
 
-        free(result);
-        result = newResult;
-    }
-    else if (postfixExpression->token == DECREMENT)
-    {
-        size_t len = strlen(result) + 3; 
-        char *newResult = malloc(len);
+            free(result);
+            result = newResult;
+        }
+        else if (postfixExpression->token == DECREMENT)
+        {
+            size_t len = strlen(result) + 3;
+            char *newResult = malloc(len);
 
-        snprintf(newResult, len, "%s--", result);
+            snprintf(newResult, len, "%s--", result);
 
-        free(result);
-        result = newResult;
-    }
+            free(result);
+            result = newResult;
+        }
     }
 
     return result;
@@ -576,49 +576,49 @@ char *_computeAssignment(Assignment *assignment)
     char *left = _computeVarAccess(assignment->vaccess);
 
     char *right = _computeExpression(assignment->expression);
-    
-    char *operator = NULL;
+
+    char *operator= NULL;
     switch (assignment->token)
     {
-        case JAVA_ASSIGNMENT:
-            operator = "=";
-            break;
-        case JAVA_PLUS_ASSIGN:
-            operator = "+=";
-            break;
-        case JAVA_MINUS_ASSIGN:
-            operator = "-=";
-            break;
-        case JAVA_MULTIPLY_ASSIGN:
-            operator = "*=";
-            break;
-        case JAVA_DIVIDE_ASSIGN:
-            operator = "/=";
-            break;
-        case JAVA_MODULO_ASSIGN:
-            operator = "%=";
-            break;
-        case JAVA_LEFT_SHIFT_ASSIGN:
-            operator = "<<=";
-            break;
-        case JAVA_RIGHT_SHIFT_ASSIGN:
-            operator = ">>=";
-            break;
-        case JAVA_UNSIGNED_RIGHT_SHIFT_ASSIGN:
-            operator = ">>>=";
-            break;
-        case JAVA_AND_ASSIGN:
-            operator = "&=";
-            break;
-        case JAVA_XOR_ASSIGN:
-            operator = "^=";
-            break;
-        case JAVA_OR_ASSIGN:
-            operator = "|=";
-            break;
-        default:
-            operator = "unknown";
-            break;
+    case JAVA_ASSIGNMENT:
+        operator= "=";
+        break;
+    case JAVA_PLUS_ASSIGN:
+        operator= "+=";
+        break;
+    case JAVA_MINUS_ASSIGN:
+        operator= "-=";
+        break;
+    case JAVA_MULTIPLY_ASSIGN:
+        operator= "*=";
+        break;
+    case JAVA_DIVIDE_ASSIGN:
+        operator= "/=";
+        break;
+    case JAVA_MODULO_ASSIGN:
+        operator= "%=";
+        break;
+    case JAVA_LEFT_SHIFT_ASSIGN:
+        operator= "<<=";
+        break;
+    case JAVA_RIGHT_SHIFT_ASSIGN:
+        operator= ">>=";
+        break;
+    case JAVA_UNSIGNED_RIGHT_SHIFT_ASSIGN:
+        operator= ">>>=";
+        break;
+    case JAVA_AND_ASSIGN:
+        operator= "&=";
+        break;
+    case JAVA_XOR_ASSIGN:
+        operator= "^=";
+        break;
+    case JAVA_OR_ASSIGN:
+        operator= "|=";
+        break;
+    default:
+        operator= "unknown";
+        break;
     }
 
     size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
@@ -864,21 +864,21 @@ char *_computeIfThenStatement(IfThenStatement *ifThenStatement)
     free(conditionStr);
     free(ifStatementStr);
 
-if (ifThenStatement->elseblock != NULL)
-{
-    char *elseStatementStr = _computeBlock(ifThenStatement->elseblock);
+    if (ifThenStatement->elseblock != NULL)
+    {
+        char *elseStatementStr = _computeBlock(ifThenStatement->elseblock);
 
-    size_t totalLength = strlen(result) + strlen(" else { }") + strlen(elseStatementStr) + 3;
+        size_t totalLength = strlen(result) + strlen(" else { }") + strlen(elseStatementStr) + 3;
 
-    char *newResult = malloc(totalLength);
+        char *newResult = malloc(totalLength);
 
-    snprintf(newResult, totalLength, "%s else { %s }", result, elseStatementStr);
+        snprintf(newResult, totalLength, "%s else { %s }", result, elseStatementStr);
 
-    free(result);
-    result = newResult;
+        free(result);
+        result = newResult;
 
-    free(elseStatementStr);
-}
+        free(elseStatementStr);
+    }
 
     return result;
 }
@@ -984,13 +984,12 @@ char *_computeBlock(Block *block)
         char *returnExpr = _computeExpression(block->exp);
         size_t totalLen = strlen(returnExpr) + 9;
         char *result = malloc(sizeof(char) * totalLen);
-        if(result != NULL)
+        if (result != NULL)
         {
             snprintf(result, totalLen, "return %s;", returnExpr);
         }
         free(returnExpr);
         return result;
-        
     }
 
     case throw:
@@ -998,7 +997,7 @@ char *_computeBlock(Block *block)
         char *throwExpr = _computeExpression(block->exp);
         size_t totalLen = strlen(throwExpr) + 9;
         char *result = malloc(sizeof(char) * totalLen);
-        if(result != NULL)
+        if (result != NULL)
         {
             snprintf(result, totalLen, "throw %s;", throwExpr);
         }

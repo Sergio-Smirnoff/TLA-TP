@@ -218,60 +218,60 @@
 
 // IMPORTANT: To use λ in the following grammar, use the %empty symbol.
 
-program: ruleset																																									{ $$ = ProgramSemanticAction(currentCompilerState(), $1); }
+program: ruleset																																						{ $$ = ProgramSemanticAction(currentCompilerState(), $1); }
 	;
 
-ruleset: rule ruleset																																								{ $$ = RulesetSemanticAction($1, $2); }
-	| rule																																											{ $$ = RulesetSemanticAction($1, NULL); }
+ruleset: rule ruleset																																					{ $$ = RulesetSemanticAction($1, $2); }
+	| rule																																								{ $$ = RulesetSemanticAction($1, NULL); }
 	;
 
-rule: VAR_NAME[def] OPEN_BRACKET regexes[regex] CLOSE_BRACKET ENDLINE	    																										{ $$ = RuleNewRegexSemanticAction($def, $regex, currentCompilerState()); }
-	| lexeme_precursor[lex] ARROW action ENDLINE																																	{ $$ = RuleDefinitionSemanticAction($lex, $action, lexeme_action); }
-	| lexeme_precursor[lex] ENDLINE																																					{ $$ = RuleDefinitionSemanticAction($lex, NULL, ignore_lexeme); }
+rule: VAR_NAME[def] OPEN_BRACKET regexes[regex] CLOSE_BRACKET ENDLINE	    																							{ $$ = RuleNewRegexSemanticAction($def, $regex, currentCompilerState()); }
+	| lexeme_precursor[lex] ARROW action ENDLINE																														{ $$ = RuleDefinitionSemanticAction($lex, $action, lexeme_action); }
+	| lexeme_precursor[lex] ENDLINE																																		{ $$ = RuleDefinitionSemanticAction($lex, NULL, ignore_lexeme); }
 	;
 
-lexeme_precursor: lexeme lexeme_precursor																																			{ $$ = LexemePrecursorSemanticAction($1, $2, concatenation); }
-	| lexeme PIPE lexeme_precursor																																					{ $$ = LexemePrecursorSemanticAction($1, $3, summation); }
-	| lexeme																																										{ $$ = LexemePrecursorSemanticAction($1, NULL, end); }
-	| DEFAULT[string]																																								{ $$ = LexemeDefaultSemanticAction(); }
+lexeme_precursor: lexeme lexeme_precursor																																{ $$ = LexemePrecursorSemanticAction($1, $2, concatenation); }
+	| lexeme PIPE lexeme_precursor																																		{ $$ = LexemePrecursorSemanticAction($1, $3, summation); }
+	| lexeme																																							{ $$ = LexemePrecursorSemanticAction($1, NULL, end); }
+	| DEFAULT[string]																																					{ $$ = LexemeDefaultSemanticAction(); }
 	;
 
-lexeme: OPEN_BRACKET regexes[regex] CLOSE_BRACKET closure[closure_p]																												{ $$ = LexemeSemanticAction(NULL, $regex, $closure_p, regexes, NULL); }
-	| OPEN_BRACES VAR_NAME[id] CLOSE_BRACES closure[closure_p]																														{ $$ = LexemeSemanticAction($id, NULL, $closure_p, name, currentCompilerState()); }
-	| OPEN_PARENTHESES lexeme_precursor[precursor] CLOSE_PARENTHESES closure[clos] 																									{ $$ = LexemeClosureSemanticAction($precursor, $clos);}
-	| STR[string]																																									{ $$ = LexemeStringSemanticAction($string); }
+lexeme: OPEN_BRACKET regexes[regex] CLOSE_BRACKET closure[closure_p]																									{ $$ = LexemeSemanticAction(NULL, $regex, $closure_p, regexes, NULL); }
+	| OPEN_BRACES VAR_NAME[id] CLOSE_BRACES closure[closure_p]																											{ $$ = LexemeSemanticAction($id, NULL, $closure_p, name, currentCompilerState()); }
+	| OPEN_PARENTHESES lexeme_precursor[precursor] CLOSE_PARENTHESES closure[clos] 																						{ $$ = LexemeClosureSemanticAction($precursor, $clos);}
+	| STR[string]																																						{ $$ = LexemeStringSemanticAction($string); }
 	;
 
-closure: %empty 																																									{ $$ = NULL; }
-	| PLUS																																											{ $$ = ClosureSemanticAction($1); }
-	| STAR																																											{ $$ = ClosureSemanticAction($1); }
+closure: %empty 																																						{ $$ = NULL; }
+	| PLUS																																								{ $$ = ClosureSemanticAction($1); }
+	| STAR																																								{ $$ = ClosureSemanticAction($1); }
 	;
 
-regexes: regex_class 																																								{ $$ = RegexesSemanticAction($1, NULL); }
-	| regex_class regexes 																																							{ $$ = RegexesSemanticAction($1, $2); }
+regexes: regex_class 																																					{ $$ = RegexesSemanticAction($1, NULL); }
+	| regex_class regexes 																																				{ $$ = RegexesSemanticAction($1, $2); }
 	;
 
-regex_class: symbol																																									{ $$ = SymbolRegexSemanticAction($1); }
-    | symbol RANGER symbol																																							{ $$ = RegexClassRangeSemanticAction($1, $3); }
-	| OPEN_BRACES VAR_NAME[id] CLOSE_BRACES closure[clousure]																														{ $$ = CreatedClassSemanticAction($id, $clousure, currentCompilerState()); }
+regex_class: symbol																																						{ $$ = SymbolRegexSemanticAction($1); }
+    | symbol RANGER symbol																																				{ $$ = RegexClassRangeSemanticAction($1, $3); }
+	| OPEN_BRACES VAR_NAME[id] CLOSE_BRACES closure[clousure]																											{ $$ = CreatedClassSemanticAction($id, $clousure, currentCompilerState()); }
 	;
 
-symbol: LOWERCASE 																																									{ $$ = RegexSymbolSemanticAction($1); }
-	| UPPERCASE 																																									{ $$ = RegexSymbolSemanticAction($1); }
-	| DIGIT 																																										{ $$ = RegexSymbolSemanticAction($1); }
-	| SYMBOL 																																										{ $$ = RegexSymbolSemanticAction($1); }
-	| ESCAPED_SYMBOL 																																								{ $$ = RegexSymbolSemanticAction($1); }
+symbol: LOWERCASE 																																						{ $$ = RegexSymbolSemanticAction($1); }
+	| UPPERCASE 																																						{ $$ = RegexSymbolSemanticAction($1); }
+	| DIGIT 																																							{ $$ = RegexSymbolSemanticAction($1); }
+	| SYMBOL 																																							{ $$ = RegexSymbolSemanticAction($1); }
+	| ESCAPED_SYMBOL 																																					{ $$ = RegexSymbolSemanticAction($1); }
 	;
 
-action: VAR_NAME																																									{ $$ = ActionSemanticAction($1); }
-	| OPEN_BRACES Block[block] CLOSE_BRACES																																			{ $$ = ActionJavaSemanticAction($block); }
+action: VAR_NAME																																						{ $$ = ActionSemanticAction($1); }
+	| OPEN_BRACES Block[block] CLOSE_BRACES																																{ $$ = ActionJavaSemanticAction($block); }
 	;
 
-type: STRING_TYPE																																									{ $$ = TypeSemanticAction($1); }
-    | INTEGER_TYPE																																									{ $$ = TypeSemanticAction($1); }
-    | DOUBLE_TYPE																																									{ $$ = TypeSemanticAction($1); }
-	| BOOLEAN_TYPE																																									{ $$ = TypeSemanticAction($1); }
-	| TOKEN_TYPE																																									{ $$ = TypeSemanticAction($1); }
+type: STRING_TYPE																																						{ $$ = TypeSemanticAction($1); }
+    | INTEGER_TYPE																																						{ $$ = TypeSemanticAction($1); }
+    | DOUBLE_TYPE																																						{ $$ = TypeSemanticAction($1); }
+	| BOOLEAN_TYPE																																						{ $$ = TypeSemanticAction($1); }
+	| TOKEN_TYPE																																						{ $$ = TypeSemanticAction($1); }
 	;
 
 
@@ -283,147 +283,147 @@ type: STRING_TYPE																																									{ $$ = TypeSemanticAct
 ** Extending java parsing beyond this point far extends the scope of this program.
 */
 
-NumericComparison: JAVA_GEQ																																							{ $$ = JavaNumericComparisonSemanticAction($1); }
-	| JAVA_GREATER																																									{ $$ = JavaNumericComparisonSemanticAction($1); }
-	| JAVA_LEQ																																										{ $$ = JavaNumericComparisonSemanticAction($1); }
-	| JAVA_LESSER																																									{ $$ = JavaNumericComparisonSemanticAction($1); }
+NumericComparison: JAVA_GEQ																																				{ $$ = JavaNumericComparisonSemanticAction($1); }
+	| JAVA_GREATER																																						{ $$ = JavaNumericComparisonSemanticAction($1); }
+	| JAVA_LEQ																																							{ $$ = JavaNumericComparisonSemanticAction($1); }
+	| JAVA_LESSER																																						{ $$ = JavaNumericComparisonSemanticAction($1); }
 	;
 ;
-Block: Statement Block																																								{ $$ = JavaBlockSemanticAction($1, $2); }
-	| Statement																																										{ $$ = JavaBlockSemanticAction($1, NULL); }
-	| JAVA_RETURN Expression ENDLINE																																				{ $$ = JavaReturnExpressionSemanticAction($2); }
-	| JAVA_THROW Expression ENDLINE																																					{ $$ = JavaThrowExpressionSemanticAction($2); }
+Block: Statement Block																																					{ $$ = JavaBlockSemanticAction($1, $2); }
+	| Statement																																							{ $$ = JavaBlockSemanticAction($1, NULL); }
+	| JAVA_RETURN Expression ENDLINE																																	{ $$ = JavaReturnExpressionSemanticAction($2); }
+	| JAVA_THROW Expression ENDLINE																																		{ $$ = JavaThrowExpressionSemanticAction($2); }
 	;
 
-Statement: ENDLINE																																									{ $$ = NULL; }
-	| StatementExpression  ENDLINE																																							{ $$ = JavaStatementExpressionSemanticAction($1); }
-	| IfThenStatement																																								{ $$ = IfStatementSemanticAction($1); }
-	| JAVA_WHILE OPEN_PARENTHESES Expression[exp] CLOSE_PARENTHESES OPEN_BRACES Block[state] CLOSE_BRACES																		{ $$ = WhileStatementSemanticAction($exp, $state); }
-	| JAVA_FOR OPEN_PARENTHESES ForInit[init] ENDLINE Expression[exp] ENDLINE StatementExpressionList[stlist] CLOSE_PARENTHESES OPEN_BRACES Block[state] CLOSE_BRACES			{ $$ = ForStatementSemanticAction($init, $exp, $stlist, $state); }
+Statement: ENDLINE																																						{ $$ = NULL; }
+	| StatementExpression  ENDLINE																																		{ $$ = JavaStatementExpressionSemanticAction($1); }
+	| IfThenStatement																																					{ $$ = IfStatementSemanticAction($1); }
+	| JAVA_WHILE OPEN_PARENTHESES Expression[exp] CLOSE_PARENTHESES OPEN_BRACES Block[state] CLOSE_BRACES																{ $$ = WhileStatementSemanticAction($exp, $state); }
+	| JAVA_FOR OPEN_PARENTHESES ForInit[init] ENDLINE Expression[exp] ENDLINE StatementExpressionList[stlist] CLOSE_PARENTHESES OPEN_BRACES Block[state] CLOSE_BRACES	{ $$ = ForStatementSemanticAction($init, $exp, $stlist, $state); }
 	;
 
-ForInit: StatementExpressionList																																					{ $$ = ForInitExpressionListSemanticAction($1); }
-	| type VAR_NAME																																								{ $$ = JavaVarTypeDefinitionSemantictAction($1, $2, withTypes); }
+ForInit: StatementExpressionList																																		{ $$ = ForInitExpressionListSemanticAction($1); }
+	| type VAR_NAME																																						{ $$ = JavaVarTypeDefinitionSemantictAction($1, $2, withTypes); }
 	;
 
-StatementExpressionList: %empty																																						{ $$ = NULL; }
-	| StatementExpression																																							{ $$ = StatementExpressionListSemanticAction($1, NULL); }
-	| StatementExpression COMMA StatementExpressionList																																{ $$ = StatementExpressionListSemanticAction($1, $3); }
+StatementExpressionList: %empty																																			{ $$ = NULL; }
+	| StatementExpression																																				{ $$ = StatementExpressionListSemanticAction($1, NULL); }
+	| StatementExpression COMMA StatementExpressionList																													{ $$ = StatementExpressionListSemanticAction($1, $3); }
 	;
 
-IfThenStatement: JAVA_IF OPEN_PARENTHESES Expression[expression] CLOSE_PARENTHESES OPEN_BRACES Block[ifblock] CLOSE_BRACES																{ $$ = JavaIfThenStructureSemanticAction($expression, $ifblock, NULL); }
-	| JAVA_IF OPEN_PARENTHESES Expression[expression] CLOSE_PARENTHESES OPEN_BRACES Block[ifblock] CLOSE_BRACES JAVA_ELSE OPEN_BRACES Block[elseblock] CLOSE_BRACES											{ $$ = JavaIfThenStructureSemanticAction($expression, $ifblock, $elseblock); }
+IfThenStatement: JAVA_IF OPEN_PARENTHESES Expression[expression] CLOSE_PARENTHESES OPEN_BRACES Block[ifblock] CLOSE_BRACES												{ $$ = JavaIfThenStructureSemanticAction($expression, $ifblock, NULL); }
+	| JAVA_IF OPEN_PARENTHESES Expression[expression] CLOSE_PARENTHESES OPEN_BRACES Block[ifblock] CLOSE_BRACES JAVA_ELSE OPEN_BRACES Block[elseblock] CLOSE_BRACES		{ $$ = JavaIfThenStructureSemanticAction($expression, $ifblock, $elseblock); }
 	;
 
-StatementExpression: Assignment																																						{ $$ = JavaAsignmentSemanticAction($1); }
-	| VarAccess																																										{ $$ = JavaVAccessDefaultSemanticAction($1); }
-	| type VAR_NAME JAVA_ASSIGNMENT Expression																																		{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
-	| type VAR_NAME JAVA_PLUS_ASSIGN Expression																																		{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
-	| type VAR_NAME JAVA_MINUS_ASSIGN Expression																																	{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
-	| type VAR_NAME JAVA_MULTIPLY_ASSIGN Expression																																	{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
-	| type VAR_NAME JAVA_DIVIDE_ASSIGN Expression																																	{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
-	| type VAR_NAME JAVA_MODULO_ASSIGN Expression																																	{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
-	| type VAR_NAME JAVA_LEFT_SHIFT_ASSIGN Expression																																{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
-	| type VAR_NAME JAVA_RIGHT_SHIFT_ASSIGN Expression																																{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
-	| type VAR_NAME JAVA_UNSIGNED_RIGHT_SHIFT_ASSIGN Expression																														{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
-	| type VAR_NAME JAVA_AND_ASSIGN Expression																																		{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
-	| type VAR_NAME JAVA_XOR_ASSIGN Expression																																		{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
-	| type VAR_NAME JAVA_OR_ASSIGN Expression																																		{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
-	;
-
-
-VarAccess: VAR_NAME																																									{ $$ = VarAccessVarSemanticAction($1); }
-	| VAR_NAME JAVA_DOT_OPERATOR VarAccess																																			{ $$ = VarAccessVarOperatorSemanticAction($1,$3); }
-	| type JAVA_DOT_OPERATOR VarAccess																																				{ $$ = VarAccessTypeOperatorSemanticAction($1,$3); }
-	| MethodInvocation																																								{ $$ = VarAccessMethodInvocationSemanticAction($1); }
-	;
-
-MethodInvocation: VarAccess OPEN_PARENTHESES ArgumentList CLOSE_PARENTHESES																											{ $$ = InvocationSemanticAction($1, $3 ); }
-	;
-
-ArgumentList: %empty																																								{ $$ = NULL; }
-	| Expression																																									{ $$ = ArgListSemanticExpression($1,NULL); }
-	| Expression COMMA ArgumentList																																					{ $$ = ArgListSemanticExpression($1,$3); }
-	;
-
-Expression: ConditionalExpression																																					{ $$ = expressionSematicAction($1, NULL); }
-	| Assignment																																									{ $$ = expressionSematicAction(NULL, $1); }
-	;
-
-ConditionalExpression: ConditionalOrExpression																																		{ $$ = JavaConditionalExpSemanticAction($1,NULL,NULL); }
-	| ConditionalOrExpression JAVA_TERNARY_OPERATOR Expression JAVA_DOTS_OPERATOR ConditionalExpression																				{ $$ = JavaConditionalExpSemanticAction($1, $3, $5); }
-	;
-
-ConditionalOrExpression: ConditionalAndExpression																																	{ $$ = JavaConditionalOrExpressionSemanticAction($1, NULL); }
-	| ConditionalOrExpression JAVA_OR ConditionalAndExpression																														{ $$ = JavaConditionalOrExpressionSemanticAction($3, $1 ); }
-	;
-
-ConditionalAndExpression: EqualityExpression																																		{ $$ = JavaConditionalAndExpressionSemanticAction(NULL, $1); }
-	| ConditionalAndExpression JAVA_AND EqualityExpression                                                        																	{ $$ = JavaConditionalAndExpressionSemanticAction($1,$3); }
-	;
-
-EqualityExpression: UnaryExpression												{ $$ = EqualityExpressionSemanticAction($1,  0, NULL); }
-	| EqualityExpression JAVA_EXACT_COMPARISON UnaryExpression																														{ $$ = EqualityExpressionSemanticAction($3,$2,$1); }
-	| EqualityExpression JAVA_NOT_EXACT_COMPARISON UnaryExpression																														{ $$ = EqualityExpressionSemanticAction($3,$2,$1); }
-	;
-
-UnaryExpression:  UnaryExpression NumericComparison PostfixExpression																													{ $$ = UnaryExpressionNumericComparisonSintaticAction($1,$2,$3); }
-	| UnaryExpression STAR PostfixExpression																																		{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,star_t ,$3); }
-	| UnaryExpression DIV PostfixExpression																																		{ $$ = UnaryExpressionDoubleTokenSintaticAction($1, div_type,$3); }
-	| UnaryExpression MOD PostfixExpression																																		{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,mod_t ,$3); }
-	| UnaryExpression PLUS PostfixExpression																																		{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,plus_t ,$3); }
-	| UnaryExpression MINUS PostfixExpression																																		{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,minus_t ,$3); }
-	| PostfixExpression																																								{ $$ = UnaryExpressionPostfixExpressionSintaticAction($1); }
-	| JAVA_NOT UnaryExpression																																						{ $$ = UnaryExpressionSingleTokenSintaticAction($2,$1); }
-	| OPEN_PARENTHESES type CLOSE_PARENTHESES																																		{ $$ = UnaryExpressionTypeSintaticAction($2); }
-	| OPEN_PARENTHESES CLOSE_PARENTHESES																																			{ $$ = UnaryExpressionTypeSintaticAction(NULL); }
-	| DECREMENT UnaryExpression																																						{ $$ = UnaryExpressionSingleTokenSintaticAction($2,$1); }
-	| MINUS UnaryExpression																																							{ $$ = UnaryExpressionSingleTokenSintaticAction($2,$1); }
-	| INCREMENT UnaryExpression																																						{ $$ = UnaryExpressionSingleTokenSintaticAction($2,$1); }
-	| PLUS UnaryExpression																																							{ $$ = UnaryExpressionSingleTokenSintaticAction($2,$1); }
+StatementExpression: Assignment																																			{ $$ = JavaAsignmentSemanticAction($1); }
+	| VarAccess																																							{ $$ = JavaVAccessDefaultSemanticAction($1); }
+	| type VAR_NAME JAVA_ASSIGNMENT Expression																															{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_PLUS_ASSIGN Expression																															{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_MINUS_ASSIGN Expression																														{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_MULTIPLY_ASSIGN Expression																														{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_DIVIDE_ASSIGN Expression																														{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_MODULO_ASSIGN Expression																														{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_LEFT_SHIFT_ASSIGN Expression																													{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_RIGHT_SHIFT_ASSIGN Expression																													{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_UNSIGNED_RIGHT_SHIFT_ASSIGN Expression																											{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_AND_ASSIGN Expression																															{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_XOR_ASSIGN Expression																															{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
+	| type VAR_NAME JAVA_OR_ASSIGN Expression																															{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
 	;
 
 
-PostfixExpression: Primary																																							{ $$ = PostfixExpressionPrimarySemanticAction($1); }
-	| VarAccess																																										{ $$ = PostfixExpressionVAccessDefaultSemanticAction($1); }
-	| VarAccess INCREMENT																																							{ $$ = PostfixExpressionVAccessSemanticAction($1,$2); }
-	| VarAccess DECREMENT																																							{ $$ = PostfixExpressionVAccessSemanticAction($1, $2); }
+VarAccess: VAR_NAME																																						{ $$ = VarAccessVarSemanticAction($1); }
+	| VAR_NAME JAVA_DOT_OPERATOR VarAccess																																{ $$ = VarAccessVarOperatorSemanticAction($1,$3); }
+	| type JAVA_DOT_OPERATOR VarAccess																																	{ $$ = VarAccessTypeOperatorSemanticAction($1,$3); }
+	| MethodInvocation																																					{ $$ = VarAccessMethodInvocationSemanticAction($1); }
 	;
 
-Assignment: VarAccess JAVA_ASSIGNMENT Expression																																	{ $$ = AssignmentSemanticAction($1, $2, $3); }
-	| VarAccess JAVA_PLUS_ASSIGN Expression																																			{ $$ = AssignmentSemanticAction($1, $2, $3); }
-	| VarAccess JAVA_MINUS_ASSIGN Expression																																		{ $$ = AssignmentSemanticAction($1, $2, $3); }
-	| VarAccess JAVA_MULTIPLY_ASSIGN Expression																																		{ $$ = AssignmentSemanticAction($1, $2, $3); }
-	| VarAccess JAVA_DIVIDE_ASSIGN Expression																																		{ $$ = AssignmentSemanticAction($1, $2, $3); }
-	| VarAccess JAVA_MODULO_ASSIGN Expression																																		{ $$ = AssignmentSemanticAction($1, $2, $3); }
-	| VarAccess JAVA_LEFT_SHIFT_ASSIGN Expression																																	{ $$ = AssignmentSemanticAction($1, $2, $3); }
-	| VarAccess JAVA_RIGHT_SHIFT_ASSIGN Expression																																	{ $$ = AssignmentSemanticAction($1, $2, $3); }
-	| VarAccess JAVA_UNSIGNED_RIGHT_SHIFT_ASSIGN Expression																															{ $$ = AssignmentSemanticAction($1, $2, $3); }
-	| VarAccess JAVA_AND_ASSIGN Expression																																			{ $$ = AssignmentSemanticAction($1, $2, $3); }
-	| VarAccess JAVA_XOR_ASSIGN Expression																																			{ $$ = AssignmentSemanticAction($1, $2, $3); }
-	| VarAccess JAVA_OR_ASSIGN Expression																																			{ $$ = AssignmentSemanticAction($1, $2, $3); }
+MethodInvocation: VarAccess OPEN_PARENTHESES ArgumentList CLOSE_PARENTHESES																								{ $$ = InvocationSemanticAction($1, $3 ); }
+	;
+
+ArgumentList: %empty																																					{ $$ = NULL; }
+	| Expression																																						{ $$ = ArgListSemanticExpression($1,NULL); }
+	| Expression COMMA ArgumentList																																		{ $$ = ArgListSemanticExpression($1,$3); }
+	;
+
+Expression: ConditionalExpression																																		{ $$ = expressionSematicAction($1, NULL); }
+	| Assignment																																						{ $$ = expressionSematicAction(NULL, $1); }
+	;
+
+ConditionalExpression: ConditionalOrExpression																															{ $$ = JavaConditionalExpSemanticAction($1,NULL,NULL); }
+	| ConditionalOrExpression JAVA_TERNARY_OPERATOR Expression JAVA_DOTS_OPERATOR ConditionalExpression																	{ $$ = JavaConditionalExpSemanticAction($1, $3, $5); }
+	;
+
+ConditionalOrExpression: ConditionalAndExpression																														{ $$ = JavaConditionalOrExpressionSemanticAction($1, NULL); }
+	| ConditionalOrExpression JAVA_OR ConditionalAndExpression																											{ $$ = JavaConditionalOrExpressionSemanticAction($3, $1 ); }
+	;
+
+ConditionalAndExpression: EqualityExpression																															{ $$ = JavaConditionalAndExpressionSemanticAction(NULL, $1); }
+	| ConditionalAndExpression JAVA_AND EqualityExpression                                                        														{ $$ = JavaConditionalAndExpressionSemanticAction($1,$3); }
+	;
+
+EqualityExpression: UnaryExpression																																		{ $$ = EqualityExpressionSemanticAction($1,  0, NULL); }
+	| EqualityExpression JAVA_EXACT_COMPARISON UnaryExpression																											{ $$ = EqualityExpressionSemanticAction($3,$2,$1); }
+	| EqualityExpression JAVA_NOT_EXACT_COMPARISON UnaryExpression																										{ $$ = EqualityExpressionSemanticAction($3,$2,$1); }
+	;
+
+UnaryExpression:  UnaryExpression NumericComparison PostfixExpression																									{ $$ = UnaryExpressionNumericComparisonSintaticAction($1,$2,$3); }
+	| UnaryExpression STAR PostfixExpression																															{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,star_t ,$3); }
+	| UnaryExpression DIV PostfixExpression																																{ $$ = UnaryExpressionDoubleTokenSintaticAction($1, div_type,$3); }
+	| UnaryExpression MOD PostfixExpression																																{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,mod_t ,$3); }
+	| UnaryExpression PLUS PostfixExpression																															{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,plus_t ,$3); }
+	| UnaryExpression MINUS PostfixExpression																															{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,minus_t ,$3); }
+	| PostfixExpression																																					{ $$ = UnaryExpressionPostfixExpressionSintaticAction($1); }
+	| JAVA_NOT UnaryExpression																																			{ $$ = UnaryExpressionSingleTokenSintaticAction($2,$1); }
+	| OPEN_PARENTHESES type CLOSE_PARENTHESES																															{ $$ = UnaryExpressionTypeSintaticAction($2); }
+	| OPEN_PARENTHESES CLOSE_PARENTHESES																																{ $$ = UnaryExpressionTypeSintaticAction(NULL); }
+	| DECREMENT UnaryExpression																																			{ $$ = UnaryExpressionSingleTokenSintaticAction($2,$1); }
+	| MINUS UnaryExpression																																				{ $$ = UnaryExpressionSingleTokenSintaticAction($2,$1); }
+	| INCREMENT UnaryExpression																																			{ $$ = UnaryExpressionSingleTokenSintaticAction($2,$1); }
+	| PLUS UnaryExpression																																				{ $$ = UnaryExpressionSingleTokenSintaticAction($2,$1); }
 	;
 
 
-Primary: Literal																							{ $$ = PrimaryLiteralSemanticAction($1); }
-	| OPEN_PARENTHESES Expression CLOSE_PARENTHESES															{ $$ = PrimaryExpressionSemanticAction($2); }
-	| ClassInstanceCreationExpression																		{ $$ = PrimaryCExpSemanticAction($1); }
+PostfixExpression: Primary																																				{ $$ = PostfixExpressionPrimarySemanticAction($1); }
+	| VarAccess																																							{ $$ = PostfixExpressionVAccessDefaultSemanticAction($1); }
+	| VarAccess INCREMENT																																				{ $$ = PostfixExpressionVAccessSemanticAction($1,$2); }
+	| VarAccess DECREMENT																																				{ $$ = PostfixExpressionVAccessSemanticAction($1, $2); }
 	;
 
-ClassInstanceCreationExpression: UnqualifiedClassInstanceCreationExpression																											{ $$ = InstanceCreationExpressionSemanticAction($1); }
-	| VarAccess JAVA_DOT_OPERATOR UnqualifiedClassInstanceCreationExpression																										{ $$ = VAccessInstanceCreationExpressionSemanticAction($1, $3); }
-	| Primary JAVA_DOT_OPERATOR UnqualifiedClassInstanceCreationExpression																											{ $$ = PrimaryInstanceCreationExpressionSemanticAction($1,$3); }
+Assignment: VarAccess JAVA_ASSIGNMENT Expression																														{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_PLUS_ASSIGN Expression																																{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_MINUS_ASSIGN Expression																															{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_MULTIPLY_ASSIGN Expression																															{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_DIVIDE_ASSIGN Expression																															{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_MODULO_ASSIGN Expression																															{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_LEFT_SHIFT_ASSIGN Expression																														{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_RIGHT_SHIFT_ASSIGN Expression																														{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_UNSIGNED_RIGHT_SHIFT_ASSIGN Expression																												{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_AND_ASSIGN Expression																																{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_XOR_ASSIGN Expression																																{ $$ = AssignmentSemanticAction($1, $2, $3); }
+	| VarAccess JAVA_OR_ASSIGN Expression																																{ $$ = AssignmentSemanticAction($1, $2, $3); }
 	;
 
-UnqualifiedClassInstanceCreationExpression: JAVA_NEW type OPEN_PARENTHESES ArgumentList CLOSE_PARENTHESES																			{ $$ = UnqualifiedClassSemanticAction($2,$4); }
-	| JAVA_NEW MethodInvocation																																						{ $$ = UnqualifiedClassSemanticActionInvocation($2); }
+
+Primary: Literal																																						{ $$ = PrimaryLiteralSemanticAction($1); }
+	| OPEN_PARENTHESES Expression CLOSE_PARENTHESES																														{ $$ = PrimaryExpressionSemanticAction($2); }
+	| ClassInstanceCreationExpression																																	{ $$ = PrimaryCExpSemanticAction($1); }
 	;
 
-Literal: NUMBER																																										{ $$ = JavaLiteralStrSemanticAction($1); }
-	| JAVA_TRUE																																										{ $$ = JavaLiteralTokenSemanticAction($1); }
-	| JAVA_FALSE																																									{ $$ = JavaLiteralTokenSemanticAction($1); }
-	| FLOAT																																											{ $$ = JavaLiteralStrSemanticAction($1); }
-	| STR																																											{ $$ = JavaLiteralStrSemanticAction($1); }
+ClassInstanceCreationExpression: UnqualifiedClassInstanceCreationExpression																								{ $$ = InstanceCreationExpressionSemanticAction($1); }
+	| VarAccess JAVA_DOT_OPERATOR UnqualifiedClassInstanceCreationExpression																							{ $$ = VAccessInstanceCreationExpressionSemanticAction($1, $3); }
+	| Primary JAVA_DOT_OPERATOR UnqualifiedClassInstanceCreationExpression																								{ $$ = PrimaryInstanceCreationExpressionSemanticAction($1,$3); }
+	;
+
+UnqualifiedClassInstanceCreationExpression: JAVA_NEW type OPEN_PARENTHESES ArgumentList CLOSE_PARENTHESES																{ $$ = UnqualifiedClassSemanticAction($2,$4); }
+	| JAVA_NEW MethodInvocation																																			{ $$ = UnqualifiedClassSemanticActionInvocation($2); }
+	;
+
+Literal: NUMBER																																							{ $$ = JavaLiteralStrSemanticAction($1); }
+	| JAVA_TRUE																																							{ $$ = JavaLiteralTokenSemanticAction($1); }
+	| JAVA_FALSE																																						{ $$ = JavaLiteralTokenSemanticAction($1); }
+	| FLOAT																																								{ $$ = JavaLiteralStrSemanticAction($1); }
+	| STR																																								{ $$ = JavaLiteralStrSemanticAction($1); }
 	;
 
 %%

@@ -153,9 +153,9 @@ void _releaseLexemePrecursor(Lexeme_precursor *lexeme_precursor)
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (lexeme_precursor != NULL)
 	{
-		if(lexeme_precursor->precursor_type != default_t)
+		if (lexeme_precursor->precursor_type != default_t)
 		{
-			switch(lexeme_precursor->chain_type)
+			switch (lexeme_precursor->chain_type)
 			{
 			case end:
 				_releaseLexeme(lexeme_precursor->lex);
@@ -201,7 +201,7 @@ void _releaseLexeme(Lexeme *lexeme)
 			_releaseLexemePrecursor(lexeme->precursor);
 			_releaseClousure(lexeme->closure);
 			break;
-		
+
 		default:
 			logError(_logger, "Invalid lexeme type: %d", lexeme->type);
 			break;
@@ -221,8 +221,10 @@ void _releaseSymbol(Symbol *symbol)
 	}
 }
 
-void _releaseClousure(Closure *clousure) {
-	if(clousure != NULL) {
+void _releaseClousure(Closure *clousure)
+{
+	if (clousure != NULL)
+	{
 		free(clousure);
 	}
 }
@@ -236,10 +238,13 @@ void _releaseAction(Action *act)
 		if (act->type == action)
 		{
 			free(act->varName);
-		} else if (act->type == function_body)
+		}
+		else if (act->type == function_body)
 		{
 			_releaseBlock(act->block);
-		} else {
+		}
+		else
+		{
 			logError(_logger, "Invalid action type: %d", act->type);
 		}
 		free(act);
@@ -318,7 +323,7 @@ void _releaseStatementExpression(StatementExpression *sexp)
 		case assignation:
 			_releaseAssignment(sexp->assignment);
 			break;
-		
+
 		case vaccess:
 			_releaseVarAccess(sexp->var_access);
 			break;
@@ -337,9 +342,11 @@ void _releaseStatementExpression(StatementExpression *sexp)
 	}
 }
 
-void _releaseIfThenStatement(IfThenStatement *ifThenStatement) {
+void _releaseIfThenStatement(IfThenStatement *ifThenStatement)
+{
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(ifThenStatement != NULL) {
+	if (ifThenStatement != NULL)
+	{
 		_releaseExpression(ifThenStatement->exp);
 		_releaseBlock(ifThenStatement->ifblock);
 		_releaseBlock(ifThenStatement->elseblock);
@@ -347,10 +354,13 @@ void _releaseIfThenStatement(IfThenStatement *ifThenStatement) {
 	}
 }
 
-void _releaseForInit(ForInit *forInit) {
+void _releaseForInit(ForInit *forInit)
+{
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(forInit != NULL) {
-		switch(forInit->for_type) {
+	if (forInit != NULL)
+	{
+		switch (forInit->for_type)
+		{
 		case statementExpList:
 			_releaseStatementExpressionList(forInit->statementExpList);
 			break;
@@ -372,9 +382,11 @@ void _releaseForInit(ForInit *forInit) {
 	}
 }
 
-void _releaseStatementExpressionList(StatementExpressionList *statementExpList) {
+void _releaseStatementExpressionList(StatementExpressionList *statementExpList)
+{
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(statementExpList != NULL) {
+	if (statementExpList != NULL)
+	{
 		_releaseStatementExpression(statementExpList->exp);
 		_releaseStatementExpressionList(statementExpList->list);
 		free(statementExpList);
@@ -382,10 +394,13 @@ void _releaseStatementExpressionList(StatementExpressionList *statementExpList) 
 }
 
 // Expressions
-void _releaseExpression(Expression *exp) {
+void _releaseExpression(Expression *exp)
+{
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(exp != NULL) {
-		switch(exp->type) {
+	if (exp != NULL)
+	{
+		switch (exp->type)
+		{
 		case xexp:
 			_releaseConditionalExpression(exp->xexp);
 			break;
@@ -402,9 +417,11 @@ void _releaseExpression(Expression *exp) {
 	}
 }
 
-void _releaseConditionalExpression(ConditionalExpression *condExp) {
+void _releaseConditionalExpression(ConditionalExpression *condExp)
+{
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(condExp != NULL) {
+	if (condExp != NULL)
+	{
 		_releaseConditionalOrExpression(condExp->corexp);
 		_releaseExpression(condExp->exp);
 		_releaseConditionalExpression(condExp->cexp);
@@ -412,37 +429,46 @@ void _releaseConditionalExpression(ConditionalExpression *condExp) {
 	}
 }
 
-void _releaseConditionalOrExpression(ConditionalOrExpression *condOrExp) {
+void _releaseConditionalOrExpression(ConditionalOrExpression *condOrExp)
+{
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(condOrExp != NULL) {
+	if (condOrExp != NULL)
+	{
 		_releaseConditionalAndExpression(condOrExp->candexp);
 		_releaseConditionalOrExpression(condOrExp->corexp);
 		free(condOrExp);
 	}
 }
 
-void _releaseConditionalAndExpression(ConditionalAndExpression *condAndExp) {
+void _releaseConditionalAndExpression(ConditionalAndExpression *condAndExp)
+{
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(condAndExp != NULL) {
+	if (condAndExp != NULL)
+	{
 		_releaseEqualityExpression(condAndExp->eqexp);
 		_releaseConditionalAndExpression(condAndExp->candexp);
 		free(condAndExp);
 	}
 }
 
-void _releaseEqualityExpression(EqualityExpression *eqExp) {
+void _releaseEqualityExpression(EqualityExpression *eqExp)
+{
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(eqExp != NULL) {
+	if (eqExp != NULL)
+	{
 		_releaseUnaryExpression(eqExp->uexp);
 		_releaseEqualityExpression(eqExp->eqexp);
 		free(eqExp);
 	}
 }
 
-void _releaseUnaryExpression(UnaryExpression *unExp) {
+void _releaseUnaryExpression(UnaryExpression *unExp)
+{
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(unExp != NULL) {
-		switch(unExp->globaltype) {
+	if (unExp != NULL)
+	{
+		switch (unExp->globaltype)
+		{
 		case numericComparison:
 			_releaseUnaryExpression(unExp->uexp1_num);
 			_releaseNumericComparison(unExp->numcomp);
@@ -473,19 +499,24 @@ void _releaseUnaryExpression(UnaryExpression *unExp) {
 	}
 }
 
-void _releasePostfixExpression(PostfixExpression *postExp) {
+void _releasePostfixExpression(PostfixExpression *postExp)
+{
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(postExp != NULL) {
+	if (postExp != NULL)
+	{
 		_releasePrimary(postExp->primary);
 		_releaseVarAccess(postExp->vaccess);
 		free(postExp);
 	}
 }
 
-void _releaseUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstanceCreationExpression *unqualClassInstCreationExp) {
+void _releaseUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstanceCreationExpression *unqualClassInstCreationExp)
+{
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(unqualClassInstCreationExp != NULL) {
-		switch(unqualClassInstCreationExp->unq_type) {
+	if (unqualClassInstCreationExp != NULL)
+	{
+		switch (unqualClassInstCreationExp->unq_type)
+		{
 		case parargs:
 			_releaseType(unqualClassInstCreationExp->type);
 			_releaseArgumentList(unqualClassInstCreationExp->arglist);
@@ -503,9 +534,11 @@ void _releaseUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstance
 	}
 }
 
-void _releaseClassInstanceCreationExpression(ClassInstanceCreationExpression *classInstCreationExp) {
+void _releaseClassInstanceCreationExpression(ClassInstanceCreationExpression *classInstCreationExp)
+{
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(classInstCreationExp != NULL) {
+	if (classInstCreationExp != NULL)
+	{
 		_releaseUnqualifiedClassInstanceCreationExpression(classInstCreationExp->ucice);
 		_releaseVarAccess(classInstCreationExp->vaccess);
 		_releasePrimary(classInstCreationExp->primary);
@@ -513,10 +546,13 @@ void _releaseClassInstanceCreationExpression(ClassInstanceCreationExpression *cl
 	}
 }
 
-void _releasePrimary(Primary *primary) {
+void _releasePrimary(Primary *primary)
+{
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(primary != NULL) {
-		switch(primary->type) {
+	if (primary != NULL)
+	{
+		switch (primary->type)
+		{
 		case literal:
 			_releaseLiteral(primary->lit);
 			break;
@@ -537,10 +573,13 @@ void _releasePrimary(Primary *primary) {
 	}
 }
 
-void _releaseLiteral(Literal *literal) {
+void _releaseLiteral(Literal *literal)
+{
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(literal != NULL) {
-		switch(literal->type) {
+	if (literal != NULL)
+	{
+		switch (literal->type)
+		{
 		case str:
 			free(literal->str);
 			break;
@@ -557,9 +596,11 @@ void _releaseLiteral(Literal *literal) {
 }
 
 // Assignment
-void _releaseAssignment(Assignment *assignment) {
+void _releaseAssignment(Assignment *assignment)
+{
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(assignment != NULL) {
+	if (assignment != NULL)
+	{
 		_releaseVarAccess(assignment->vaccess);
 		_releaseExpression(assignment->expression);
 		free(assignment);
@@ -567,16 +608,20 @@ void _releaseAssignment(Assignment *assignment) {
 }
 
 // Other stuff
-void _releaseNumericComparison(NumericComparison *numericComparison) {
+void _releaseNumericComparison(NumericComparison *numericComparison)
+{
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(numericComparison != NULL) {
+	if (numericComparison != NULL)
+	{
 		free(numericComparison);
 	}
 }
 
-void _releaseVarAccess(VarAccess *var_access) {
+void _releaseVarAccess(VarAccess *var_access)
+{
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(var_access != NULL) {
+	if (var_access != NULL)
+	{
 		free(var_access->var_name);
 		_releaseVarAccess(var_access->vaccess);
 		_releaseType(var_access->type);
@@ -585,36 +630,44 @@ void _releaseVarAccess(VarAccess *var_access) {
 	}
 }
 
-void _releaseMethodInvocation(MethodInvocation *methodInvocation) {
+void _releaseMethodInvocation(MethodInvocation *methodInvocation)
+{
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(methodInvocation != NULL) {
+	if (methodInvocation != NULL)
+	{
 		_releaseVarAccess(methodInvocation->vaccess);
 		_releaseArgumentList(methodInvocation->arglist);
 		free(methodInvocation);
 	}
 }
 
-void _releaseArgumentList(ArgumentList *argList) {
+void _releaseArgumentList(ArgumentList *argList)
+{
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(argList != NULL) {
+	if (argList != NULL)
+	{
 		_releaseExpression(argList->expression);
 		_releaseArgumentList(argList->arglist);
 		free(argList);
 	}
 }
 
-void _releaseFunctionBody(Function_body *functionBody) {
+void _releaseFunctionBody(Function_body *functionBody)
+{
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(functionBody != NULL) {
+	if (functionBody != NULL)
+	{
 		free(functionBody->log);
 		free(functionBody->ret);
 		free(functionBody);
 	}
 }
 
-void _releaseType(Type *type) {
+void _releaseType(Type *type)
+{
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(type != NULL) {
+	if (type != NULL)
+	{
 		free(type);
 	}
 }
