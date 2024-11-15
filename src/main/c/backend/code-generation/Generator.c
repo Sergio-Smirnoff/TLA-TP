@@ -984,11 +984,13 @@ char *_computeBlock(Block *block)
         char *returnExpr = _computeExpression(block->exp);
         size_t totalLen = strlen(returnExpr) + 9;
         char *result = malloc(sizeof(char) * totalLen);
-        if (result != NULL)
+        if(result != NULL)
         {
             snprintf(result, totalLen, "return %s;", returnExpr);
         }
+        free(returnExpr);
         return result;
+        
     }
 
     case throw:
@@ -996,10 +998,11 @@ char *_computeBlock(Block *block)
         char *throwExpr = _computeExpression(block->exp);
         size_t totalLen = strlen(throwExpr) + 9;
         char *result = malloc(sizeof(char) * totalLen);
-        if (result != NULL)
+        if(result != NULL)
         {
             snprintf(result, totalLen, "throw %s;", throwExpr);
         }
+        free(throwExpr);
         return result;
     }
 

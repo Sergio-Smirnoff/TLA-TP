@@ -343,6 +343,7 @@ void _releaseIfThenStatement(IfThenStatement *ifThenStatement) {
 		_releaseExpression(ifThenStatement->exp);
 		_releaseBlock(ifThenStatement->ifblock);
 		_releaseBlock(ifThenStatement->elseblock);
+		free(ifThenStatement);
 	}
 }
 
