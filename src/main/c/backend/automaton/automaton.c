@@ -764,6 +764,7 @@ char check_entry_transitions(minimization_table *table, uint64_t entry_index)
     {
         if (!state_belongs_in_entry(table, table->entries[entry_index]->state_indices[state_index], entry_index))
         {
+            moved++;
             uint64_t added_to = try_add_to_entries(table, new_entry_indices, new_entry_indices_size, table->entries[entry_index]->state_indices[state_index]);
             if (added_to == -1)
             {
