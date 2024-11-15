@@ -134,7 +134,7 @@ char *_computeLiteral(Literal *literal)
     {
         char *tok = malloc(sizeof(char) * 10);
         snprintf(tok, 10, "%d", literal->token);
-        return strdup(tok);
+        return tok;
     }
     else
     {
@@ -197,8 +197,7 @@ char *_computeVarAccess(VarAccess *varAccess)
     // Case 2: Method invocation (e.g., a.b.c.d.method())
     if (varAccess->method_invocation != NULL)
     {
-        char *methodResult = _computeMethodInvocation(varAccess->method_invocation);
-        return methodResult;
+        return  _computeMethodInvocation(varAccess->method_invocation);
     }
 
     return NULL;
@@ -253,18 +252,26 @@ char *_computePostfixExpression(PostfixExpression *postfixExpression)
 
         result = _computeVarAccess(postfixExpression->vaccess);
 
-        if (postfixExpression->token == INCREMENT)
-        {
-            size_t len = strlen(result) + 2;
-            result = realloc(result, len);
-            strcat(result, "++");
-        }
-        else if (postfixExpression->token == DECREMENT)
-        {
-            size_t len = strlen(result) + 2;
-            result = realloc(result, len);
-            strcat(result, "--");
-        }
+    if (postfixExpression->token == INCREMENT)
+    {
+        size_t len = strlen(result) + 3;
+        char *newResult = malloc(len);
+
+        snprintf(newResult, len, "%s++", result);
+
+        free(result);
+        result = newResult;
+    }
+    else if (postfixExpression->token == DECREMENT)
+    {
+        size_t len = strlen(result) + 3; 
+        char *newResult = malloc(len);
+
+        snprintf(newResult, len, "%s--", result);
+
+        free(result);
+        result = newResult;
+    }
     }
 
     return result;
@@ -698,7 +705,7 @@ char *_computeUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstanc
     {
         return strdup("");
     }
-    char *result;
+    char *result = NULL;
     size_t total;
     if (unqualifiedClassInstanceCreationExpression->unq_type == parargs)
     {
@@ -857,18 +864,21 @@ char *_computeIfThenStatement(IfThenStatement *ifThenStatement)
     free(conditionStr);
     free(ifStatementStr);
 
-    if (ifThenStatement->elseblock != NULL)
-    {
-        char *elseStatementStr = _computeBlock(ifThenStatement->elseblock);
-        size_t totalLength = strlen(result) + strlen(" else { }") + strlen(elseStatementStr) + 1;
+if (ifThenStatement->elseblock != NULL)
+{
+    char *elseStatementStr = _computeBlock(ifThenStatement->elseblock);
 
-        result = realloc(result, totalLength);
-        strcat(result, " else { ");
-        strcat(result, elseStatementStr);
-        strcat(result, " }");
+    size_t totalLength = strlen(result) + strlen(" else { }") + strlen(elseStatementStr) + 3;
 
-        free(elseStatementStr);
-    }
+    char *newResult = malloc(totalLength);
+
+    snprintf(newResult, totalLength, "%s else { %s }", result, elseStatementStr);
+
+    free(result);
+    result = newResult;
+
+    free(elseStatementStr);
+}
 
     return result;
 }
