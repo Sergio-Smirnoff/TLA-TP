@@ -463,6 +463,14 @@ struct Literal
 	Literal_type type;
 };
 
+// Assignment
+struct Assignment
+{
+	VarAccess *vaccess;
+	Expression *expression;
+	Token token;
+};
+
 // Other stuff
 struct NumericComparison
 {
@@ -488,13 +496,6 @@ struct ArgumentList
 {
 	Expression *expression;
 	ArgumentList *arglist;
-};
-
-struct Assignment
-{
-	VarAccess *vaccess;
-	Expression *expression;
-	Token token;
 };
 
 struct Function_body

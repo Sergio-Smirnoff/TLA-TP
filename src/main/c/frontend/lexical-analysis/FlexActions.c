@@ -152,7 +152,9 @@ void BeginRegexContentLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
 Token RegexContentLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext, Token token)
 {
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->string = strdup(lexicalAnalyzerContext->lexeme);
+	if(token != RANGER) {
+		lexicalAnalyzerContext->semanticValue->string = strdup(lexicalAnalyzerContext->lexeme);
+	}
 	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 	return token;
 }
@@ -219,7 +221,6 @@ Token DefaultLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
 	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
-	lexicalAnalyzerContext->semanticValue->string = strdup(lexicalAnalyzerContext->lexeme);
 	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 	return DEFAULT;
 }
