@@ -96,7 +96,8 @@ Token SimpleTokenInsert(LexicalAnalyzerContext *lexicalAnalyzerContext, Token to
 	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
-	// lexicalAnalyzerContext->semanticValue->token = token;
+	// si comento esta linea de abajo tira menos leaks pero se pierde el código java
+	lexicalAnalyzerContext->semanticValue->token = token;
 	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 	return token;
 }
