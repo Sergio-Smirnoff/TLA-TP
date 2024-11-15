@@ -132,12 +132,17 @@ void _computeRule(Rule *my_rule)
     }
 }
 
+char compare_tokens(token_t t1, token_t t2){
+    return t1 == t2;
+}
+
 void buildAutomaton(ComputationResult *computationResult)
 {
     transformer_list *aux = computationResult->list;
     result = computationResult;
     automat = new_automaton();
-    set_initial_state(automat, get_state(automat, new_state(automat, 0, NULL)));
+    uint64_t initial_state_index = new_state(automat, 0, NULL);
+    set_initial_state(automat, initial_state_index);
     int i = 1;
     while (aux != NULL)
     {
@@ -147,7 +152,7 @@ void buildAutomaton(ComputationResult *computationResult)
         }
         if (aux->lexeme != NULL)
         {
-            _computeLexemePrecursor(aux->lexeme, aux->returner, 0, 1);
+            _computeLexemePrecursor(aux->lexeme, aux->returner, initial_state_index, 1);
         }
         else
         {
@@ -158,8 +163,10 @@ void buildAutomaton(ComputationResult *computationResult)
         aux = aux->next;
     }
     automaton *dfa = get_deterministic_equivalent(automat);
+    automaton *mdfa = get_minimal_equivalent(dfa, compare_tokens);
     free_automaton(automat);
-    computationResult->automaton = dfa;
+    free_automaton(dfa);
+    computationResult->automaton = mdfa;
     return;
 }
 
@@ -193,7 +200,7 @@ uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *ret
                 uint64_t finalState = _computeLexeme(lexeme_precursor->lex, currentIndex, NULL, 0, 0);
                 return _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, finalState, useToken);
             }
-            else if(lexeme_precursor->chain_type == summation)
+            else if (lexeme_precursor->chain_type == summation)
             {
                 uint64_t finalState = new_state(automat, 0, NULL);
                 set_transition(automat, _computeLexeme(lexeme_precursor->lex, currentIndex, returner, 0, useToken), finalState, LAMBDA);
