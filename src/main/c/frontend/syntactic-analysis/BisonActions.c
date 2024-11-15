@@ -600,12 +600,13 @@ ConditionalAndExpression *JavaConditionalAndExpressionSemanticAction(Conditional
 }
 
 // EqualityExpression
-EqualityExpression *EqualityExpressionSemanticAction(UnaryExpression *uexp, EqualityExpression *eqexp)
+EqualityExpression *EqualityExpressionSemanticAction(UnaryExpression *uexp, Token token, EqualityExpression *eqexp)
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	EqualityExpression *equalityExpression = calloc(1, sizeof(EqualityExpression));
 	equalityExpression->uexp = uexp;
 	equalityExpression->eqexp = eqexp;
+	equalityExpression->token = token;
 	return equalityExpression;
 }
 

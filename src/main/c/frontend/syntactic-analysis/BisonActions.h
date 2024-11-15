@@ -113,7 +113,7 @@ ConditionalOrExpression *JavaConditionalOrExpressionSemanticAction(ConditionalAn
 ConditionalAndExpression *JavaConditionalAndExpressionSemanticAction(ConditionalAndExpression *andexp, EqualityExpression *eqexp);
 
 // EqualityExpression
-EqualityExpression *EqualityExpressionSemanticAction(UnaryExpression *uexp, EqualityExpression *eqexp);
+EqualityExpression *EqualityExpressionSemanticAction(UnaryExpression *uexp, Token token, EqualityExpression *eqexp);
 
 // UnaryExpression
 UnaryExpression *UnaryExpressionNumericComparisonSintaticAction(UnaryExpression *uexp1, NumericComparison *numcomp, PostfixExpression *uexp2);

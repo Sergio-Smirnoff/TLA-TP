@@ -348,6 +348,7 @@ struct EqualityExpression
 {
 	UnaryExpression *uexp;
 	EqualityExpression *eqexp;
+	Token token;
 };
 
 typedef enum GlobalUnaryExpressionType

@@ -462,7 +462,7 @@ char *_computeEqualityExpression(EqualityExpression *equalityExpression)
         char *left = _computeEqualityExpression(equalityExpression->eqexp);
         char *right = _computeUnaryExpression(equalityExpression->uexp);
 
-        const char *operator= "==";
+        const char *operator= equalityExpression->token == JAVA_EXACT_COMPARISON ? "==" : "!=";
 
         size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
         char *result = malloc(sizeof(char) * len);

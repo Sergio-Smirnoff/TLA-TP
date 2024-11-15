@@ -362,9 +362,9 @@ ConditionalAndExpression: EqualityExpression																																		{ 
 	| ConditionalAndExpression JAVA_AND EqualityExpression                                                        																	{ $$ = JavaConditionalAndExpressionSemanticAction($1,$3); }
 	;
 
-EqualityExpression: UnaryExpression												{ $$ = EqualityExpressionSemanticAction($1, NULL); }
-	| EqualityExpression JAVA_EXACT_COMPARISON UnaryExpression																														{ $$ = EqualityExpressionSemanticAction($3,$1); }
-	| EqualityExpression JAVA_NOT_EXACT_COMPARISON UnaryExpression																														{ $$ = EqualityExpressionSemanticAction($3,$1); }
+EqualityExpression: UnaryExpression												{ $$ = EqualityExpressionSemanticAction($1,  0, NULL); }
+	| EqualityExpression JAVA_EXACT_COMPARISON UnaryExpression																														{ $$ = EqualityExpressionSemanticAction($3,$2,$1); }
+	| EqualityExpression JAVA_NOT_EXACT_COMPARISON UnaryExpression																														{ $$ = EqualityExpressionSemanticAction($3,$2,$1); }
 	;
 
 UnaryExpression:  UnaryExpression NumericComparison PostfixExpression																													{ $$ = UnaryExpressionNumericComparisonSintaticAction($1,$2,$3); }
