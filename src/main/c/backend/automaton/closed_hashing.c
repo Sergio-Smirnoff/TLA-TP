@@ -83,6 +83,24 @@ char hashset_add(hashset *set, void *element)
     return overwrote;
 }
 
+char hashset_delete(hashset *set, const void *element)
+{
+    uint64_t hash_index = set->hasher(element) % set->elements_dim;
+    void **elements = set->elements;
+    while (elements[hash_index] != NULL)
+    {
+        if (set->compare(elements[hash_index], element))
+        {
+            elements[hash_index] = DUMMY;
+            set->elements_size--;
+            return 1;
+        }
+        hash_index++;
+        hash_index %= set->elements_dim;
+    }
+    return 0;
+}
+
 void *hashset_get(const hashset *set, const void *element)
 {
     uint64_t hash_index = set->hasher(element) % set->elements_dim;
@@ -125,4 +143,33 @@ void free_hashset(hashset *set)
     }
     free(set->elements);
     free(set);
+}
+
+hashset_iterator *hashset_get_iterator(const hashset *set)
+{
+    hashset_iterator *iterator = malloc(sizeof(hashset_iterator));
+    iterator->set = set;
+    iterator->index = 0;
+    return iterator;
+}
+
+void *hashset_next(hashset_iterator *iterator)
+{
+    while (iterator->index < iterator->set->elements_dim && (iterator->set->elements[iterator->index] == DUMMY || iterator->set->elements[iterator->index] == NULL))
+        iterator->index++;
+    if (iterator->index < iterator->set->elements_dim)
+        return iterator->set->elements[iterator->index];
+    return NULL;
+}
+
+char hashset_has_next(hashset_iterator *iterator)
+{
+    while (iterator->index < iterator->set->elements_dim && (iterator->set->elements[iterator->index] == DUMMY || iterator->set->elements[iterator->index] == NULL))
+        iterator->index++;
+    return iterator->index < iterator->set->elements_dim;
+}
+
+void free_hashset_iterator(hashset_iterator *iterator)
+{
+    free(iterator);
 }
