@@ -758,7 +758,7 @@ char compare_state_indices(const void *elem1, const void *elem2)
 uint64_t remove_elements(uint64_t *array, uint64_t array_size, char *remove_map)
 {
     uint64_t removed = 0;
-    for (uint64_t i = 0; i < array_size; i++)
+    for (uint64_t i = 0; i + removed < array_size; i++)
     {
         if (remove_map[i])
         {
@@ -766,7 +766,7 @@ uint64_t remove_elements(uint64_t *array, uint64_t array_size, char *remove_map)
             {
                 removed++;
                 array_size--;
-            } while (remove_map[i + removed]);
+            } while (i + removed < array_size && remove_map[i + removed]);
         }
         array[i] = array[i + removed];
     }
