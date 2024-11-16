@@ -569,11 +569,13 @@ typedef struct minimization_table_entry
     uint64_t state_indices_size;
     uint64_t state_indices_dim;
     uint64_t state_index;
+    uint64_t rule_count;
 } minimization_table_entry;
 
 typedef struct minimization_table
 {
     minimization_table_entry **entries;
+    uint64_t *state_lookup_table;
     uint64_t entries_size;
     uint64_t entries_dim;
     const automaton *source;
@@ -585,6 +587,7 @@ minimization_table *new_minimization_table(const automaton *source, automaton *r
 {
     minimization_table *table = malloc(sizeof(minimization_table));
     table->entries = malloc(sizeof(minimization_table_entry) * BLOCK);
+    table->state_lookup_table = malloc(sizeof(uint64_t) * source->states_size);
     table->entries_size = 0;
     table->entries_dim = BLOCK;
     table->source = source;
@@ -604,12 +607,7 @@ uint64_t find_state_in_minimization_table_entry(const minimization_table_entry *
 
 uint64_t find_state_in_minimization_table(const minimization_table *table, uint64_t state_index)
 {
-    for (uint64_t entry_index = 0; entry_index < table->entries_size; entry_index++)
-    {
-        if (find_state_in_minimization_table_entry(table->entries[entry_index], state_index) != -1)
-            return entry_index;
-    }
-    return -1;
+    return table->state_lookup_table[state_index];
 }
 
 void resize_minimization_table_entry(minimization_table_entry *entry)
@@ -654,7 +652,9 @@ uint64_t new_minimization_table_entry(minimization_table *table, uint64_t first_
     entry->state_index = new_state(table->result, throws_token(source_state), get_token(source_state));
 
     check_minimization_table_resize(table);
+    entry->rule_count = source_state->delta_size;
     table->entries[table->entries_size] = entry;
+    table->state_lookup_table[first_state_index] = table->entries_size;
     return table->entries_size++;
 }
 
@@ -666,6 +666,7 @@ void free_minimization_table_entry(minimization_table_entry *entry)
 
 void free_minimization_table(minimization_table *table)
 {
+    free(table->state_lookup_table);
     for (uint64_t i = 0; i < table->entries_size; i++)
         free_minimization_table_entry(table->entries[i]);
     free(table->entries);
@@ -680,6 +681,7 @@ void add_state_by_token_to_minimization_table(minimization_table *table, compare
         automaton_state *entry_state = get_state(table->result, table->entries[entry_index]->state_index);
         if (throws_token(entry_state) == throws_token(state) && ((!throws_token(entry_state) && !throws_token(state)) || are_equals(get_token(entry_state), get_token(state))))
         {
+            table->state_lookup_table[state_index] = entry_index;
             add_state_to_minimization_table_entry(table->entries[entry_index], state_index);
             return;
         }
@@ -696,32 +698,18 @@ void populate_minimization_table_entry(minimization_table *table, uint64_t entry
     }
 }
 
-void remap_transitions(minimization_table *table, uint64_t previous_entry_index, uint64_t new_entry_index, uint64_t moved_state_index)
-{
-    for (uint64_t entry_index = 0; entry_index < table->entries_size; entry_index++)
-    {
-        automaton_state *current_state = get_state(table->result, table->entries[entry_index]->state_index);
-        automaton_state *current_state_template = get_state(table->source, table->entries[entry_index]->state_indices[0]);
-        for (uint64_t rule_index = 0; rule_index < current_state_template->delta_size; rule_index++)
-        {
-            if (current_state_template->delta[rule_index]->next_indices[0] == moved_state_index)
-            {
-                current_state->delta[rule_index]->next_indices[0] = new_entry_index;
-            }
-        }
-    }
-}
+#define TEMPLATING_STATE(entry_index) (table->source->states[table->entries[(entry_index)]->state_indices[0]])
 
 char state_belongs_in_entry(const minimization_table *table, uint64_t state_index, uint64_t entry_index)
 {
     minimization_table_entry *entry = table->entries[entry_index];
     automaton_state *state = get_state(table->source, state_index);
     automaton_state *entry_state = get_state(table->result, table->entries[entry_index]->state_index);
-    if (entry_state->delta_size != state->delta_size)
+    if (table->entries[entry_index]->rule_count != state->delta_size)
         return 0;
     for (uint64_t rule_index = 0; rule_index < table->source->states[state_index]->delta_size; rule_index++)
     {
-        if (table->source->states[state_index]->delta[rule_index]->matcher != table->result->states[table->entries[entry_index]->state_index]->delta[rule_index]->matcher || (find_state_in_minimization_table(table, table->source->states[state_index]->delta[rule_index]->next_indices[0]) != table->result->states[table->entries[entry_index]->state_index]->delta[rule_index]->next_indices[0]))
+        if (table->source->states[state_index]->delta[rule_index]->matcher != TEMPLATING_STATE(entry_index)->delta[rule_index]->matcher || (find_state_in_minimization_table(table, table->source->states[state_index]->delta[rule_index]->next_indices[0]) != find_state_in_minimization_table(table, TEMPLATING_STATE(entry_index)->delta[rule_index]->next_indices[0])))
             return 0;
     }
     return 1;
@@ -764,16 +752,15 @@ char check_entry_transitions(minimization_table *table, uint64_t entry_index)
     {
         if (!state_belongs_in_entry(table, table->entries[entry_index]->state_indices[state_index], entry_index))
         {
+            moved++;
             uint64_t added_to = try_add_to_entries(table, new_entry_indices, new_entry_indices_size, table->entries[entry_index]->state_indices[state_index]);
             if (added_to == -1)
             {
                 new_entry_indices[new_entry_indices_size++] = new_minimization_table_entry(table, table->entries[entry_index]->state_indices[state_index]);
-                populate_minimization_table_entry(table, new_entry_indices[new_entry_indices_size - 1]);
-                remap_transitions(table, entry_index, new_entry_indices[new_entry_indices_size - 1], table->entries[entry_index]->state_indices[state_index]);
             }
             else
             {
-                remap_transitions(table, entry_index, added_to, table->entries[entry_index]->state_indices[state_index]);
+                table->state_lookup_table[table->entries[entry_index]->state_indices[state_index]] = added_to;
             }
             remove_state_from_entry(table, entry_index, state_index);
             iteration_limit--;
@@ -839,16 +826,11 @@ automaton *get_minimal_equivalent(const automaton *dfa, compare_token are_equals
             add_state_by_token_to_minimization_table(table, are_equals, state_index);
     }
     free(reachables);
+    while (check_transitions(table));
     for (uint64_t entry_index = 0; entry_index < table->entries_size; entry_index++)
     {
         populate_minimization_table_entry(table, entry_index);
     }
-    print_minimization_table(table);
-    while (check_transitions(table))
-    {
-        print_minimization_table(table);
-    }
-    print_minimization_table(table);
     free_minimization_table(table);
     return minimal_a;
 }
