@@ -702,9 +702,7 @@ void populate_minimization_table_entry(minimization_table *table, uint64_t entry
 
 char state_belongs_in_entry(const minimization_table *table, uint64_t state_index, uint64_t entry_index)
 {
-    minimization_table_entry *entry = table->entries[entry_index];
     automaton_state *state = get_state(table->source, state_index);
-    automaton_state *entry_state = get_state(table->result, table->entries[entry_index]->state_index);
     if (table->entries[entry_index]->rule_count != state->delta_size)
         return 0;
     for (uint64_t rule_index = 0; rule_index < table->source->states[state_index]->delta_size; rule_index++)
@@ -740,6 +738,41 @@ char remove_state_from_entry(minimization_table *table, uint64_t entry_index, ui
     return 1;
 }
 
+#define IDX(x) (*((uint64_t *)(x)))
+
+void free_state_index(void *elem)
+{
+    free(elem);
+}
+
+uint64_t hash_state_index(const void *element)
+{
+    return IDX(element);
+}
+
+char compare_state_indices(const void *elem1, const void *elem2)
+{
+    return IDX(elem1) == IDX(elem2);
+}
+
+uint64_t remove_elements(uint64_t *array, uint64_t array_size, char *remove_map)
+{
+    uint64_t removed = 0;
+    for (uint64_t i = 0; i < array_size; i++)
+    {
+        if (remove_map[i])
+        {
+            do
+            {
+                removed++;
+                array_size--;
+            } while (remove_map[i + removed]);
+        }
+        array[i] = array[i + removed];
+    }
+    return removed;
+}
+
 char check_entry_transitions(minimization_table *table, uint64_t entry_index)
 {
     uint64_t moved = 0;
@@ -747,6 +780,7 @@ char check_entry_transitions(minimization_table *table, uint64_t entry_index)
     uint64_t *new_entry_indices = malloc(sizeof(uint64_t) * table->source->states_size);
     uint64_t new_entry_indices_size = 0;
     uint64_t iteration_limit = entry->state_indices_size;
+    char *remove_map = calloc(iteration_limit, sizeof(char));
     // begins in 1, since the entry has the same transitions as the first state entered into it, that state will always belong
     for (uint64_t state_index = 1; state_index < iteration_limit; state_index++)
     {
@@ -762,11 +796,12 @@ char check_entry_transitions(minimization_table *table, uint64_t entry_index)
             {
                 table->state_lookup_table[table->entries[entry_index]->state_indices[state_index]] = added_to;
             }
-            remove_state_from_entry(table, entry_index, state_index);
-            iteration_limit--;
-            state_index--;
+            remove_map[state_index] = 1;
         }
     }
+    table->entries[entry_index]->state_indices_size -= remove_elements(table->entries[entry_index]->state_indices, iteration_limit, remove_map);
+    ;
+    free(remove_map);
     free(new_entry_indices);
     return moved > 0;
 }
