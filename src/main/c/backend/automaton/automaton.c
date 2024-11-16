@@ -766,8 +766,9 @@ uint64_t remove_elements(uint64_t *array, uint64_t array_size, char *remove_map)
             {
                 removed++;
                 array_size--;
-            } while (i + removed < array_size && remove_map[i + removed]);
+            } while (i < array_size && remove_map[i + removed]);
         }
+        if(i < array_size)
         array[i] = array[i + removed];
     }
     return removed;
