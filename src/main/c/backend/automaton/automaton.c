@@ -818,18 +818,43 @@ char check_transitions(minimization_table *table)
     return made_changes && table->entries_size < table->source->states_size;
 }
 
+typedef struct processing_queue_element
+{
+    uint64_t state_index;
+    uint64_t rule_index;
+} processing_queue_element;
+
 uint64_t add_reachable_states(const automaton *source, char *reachables, uint64_t state_index)
 {
-    automaton_state *state = get_state(source, state_index);
     uint64_t reachables_count = 0;
-    for (uint64_t rule_index = 0; rule_index < state->delta_size; rule_index++)
+    processing_queue_element *processing_queue = malloc(sizeof(processing_queue_element) * source->states_size);
+    processing_queue[0].state_index = state_index;
+    processing_queue[0].rule_index = 0;
+    uint64_t processing_queue_size = 1;
+    while (processing_queue_size)
     {
-        if (!reachables[state->delta[rule_index]->next_indices[0]])
+        char leave_flag = 0;
+        automaton_state *state = get_state(source, processing_queue[processing_queue_size - 1].state_index);
+        for (uint64_t rule_index = processing_queue[processing_queue_size - 1].rule_index; !leave_flag && rule_index < state->delta_size; rule_index++)
         {
-            reachables[state->delta[rule_index]->next_indices[0]] = 1;
-            reachables_count += 1 + add_reachable_states(source, reachables, state->delta[rule_index]->next_indices[0]);
+            if (!reachables[state->delta[rule_index]->next_indices[0]])
+            {
+
+                reachables_count++;
+                reachables[state->delta[rule_index]->next_indices[0]] = 1;
+                processing_queue[processing_queue_size - 1].rule_index = rule_index + 1;
+                processing_queue[processing_queue_size].rule_index = 0;
+                processing_queue[processing_queue_size].state_index = state->delta[rule_index]->next_indices[0];
+                processing_queue_size++;
+                leave_flag = 1;
+            }
+        }
+        if (!leave_flag)
+        {
+            processing_queue_size--;
         }
     }
+    free(processing_queue);
     return reachables_count;
 }
 
