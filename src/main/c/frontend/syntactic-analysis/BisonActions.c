@@ -185,11 +185,12 @@ Lexeme *LexemeSemanticAction(char *string, Regexes *regex_class, Closure *closur
 	return lexeme;
 }
 
-Lexeme *LexemeStringSemanticAction(char *string){
+Lexeme *LexemeStringSemanticAction(char *string)
+{
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Lexeme *lexeme = calloc(1, sizeof(Lexeme));
 	lexeme->string = string;
-	lexeme->type=string_lexeme;
+	lexeme->type = string_lexeme;
 	return lexeme;
 }
 
@@ -318,10 +319,10 @@ Action *ActionJavaSemanticAction(Block *body)
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Action *action = calloc(1, sizeof(Action));
-	
+
 	action->type = function_body;
 	action->block = body;
-	
+
 	return action;
 }
 
@@ -600,12 +601,13 @@ ConditionalAndExpression *JavaConditionalAndExpressionSemanticAction(Conditional
 }
 
 // EqualityExpression
-EqualityExpression *EqualityExpressionSemanticAction(UnaryExpression *uexp, EqualityExpression *eqexp)
+EqualityExpression *EqualityExpressionSemanticAction(UnaryExpression *uexp, Token token, EqualityExpression *eqexp)
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	EqualityExpression *equalityExpression = calloc(1, sizeof(EqualityExpression));
 	equalityExpression->uexp = uexp;
 	equalityExpression->eqexp = eqexp;
+	equalityExpression->token = token;
 	return equalityExpression;
 }
 
@@ -699,7 +701,7 @@ Assignment *AssignmentSemanticAction(VarAccess *vaccess, Token token, Expression
 	assignment->vaccess = vaccess;
 	assignment->expression = exp;
 	assignment->token = token;
-	
+
 	return assignment;
 }
 

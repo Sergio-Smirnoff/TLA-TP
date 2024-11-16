@@ -16,12 +16,11 @@ if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
 	message(NOTICE "The C compiler is GCC.")
 
 	# Options for GCC.
-	# add_compile_options(-fsanitize=address)
 	add_compile_options(-O3)
 	add_compile_options(-static-libgcc)
 	add_compile_options(-std=gnu99)
-	# add_link_options(-fsanitize=address)
-	# add_link_options(-static-libasan)
+	add_link_options(-fsanitize=address)
+	add_link_options(-static-libasan)
 
 	# Compiles the scanner with Flex.
 	add_custom_command(

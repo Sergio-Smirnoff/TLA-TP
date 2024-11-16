@@ -826,7 +826,8 @@ automaton *get_minimal_equivalent(const automaton *dfa, compare_token are_equals
             add_state_by_token_to_minimization_table(table, are_equals, state_index);
     }
     free(reachables);
-    while (check_transitions(table));
+    while (check_transitions(table))
+        ;
     for (uint64_t entry_index = 0; entry_index < table->entries_size; entry_index++)
     {
         populate_minimization_table_entry(table, entry_index);

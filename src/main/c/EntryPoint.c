@@ -9,13 +9,16 @@
 #include "shared/Logger.h"
 #include "shared/String.h"
 
+void freeRegexLists(CompilerState *compilerState);
+
 /**
  * The main entry-point of the entire application. If you use "strtok" to
  * parse anything inside this project instead of using Flex and Bison, I will
  * find you, and I will kill you (Bryan Mills; "Taken", 2008).
  */
-const int main(const int count, const char ** arguments) {
-	Logger * logger = createLogger("EntryPoint");
+const int main(const int count, const char **arguments)
+{
+	Logger *logger = createLogger("EntryPoint");
 	initializeFlexActionsModule();
 	initializeBisonActionsModule();
 	initializeSyntacticAnalyzerModule();
@@ -24,50 +27,58 @@ const int main(const int count, const char ** arguments) {
 	initializeGeneratorModule();
 
 	// Logs the arguments of the application.
-	for (int k = 0; k < count; ++k) {
+	for (int k = 0; k < count; ++k)
+	{
 		logDebugging(logger, "Argument %d: \"%s\"", k, arguments[k]);
 	}
 
 	CompilerState compilerState = {
-    	.abstractSyntaxTree = NULL,
-    	.succeed = false,
-    	.validRegexList = malloc(sizeof(Valid_Regex_List)),
-    	.invalidRegexList = malloc(sizeof(Invalid_Regex_List)),
-		.automaton = NULL
-	};
+		.abstractSyntaxTree = NULL,
+		.succeed = false,
+		.validRegexList = malloc(sizeof(Valid_Regex_List)),
+		.invalidRegexList = malloc(sizeof(Invalid_Regex_List)),
+		.automaton = NULL};
 
-
-	if (compilerState.validRegexList != NULL) {
+	if (compilerState.validRegexList != NULL)
+	{
 		compilerState.validRegexList->size = 0;
 		compilerState.validRegexList->head = NULL;
 	}
-	if (compilerState.invalidRegexList != NULL) {
+	if (compilerState.invalidRegexList != NULL)
+	{
 		compilerState.invalidRegexList->size = 0;
 		compilerState.invalidRegexList->head = NULL;
 	}
 
 	const SyntacticAnalysisStatus syntacticAnalysisStatus = parse(&compilerState);
 	CompilationStatus compilationStatus = SUCCEED;
-	Program* program = compilerState.abstractSyntaxTree;
-	if (syntacticAnalysisStatus == ACCEPT) {
+	Program *program = compilerState.abstractSyntaxTree;
+	if (syntacticAnalysisStatus == ACCEPT)
+	{
 		// ----------------------------------------------------------------------------------------
 		// Beginning of the Backend... ------------------------------------------------------------
 		logDebugging(logger, "Computing expression value...");
-		
-		ComputationResult* computationResult = computeProgram(program, compilerState.validRegexList);
-		if(!computationResult->succeed) {
+
+		ComputationResult *computationResult = computeProgram(program, compilerState.validRegexList);
+		if (!computationResult->succeed)
+		{
 			logError(logger, "The computation phase rejects the input program.");
 			logError(logger, "Error: %s", computationResult->errorMessage);
 			free(computationResult->errorMessage);
 			compilationStatus = FAILED;
-		} else {
+		}
+		else
+		{
 			buildAutomaton(computationResult);
-			if(!computationResult->succeed) {
+			if (!computationResult->succeed)
+			{
 				logError(logger, "The computation phase rejects the input program.");
 				logError(logger, "Error: %s", computationResult->errorMessage);
 				free(computationResult->errorMessage);
 				compilationStatus = FAILED;
-			} else {
+			}
+			else
+			{
 				compilerState.automaton = computationResult->automaton;
 				generate(&compilerState);
 			}
@@ -76,22 +87,28 @@ const int main(const int count, const char ** arguments) {
 		}
 		// ...end of the Backend. -----------------------------------------------------------------
 		// ----------------------------------------------------------------------------------------
-		logDebugging(logger, "Releasing AST resources...");
-		//releaseProgram(program);
-	} else {
-		if (compilerState.invalidRegexList->size > 0) {
-			Invalid_Regex_List_Node* current = compilerState.invalidRegexList->head;
+	}
+	else
+	{
+		if (compilerState.invalidRegexList->size > 0)
+		{
+			Invalid_Regex_List_Node *current = compilerState.invalidRegexList->head;
 
-			while (current != NULL) {
+			while (current != NULL)
+			{
 				logError(logger, "Invalid regex: %s\n", current->regex_id);
 				current = current->next;
 			}
 		}
 
 		logError(logger, "The syntactic-analysis phase rejects the input program.");
-	
+
 		compilationStatus = FAILED;
 	}
+
+	logDebugging(logger, "Releasing AST resources...");
+	releaseProgram(program);
+	freeRegexLists(&compilerState);
 
 	logDebugging(logger, "Releasing modules resources...");
 	shutdownGeneratorModule();
@@ -105,4 +122,30 @@ const int main(const int count, const char ** arguments) {
 
 	printf("Compilation %s.\n", compilationStatus == SUCCEED ? "succeeds" : "fails");
 	return compilationStatus;
+}
+
+void freeRegexLists(CompilerState *compilerState)
+{
+	Invalid_Regex_List_Node *currentInvalid = compilerState->invalidRegexList->head;
+	Invalid_Regex_List_Node *auxInvalid;
+
+	while (currentInvalid != NULL)
+	{
+		auxInvalid = currentInvalid;
+		currentInvalid = currentInvalid->next;
+		free(auxInvalid);
+	}
+
+	Valid_Regex_List_Node *currentValid = compilerState->validRegexList->head;
+	Valid_Regex_List_Node *auxValid;
+
+	while (currentValid != NULL)
+	{
+		auxValid = currentValid;
+		currentValid = currentValid->next;
+		free(auxValid);
+	}
+
+	free(compilerState->invalidRegexList);
+	free(compilerState->validRegexList);
 }

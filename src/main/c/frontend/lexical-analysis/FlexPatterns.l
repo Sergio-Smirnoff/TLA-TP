@@ -89,8 +89,8 @@
 <STRING>"\""                                    { EndStringLexeme(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 
 "*"                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), STAR); }
-"++"                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), INCREMENT); }
-"--"                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), DECREMENT); }
+"++"                                            { return SimpleTokenInsert(createLexicalAnalyzerContext(), INCREMENT); }
+"--"                                            { return SimpleTokenInsert(createLexicalAnalyzerContext(), DECREMENT); }
 "+"                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), PLUS); }
 "-"                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), MINUS); }
 "/"                                             { return SimpleTokenInsert(createLexicalAnalyzerContext(), DIV); }
@@ -107,7 +107,7 @@
 "("                                             { return OpenParenthesesLexeme(createLexicalAnalyzerContext()); }
 ")"                                             { return CloseParenthesesLexeme(createLexicalAnalyzerContext()); }
 
-[a-zA-Z_$][a-zA-Z0-9_$]*                                  { return VarNameLexeme(createLexicalAnalyzerContext()); }
+[a-zA-Z_$][a-zA-Z0-9_$]*                        { return VarNameLexeme(createLexicalAnalyzerContext()); }
 [0-9]+                                          { return VarNameLexeme(createLexicalAnalyzerContext()); }
 [0-9]+"."[0-9]+                                 { return VarNameLexeme(createLexicalAnalyzerContext()); }
 

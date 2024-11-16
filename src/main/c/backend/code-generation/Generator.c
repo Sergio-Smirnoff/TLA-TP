@@ -134,7 +134,7 @@ char *_computeLiteral(Literal *literal)
     {
         char *tok = malloc(sizeof(char) * 10);
         snprintf(tok, 10, "%d", literal->token);
-        return strdup(tok);
+        return tok;
     }
     else
     {
@@ -197,8 +197,7 @@ char *_computeVarAccess(VarAccess *varAccess)
     // Case 2: Method invocation (e.g., a.b.c.d.method())
     if (varAccess->method_invocation != NULL)
     {
-        char *methodResult = _computeMethodInvocation(varAccess->method_invocation);
-        return methodResult;
+        return _computeMethodInvocation(varAccess->method_invocation);
     }
 
     return NULL;
@@ -255,15 +254,23 @@ char *_computePostfixExpression(PostfixExpression *postfixExpression)
 
         if (postfixExpression->token == INCREMENT)
         {
-            size_t len = strlen(result) + 2;
-            result = realloc(result, len);
-            strcat(result, "++");
+            size_t len = strlen(result) + 3;
+            char *newResult = malloc(len);
+
+            snprintf(newResult, len, "%s++", result);
+
+            free(result);
+            result = newResult;
         }
         else if (postfixExpression->token == DECREMENT)
         {
-            size_t len = strlen(result) + 2;
-            result = realloc(result, len);
-            strcat(result, "--");
+            size_t len = strlen(result) + 3;
+            char *newResult = malloc(len);
+
+            snprintf(newResult, len, "%s--", result);
+
+            free(result);
+            result = newResult;
         }
     }
 
@@ -455,7 +462,7 @@ char *_computeEqualityExpression(EqualityExpression *equalityExpression)
         char *left = _computeEqualityExpression(equalityExpression->eqexp);
         char *right = _computeUnaryExpression(equalityExpression->uexp);
 
-        const char *operator= "==";
+        const char *operator= equalityExpression->token == JAVA_EXACT_COMPARISON ? "==" : "!=";
 
         size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
         char *result = malloc(sizeof(char) * len);
@@ -569,49 +576,49 @@ char *_computeAssignment(Assignment *assignment)
     char *left = _computeVarAccess(assignment->vaccess);
 
     char *right = _computeExpression(assignment->expression);
-    
-    char *operator = NULL;
+
+    char *operator= NULL;
     switch (assignment->token)
     {
-        case JAVA_ASSIGNMENT:
-            operator = "=";
-            break;
-        case JAVA_PLUS_ASSIGN:
-            operator = "+=";
-            break;
-        case JAVA_MINUS_ASSIGN:
-            operator = "-=";
-            break;
-        case JAVA_MULTIPLY_ASSIGN:
-            operator = "*=";
-            break;
-        case JAVA_DIVIDE_ASSIGN:
-            operator = "/=";
-            break;
-        case JAVA_MODULO_ASSIGN:
-            operator = "%=";
-            break;
-        case JAVA_LEFT_SHIFT_ASSIGN:
-            operator = "<<=";
-            break;
-        case JAVA_RIGHT_SHIFT_ASSIGN:
-            operator = ">>=";
-            break;
-        case JAVA_UNSIGNED_RIGHT_SHIFT_ASSIGN:
-            operator = ">>>=";
-            break;
-        case JAVA_AND_ASSIGN:
-            operator = "&=";
-            break;
-        case JAVA_XOR_ASSIGN:
-            operator = "^=";
-            break;
-        case JAVA_OR_ASSIGN:
-            operator = "|=";
-            break;
-        default:
-            operator = "unknown";
-            break;
+    case JAVA_ASSIGNMENT:
+        operator= "=";
+        break;
+    case JAVA_PLUS_ASSIGN:
+        operator= "+=";
+        break;
+    case JAVA_MINUS_ASSIGN:
+        operator= "-=";
+        break;
+    case JAVA_MULTIPLY_ASSIGN:
+        operator= "*=";
+        break;
+    case JAVA_DIVIDE_ASSIGN:
+        operator= "/=";
+        break;
+    case JAVA_MODULO_ASSIGN:
+        operator= "%=";
+        break;
+    case JAVA_LEFT_SHIFT_ASSIGN:
+        operator= "<<=";
+        break;
+    case JAVA_RIGHT_SHIFT_ASSIGN:
+        operator= ">>=";
+        break;
+    case JAVA_UNSIGNED_RIGHT_SHIFT_ASSIGN:
+        operator= ">>>=";
+        break;
+    case JAVA_AND_ASSIGN:
+        operator= "&=";
+        break;
+    case JAVA_XOR_ASSIGN:
+        operator= "^=";
+        break;
+    case JAVA_OR_ASSIGN:
+        operator= "|=";
+        break;
+    default:
+        operator= "unknown";
+        break;
     }
 
     size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
@@ -698,7 +705,7 @@ char *_computeUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstanc
     {
         return strdup("");
     }
-    char *result;
+    char *result = NULL;
     size_t total;
     if (unqualifiedClassInstanceCreationExpression->unq_type == parargs)
     {
@@ -860,12 +867,15 @@ char *_computeIfThenStatement(IfThenStatement *ifThenStatement)
     if (ifThenStatement->elseblock != NULL)
     {
         char *elseStatementStr = _computeBlock(ifThenStatement->elseblock);
-        size_t totalLength = strlen(result) + strlen(" else { }") + strlen(elseStatementStr) + 1;
 
-        result = realloc(result, totalLength);
-        strcat(result, " else { ");
-        strcat(result, elseStatementStr);
-        strcat(result, " }");
+        size_t totalLength = strlen(result) + strlen(" else { }") + strlen(elseStatementStr) + 3;
+
+        char *newResult = malloc(totalLength);
+
+        snprintf(newResult, totalLength, "%s else { %s }", result, elseStatementStr);
+
+        free(result);
+        result = newResult;
 
         free(elseStatementStr);
     }
@@ -978,6 +988,7 @@ char *_computeBlock(Block *block)
         {
             snprintf(result, totalLen, "return %s;", returnExpr);
         }
+        free(returnExpr);
         return result;
     }
 
@@ -990,6 +1001,7 @@ char *_computeBlock(Block *block)
         {
             snprintf(result, totalLen, "throw %s;", throwExpr);
         }
+        free(throwExpr);
         return result;
     }
 
@@ -1156,13 +1168,11 @@ static void _generatePrologue(void)
             "//EDIT THIS IMPORT TO MATCH YOUR PACKAGE\n"
             "import static Your_package.Automaton.Token.*;\n"
             "\n"
-            "\n"
             "public abstract class Automaton {\n"
             "\n"
             "    // EDIT THIS ENUM TO MATCH YOUR TOKENS\n"
             "    public enum Token {\n"
             "        PUT_YOUR_USED_TOKENS_HERE, UNKNOWN;\n"
-            "\n"
             "\n"
             "        private String stringContent;\n"
             "        private Integer intContent;\n"
@@ -1270,7 +1280,7 @@ static void _generatePrologue(void)
             "\n"
             "    private static void foundTokenManageState(Token token) {\n"
             "        Automaton.stateTracker.lexeme = new StringBuilder();\n"
-            "		 if(token != null)\n"
+            "		if (token != null)\n"
             "	        Automaton.stateTracker.token = token;\n"
             "    }\n"
             "\n"
@@ -1302,8 +1312,9 @@ static void _generatePrologue(void)
             "            consumeIndex = readIndex;\n"
             "        }\n"
             "        updateStateInRange(charArray, startIndex, consumeIndex);\n"
-            "        if(foundToken == null)\n"
-            "		 	throw new NoSuchElementException(\"Error on row \%d, from column \%d to column \%d: \%s\".formatted(stateTracker.attribute.row, startIndex, consumeIndex, stateTracker.lexeme));\n"
+            "        if (foundToken == null) {\n"
+            "		 	throw new NoSuchElementException(\"Error on row \%d, from column \%d to column \%d: \%s\"\n"
+            "                   .formatted(stateTracker.attribute.row, startIndex, consumeIndex, stateTracker.lexeme));\n"
             "        return new TokenAndConsume(foundToken.apply(stateTracker), consumeIndex);\n"
             "    }\n"
             "\n"
@@ -1313,10 +1324,10 @@ static void _generatePrologue(void)
             "        int i;\n"
             "        char[] chars = s.toCharArray();\n"
             "        List<Token> tokens = new ArrayList<>();\n"
-            "        for (i = 0; i < chars.length; ) {\n"
+            "        for (i = 0; i < chars.length;) {\n"
             "            tokenAndConsume = getNextToken(chars, i);\n"
             "            foundTokenManageState(tokenAndConsume.token);\n"
-            "			 if(tokenAndConsume.token != null)\n"
+            "           if (tokenAndConsume.token != null)\n"
             "            	tokens.add(tokenAndConsume.token);\n"
             "            i = tokenAndConsume.consumeIndex;\n"
             "        }\n"

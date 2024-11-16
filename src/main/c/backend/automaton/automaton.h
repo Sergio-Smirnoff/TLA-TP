@@ -142,10 +142,10 @@ typedef char (*compare_token)(token_t, token_t);
 
 /**
  * @brief Get the minimal equivalent of a deterministic finite automaton
- * 
- * @param dfa 
+ *
+ * @param dfa
  * @param are_equals A function that returns 1 if two tokens are considered equal, 0 otherwise
- * @return automaton* 
+ * @return automaton*
  */
 automaton *get_minimal_equivalent(const automaton *dfa, compare_token are_equals);
 
