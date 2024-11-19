@@ -85,8 +85,10 @@ ComputationResult *computeProgram(Program *tree, Valid_Regex_List *regexList)
     _ruleset(tree->ruleset);
     if (list->lexeme == NULL)
     {
-        result->succeed = false;
         result->errorMessage = strdup("No rules");
+        return result;
+    } if(result->errorMessage != NULL){
+        result->succeed = false;
         return result;
     }
     result->succeed = true;
@@ -101,7 +103,7 @@ void _ruleset(Ruleset *my_ruleset)
         return;
     }
     _computeRule(my_ruleset->rule);
-    if(result->succeed == false){
+    if(result->errorMessage != NULL){
         return;
     }
     _ruleset(my_ruleset->ruleset);
@@ -141,7 +143,6 @@ void _computeRule(Rule *my_rule)
         }
         break;
     default:
-        result->succeed = false;
         result->errorMessage = strdup("Invalid rule type");
         break;
     }
@@ -162,14 +163,14 @@ void buildAutomaton(ComputationResult *computationResult)
     int i = 1;
     while (aux != NULL)
     {
-        if (result->succeed == false)
+        if (result->errorMessage != NULL)
         {
             return;
         }
         if (aux->lexeme != NULL)
         {
             _computeLexemePrecursor(aux->lexeme, aux->returner, initial_state_index, 1);
-            if (result->succeed == false)
+            if (result->errorMessage != NULL)
             {
                 free_automaton(automat);
                 return;
@@ -231,7 +232,6 @@ uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *ret
             return currentIndex;
         }
     default:
-        result->succeed = false;
         result->errorMessage = strdup("Invalid lexeme precursor type");
         return currentIndex;
     }
@@ -321,7 +321,6 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
         set_transition(automat, currentIndex, newFinal, LAMBDA);
         return newFinal;
     default:
-        result->succeed = false;
         result->errorMessage = strdup("Invalid lexeme type");
         return currentIndex;
     }
@@ -351,7 +350,7 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
 void _regexContent(Regexes *regexes, uint64_t startIndex, uint64_t endIndex)
 {
     _computeRegexClass(regexes->regexClass, startIndex, endIndex);
-    if(result->succeed == false){
+    if(result->errorMessage != NULL){
         return;
     }
     if (regexes->regexes != NULL)
@@ -375,7 +374,6 @@ void _computeRegexClass(Regex_class *regexClass, uint64_t startIndex, uint64_t e
             char *aux = _strConcat(regexClass->startSymbol->symbol_tok, "-");
             char *range = _strConcat(aux, regexClass->endSymbol->symbol_tok);
             char *to_print = _strConcat("Invalid range: ", range);
-            result->succeed = false;
             result->errorMessage = to_print;
             free(range);
             free(aux);
@@ -402,7 +400,6 @@ void _computeRegexClass(Regex_class *regexClass, uint64_t startIndex, uint64_t e
         }
         return;
     default:
-        result->succeed = false;
         result->errorMessage = strdup("Invalid regex class type");
         return;
     }

@@ -88,7 +88,7 @@ char *_computeTypes(Type *type)
 
     switch (type->stuff)
     {
-    case STRING_T:
+    case STRING_TYPE:
         result = strdup("String");
         break;
 
@@ -104,7 +104,7 @@ char *_computeTypes(Type *type)
         result = strdup("Boolean");
         break;
 
-    case TOKEN_T:
+    case TOKEN_TYPE:
         result = strdup("Token");
         break;
 
