@@ -88,7 +88,7 @@ char *_computeTypes(Type *type)
 
     switch (type->stuff)
     {
-    case STRING_TYPE:
+    case STRING_T:
         result = strdup("String");
         break;
 
@@ -104,7 +104,7 @@ char *_computeTypes(Type *type)
         result = strdup("Boolean");
         break;
 
-    case TOKEN_TYPE:
+    case TOKEN_T:
         result = strdup("Token");
         break;
 
@@ -123,14 +123,14 @@ char *_computeLiteral(Literal *literal)
         return NULL;
     }
 
-    if (literal->type == str)
+    if (literal->type == STRING_T)
     {
         size_t len = strlen(literal->str) + 3;
         char *stringinastring = malloc(sizeof(char) * len);
         snprintf(stringinastring, len, "\"%s\"", literal->str);
         return stringinastring;
     }
-    else if (literal->type == token)
+    else if (literal->type == TOKEN_T)
     {
         char *tok = malloc(sizeof(char) * 10);
         snprintf(tok, 10, "%d", literal->token);
@@ -288,7 +288,7 @@ char *_computeUnaryExpression(UnaryExpression *unaryExpression)
 
     switch (unaryExpression->globaltype)
     {
-    case numericComparison:
+    case NUMERIC_COMPARISON:
     {
         char *left = _computeUnaryExpression(unaryExpression->uexp1_num);
         char *right = _computePostfixExpression(unaryExpression->uexp2_num);
@@ -299,7 +299,7 @@ char *_computeUnaryExpression(UnaryExpression *unaryExpression)
     }
     break;
 
-    case doubleToken:
+    case DOUBLE_TOKEN:
     {
         char *left = _computeUnaryExpression(unaryExpression->uexp1_exp);
         char *right = _computePostfixExpression(unaryExpression->uexp2_exp);
@@ -309,11 +309,11 @@ char *_computeUnaryExpression(UnaryExpression *unaryExpression)
     }
     break;
 
-    case postfixExpression:
+    case POSTFIX_EXPRESSION:
         result = _computePostfixExpression(unaryExpression->pexp);
         break;
 
-    case type:
+    case TYPE:
     {
         if (unaryExpression->obj_type == NULL)
         {
@@ -330,7 +330,7 @@ char *_computeUnaryExpression(UnaryExpression *unaryExpression)
     }
     break;
 
-    case singleToken:
+    case SINGLE_TOKEN:
     {
         char *operand = _computeUnaryExpression(unaryExpression->uexp);
         result = _computeSingleTokenOperator(operand, unaryExpression->token);
@@ -385,19 +385,19 @@ char *_computeDoubleTokenExpression(char *left, char *right, UnaryExpressionType
     char *operator= NULL;
     switch (type)
     {
-    case star_t:
+    case STAR_TYPE:
         operator= "*";
         break;
-    case div_type:
+    case DIV_TYPE:
         operator= "/";
         break;
-    case mod_t:
+    case MOD_TYPE:
         operator= "%";
         break;
-    case plus_t:
+    case PLUS_TYPE:
         operator= "+";
         break;
-    case minus_t:
+    case MINUS_TYPE:
         operator= "-";
         break;
     default:
@@ -644,15 +644,15 @@ char *_computePrimary(Primary *primary)
 
     switch (primary->type)
     {
-    case literal:
+    case LITERAL_TYPE:
         result = _computeLiteral(primary->lit);
         break;
 
-    case expression:
+    case EXPRESSION_TYPE:
         result = _computeExpression(primary->exp);
         break;
 
-    case cexp:
+    case CONDITIONAL_EXPRESSION_TYPE:
         result = _computeClassInstanceCreationExpression(primary->cice);
         break;
 
@@ -707,7 +707,7 @@ char *_computeUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstanc
     }
     char *result = NULL;
     size_t total;
-    if (unqualifiedClassInstanceCreationExpression->unq_type == parargs)
+    if (unqualifiedClassInstanceCreationExpression->unq_type == PARARGS_TYPE)
     {
         char *arglistStr = _computeArgumentList(unqualifiedClassInstanceCreationExpression->arglist);
         char *types = _computeTypes(unqualifiedClassInstanceCreationExpression->type);
@@ -742,10 +742,10 @@ char *_computeExpression(Expression *expression)
 
     switch (expression->type)
     {
-    case xexp:
+    case CONDITIONAL_EXP:
         return _computeConditionalExpression(expression->xexp);
 
-    case assignment:
+    case ASSIGNMENT_TYPE:
         return _computeAssignment(expression->assignment);
 
     default:
@@ -786,17 +786,17 @@ char *_computeStatementExpression(StatementExpression *statementExpression)
 
     switch (statementExpression->state_type)
     {
-    case assignation:
+    case ASSIGNATION:
     {
         result = _computeAssignment(statementExpression->assignment);
         break;
     }
-    case vaccess:
+    case VAR_ACCESS:
     {
         result = _computeVarAccess(statementExpression->var_access);
         break;
     }
-    case assigType:
+    case ASSIG_TYPE:
     {
         char *expStr = _computeExpression(statementExpression->exp);
         char *typeStr = _computeTypes(statementExpression->type);
@@ -917,17 +917,17 @@ char *_computeStatement(Statement *statement)
 {
     switch (statement->type)
     {
-    case state:
+    case STATE_TYPE:
     {
         return _computeStatementExpression(statement->sexp);
     }
 
-    case ifThenStatement:
+    case IF_THEN_STATEMENT:
     {
         return _computeIfThenStatement(statement->ifThen);
     }
 
-    case While:
+    case WHILE_TYPE:
     {
         char *whileCondition = _computeExpression(statement->expwhile);
         char *whileStatement = _computeBlock(statement->blockwhile);
@@ -938,7 +938,7 @@ char *_computeStatement(Statement *statement)
         return result;
     }
 
-    case For:
+    case FOR_TYPE:
     {
         char *forInit = _computeForInit(statement->forInit);
         char *forCondition = _computeExpression(statement->expfor);
@@ -963,7 +963,7 @@ char *_computeBlock(Block *block)
 {
     switch (block->type)
     {
-    case statement:
+    case STATEMENT:
     {
         char *statementResult = _computeStatement(block->statement);
         char *nestedBlockResult = block->block != NULL ? _computeBlock(block->block) : NULL;
@@ -979,7 +979,7 @@ char *_computeBlock(Block *block)
         return result;
     }
 
-    case ret:
+    case RET:
     {
         char *returnExpr = _computeExpression(block->exp);
         size_t totalLen = strlen(returnExpr) + 9;
@@ -992,7 +992,7 @@ char *_computeBlock(Block *block)
         return result;
     }
 
-    case throw:
+    case THROW:
     {
         char *throwExpr = _computeExpression(block->exp);
         size_t totalLen = strlen(throwExpr) + 9;
@@ -1012,11 +1012,11 @@ char *_computeBlock(Block *block)
 
 char *_computeAction(Action *my_action)
 {
-    if (my_action->type == action)
+    if (my_action->type == ACTION_T)
     {
         return strdup(my_action->varName);
     }
-    else if (my_action->type == function_body)
+    else if (my_action->type == FUNCTION_BODY)
     {
         char *block_str = _computeBlock(my_action->block);
 
@@ -1108,7 +1108,7 @@ static void _generateProgram(automaton *automaton)
             }
             else
             {
-                if (act->type == action)
+                if (act->type == ACTION_T)
                 {
                     _output(0, "var -> %s", act->varName);
                 }

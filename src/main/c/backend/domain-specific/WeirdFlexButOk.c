@@ -113,17 +113,17 @@ void _computeRule(Rule *my_rule)
     Action *returner;
     switch (my_rule->type)
     {
-    case lexeme_action:
+    case LEXEME_ACTION:
         lexeme = my_rule->lex;
         returner = my_rule->action;
         _addToList(lexeme, returner);
         break;
-    case ignore_lexeme:
+    case IGNORE_LEXEME:
         lexeme = my_rule->lexeme;
         returner = NULL;
         _addToList(lexeme, returner);
         break;
-    case regex:
+    case REGEX:
         Regexes *regex_content = my_rule->regexes;
         Valid_Regex_List_Node *aux = validRegexList->head;
         while (aux != NULL)
@@ -186,7 +186,7 @@ uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *ret
     }
     switch (lexeme_precursor->precursor_type)
     {
-    case default_t:
+    case DEFAULT_T:
         uint64_t defaultStateIndex = useToken ? new_state(automat, 1, returner) : new_state(automat, 0, NULL);
         for (unsigned char c = 9; c < 127; c++)
         {
@@ -196,19 +196,19 @@ uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *ret
             }
         }
         return defaultStateIndex;
-    case nonliterals:
+    case NONLITERALS:
         if (lexeme_precursor->lex_prec == NULL)
         {
             return _computeLexeme(lexeme_precursor->lex, currentIndex, returner, 1, useToken);
         }
         else
         {
-            if (lexeme_precursor->chain_type == concatenation)
+            if (lexeme_precursor->chain_type == CONCATENATION)
             {
                 uint64_t finalState = _computeLexeme(lexeme_precursor->lex, currentIndex, NULL, 0, 0);
                 return _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, finalState, useToken);
             }
-            else if (lexeme_precursor->chain_type == summation)
+            else if (lexeme_precursor->chain_type == SUMMATION)
             {
                 uint64_t finalState = new_state(automat, 0, NULL);
                 set_transition(automat, _computeLexeme(lexeme_precursor->lex, currentIndex, returner, 0, useToken), finalState, LAMBDA);
@@ -249,10 +249,10 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
     Regexes *node;
     switch (lexeme->type)
     {
-    case regexes:
+    case REGEXES_TYPE:
         node = lexeme->regexes;
         break;
-    case name:
+    case NAME:
         Valid_Regex_List_Node *aux2 = validRegexList->head;
         while (aux2 != NULL)
         {
@@ -264,7 +264,7 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
             aux2 = aux2->next;
         }
         break;
-    case string_lexeme:
+    case STRING_LEXEME:
         char *s = lexeme->string;
         uint64_t currentStateIndex = currentIndex;
         uint64_t nextStateIndex;
@@ -283,7 +283,7 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
             currentStateIndex = nextStateIndex;
         }
         return currentStateIndex;
-    case precursor_closure:
+    case PRECURSOR_CLOSURE:
         if (lexeme->closure == NULL)
         {
             return _computeLexemePrecursor(lexeme->precursor, returner, currentIndex, useToken);
@@ -342,10 +342,10 @@ void _computeRegexClass(Regex_class *regexClass, uint64_t startIndex, uint64_t e
     }
     switch (regexClass->type)
     {
-    case symbol:
+    case SYMBOL_TYPE:
         set_transition(automat, startIndex, endIndex, regexClass->symbol->symbol_tok[0]);
         return;
-    case range:
+    case RANGE:
         if (regexClass->startSymbol->symbol_tok[0] > regexClass->endSymbol->symbol_tok[0])
         {
             char *aux = _strConcat(regexClass->startSymbol->symbol_tok, "-");
@@ -365,7 +365,7 @@ void _computeRegexClass(Regex_class *regexClass, uint64_t startIndex, uint64_t e
             }
             return;
         }
-    case variable:
+    case VARIABLE:
         Valid_Regex_List_Node *aux2 = validRegexList->head;
         while (aux2 != NULL)
         {

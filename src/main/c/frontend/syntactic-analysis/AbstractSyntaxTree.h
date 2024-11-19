@@ -70,9 +70,9 @@ struct Ruleset
 
 typedef enum Rule_type
 {
-	regex,
-	ignore_lexeme,
-	lexeme_action
+	REGEX,
+	IGNORE_LEXEME,
+	LEXEME_ACTION
 } Rule_type;
 
 struct Rule
@@ -103,9 +103,9 @@ struct Regexes
 
 typedef enum Regex_class_type
 {
-	symbol,
-	range,
-	variable
+	SYMBOL_TYPE,
+	RANGE,
+	VARIABLE
 } Regex_class_type;
 
 typedef struct Regex_class
@@ -130,15 +130,15 @@ typedef struct Regex_class
 // Lexemes
 typedef enum Lexeme_precursor_type
 {
-	default_t,
-	nonliterals
+	DEFAULT_T,
+	NONLITERALS
 } Lexeme_precursor_type;
 
 typedef enum Lexeme_chain_type
 {
-	end,
-	concatenation, // cero is reserved for "NULL" case
-	summation
+	END,
+	CONCATENATION,
+	SUMMATION
 } Lexeme_chain_type;
 
 struct Lexeme_precursor
@@ -151,10 +151,10 @@ struct Lexeme_precursor
 
 typedef enum Lexeme_type
 {
-	regexes,
-	name,
-	string_lexeme,
-	precursor_closure
+	REGEXES_TYPE,
+	NAME,
+	STRING_LEXEME,
+	PRECURSOR_CLOSURE
 } Lexeme_type;
 
 struct Lexeme
@@ -184,8 +184,8 @@ struct Closure
 // Actions
 typedef enum Action_type
 {
-	action,
-	function_body
+	ACTION_T,
+	FUNCTION_BODY
 } Action_type;
 
 struct Action
@@ -201,9 +201,9 @@ struct Action
 // Java
 typedef enum Block_type
 {
-	statement,
-	throw,
-	ret
+	STATEMENT,
+	THROW,
+	RET
 } Block_type;
 
 struct Block
@@ -223,10 +223,10 @@ struct Block
 // Statements
 typedef enum Statement_type
 {
-	state,
-	ifThenStatement,
-	While,
-	For
+	STATE_TYPE,
+	IF_THEN_STATEMENT,
+	WHILE_TYPE,
+	FOR_TYPE
 } Statement_type;
 
 struct Statement
@@ -253,9 +253,9 @@ struct Statement
 
 typedef enum StatementExpressionType
 {
-	assignation,
-	vaccess,
-	assigType,
+	ASSIGNATION,
+	VAR_ACCESS,
+	ASSIG_TYPE,
 } StatementExpressionType;
 
 struct StatementExpression
@@ -312,8 +312,8 @@ struct StatementExpressionList
 // Expressions
 typedef enum Expression_type
 {
-	xexp,
-	assignment
+	CONDITIONAL_EXP,
+	ASSIGNMENT_TYPE
 } Expression_type;
 
 struct Expression
@@ -354,20 +354,20 @@ struct EqualityExpression
 
 typedef enum GlobalUnaryExpressionType
 {
-	numericComparison,
-	doubleToken,
-	postfixExpression,
-	type,
-	singleToken
+	NUMERIC_COMPARISON,
+	DOUBLE_TOKEN,
+	POSTFIX_EXPRESSION,
+	TYPE,
+	SINGLE_TOKEN
 } GlobalUnaryExpressionType;
 
 typedef enum UnaryExpressionType
 {
-	star_t,
-	div_type,
-	mod_t,
-	plus_t,
-	minus_t
+	STAR_TYPE,
+	DIV_TYPE,
+	MOD_TYPE,
+	PLUS_TYPE,
+	MINUS_TYPE
 } UnaryExpressionType;
 
 struct UnaryExpression
@@ -406,8 +406,8 @@ struct PostfixExpression
 
 typedef enum UnqualifiedClassInstanceCreationExpression_type
 {
-	method,
-	parargs
+	METHOD_TYPE,
+	PARARGS_TYPE
 } UnqualifiedClassInstanceCreationExpression_type;
 
 struct UnqualifiedClassInstanceCreationExpression
@@ -433,9 +433,9 @@ struct ClassInstanceCreationExpression
 
 typedef enum PrimaryType
 {
-	literal,
-	expression,
-	cexp
+	LITERAL_TYPE,
+	EXPRESSION_TYPE,
+	CONDITIONAL_EXPRESSION_TYPE
 } PrimaryType;
 
 struct Primary
@@ -451,8 +451,8 @@ struct Primary
 
 typedef enum Literal_type
 {
-	str,
-	token
+	STRING_T,
+	TOKEN_T
 } Literal_type;
 
 struct Literal
