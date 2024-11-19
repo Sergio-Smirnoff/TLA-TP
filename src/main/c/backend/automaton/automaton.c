@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 
 #define BLOCK 32
 #define DTE(x) ((delta_table_entry *)(x))
@@ -768,8 +767,8 @@ uint64_t remove_elements(uint64_t *array, uint64_t array_size, char *remove_map)
                 array_size--;
             } while (i < array_size && remove_map[i + removed]);
         }
-        if(i < array_size)
-        array[i] = array[i + removed];
+        if (i < array_size)
+            array[i] = array[i + removed];
     }
     return removed;
 }

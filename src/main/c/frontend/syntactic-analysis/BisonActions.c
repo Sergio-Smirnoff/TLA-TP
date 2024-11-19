@@ -426,7 +426,7 @@ ForInit *ForInitExpressionListSemanticAction(StatementExpressionList *list)
 	return forInit;
 }
 
-ForInit *JavaVarTypeDefinitionSemantictAction(Type *type, char *var_name, ForInitType for_type, CompilerState* compilerState)
+ForInit *JavaVarTypeDefinitionSemantictAction(Type *type, char *var_name, ForInitType for_type, CompilerState *compilerState)
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	ForInit *forInit = calloc(1, sizeof(ForInit));

@@ -75,7 +75,7 @@ Statement *ForStatementSemanticAction(ForInit *fors, Expression *exp, StatementE
 
 // ForInit
 ForInit *ForInitExpressionListSemanticAction(StatementExpressionList *list);
-ForInit *JavaVarTypeDefinitionSemantictAction(Type *type, char *var_name, ForInitType for_type, CompilerState* compilerState);
+ForInit *JavaVarTypeDefinitionSemantictAction(Type *type, char *var_name, ForInitType for_type, CompilerState *compilerState);
 
 // StatementExpressionList
 StatementExpressionList *StatementExpressionListSemanticAction(StatementExpression *exp, StatementExpressionList *list);

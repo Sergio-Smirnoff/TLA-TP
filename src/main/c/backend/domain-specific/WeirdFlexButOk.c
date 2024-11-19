@@ -2,7 +2,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <unistd.h>
 
 /* MODULE INTERNAL STATE */
 
@@ -87,7 +86,9 @@ ComputationResult *computeProgram(Program *tree, Valid_Regex_List *regexList)
     {
         result->errorMessage = strdup("No rules");
         return result;
-    } if(result->errorMessage != NULL){
+    }
+    if (result->errorMessage != NULL)
+    {
         result->succeed = false;
         return result;
     }
@@ -103,7 +104,8 @@ void _ruleset(Ruleset *my_ruleset)
         return;
     }
     _computeRule(my_ruleset->rule);
-    if(result->errorMessage != NULL){
+    if (result->errorMessage != NULL)
+    {
         return;
     }
     _ruleset(my_ruleset->ruleset);
@@ -350,7 +352,8 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
 void _regexContent(Regexes *regexes, uint64_t startIndex, uint64_t endIndex)
 {
     _computeRegexClass(regexes->regexClass, startIndex, endIndex);
-    if(result->errorMessage != NULL){
+    if (result->errorMessage != NULL)
+    {
         return;
     }
     if (regexes->regexes != NULL)

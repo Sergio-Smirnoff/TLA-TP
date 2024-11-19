@@ -1,15 +1,3 @@
-
-// general
-// WeirdFlexButOk.c AbstractSyntaxTree.c BisonActions.c SyntacticAnalyzer.c
-> Make default cases in switch statements that throw an error:
-  - Error may change the CompilerState to an error state and inform the user of the error
-  - Maybe the callers of that functions may check the compiler state and find a way to end
-  the compilation process right away
-  - Ver la opción del grupo 61 que es elegante.
-
 // AbstractSyntaxTree.h
-> Correct to standard use of union types:
-  - The types should be SCREAMING_SNAKE_CASE or PascalCase
-  - The fields of the structure should be more descriptive for usage
-  - Todo esto por ahí puede hacerse con CLion o de alguna forma que el refactor en el .h ya
-  actualice todos los .c 
+> Clarify field names in the structures.
+  - The fields of the structures should be more descriptive for usage.
