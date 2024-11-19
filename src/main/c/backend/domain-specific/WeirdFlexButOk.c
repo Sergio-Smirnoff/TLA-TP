@@ -16,6 +16,7 @@ static ComputationResult *result;
 /** PRIVATE FUNCTIONS */
 static void _addToList(Lexeme_precursor *lexeme, Action *returner);
 static char *_strConcat(char *str1, char *str2);
+static char _compare_tokens(token_t t1, token_t t2);
 void _ruleset(Ruleset *my_ruleset);
 void _computeRule(Rule *my_rule);
 void _regexContent(Regexes *regexes, uint64_t startIndex, uint64_t endIndex);
@@ -100,6 +101,9 @@ void _ruleset(Ruleset *my_ruleset)
         return;
     }
     _computeRule(my_ruleset->rule);
+    if(result->succeed == false){
+        return;
+    }
     _ruleset(my_ruleset->ruleset);
 }
 
@@ -136,10 +140,14 @@ void _computeRule(Rule *my_rule)
             aux = aux->next;
         }
         break;
+    default:
+        result->succeed = false;
+        result->errorMessage = strdup("Invalid rule type");
+        break;
     }
 }
 
-char compare_tokens(token_t t1, token_t t2)
+static char _compare_tokens(token_t t1, token_t t2)
 {
     return t1 == t2;
 }
@@ -161,6 +169,11 @@ void buildAutomaton(ComputationResult *computationResult)
         if (aux->lexeme != NULL)
         {
             _computeLexemePrecursor(aux->lexeme, aux->returner, initial_state_index, 1);
+            if (result->succeed == false)
+            {
+                free_automaton(automat);
+                return;
+            }
         }
         else
         {
@@ -171,7 +184,7 @@ void buildAutomaton(ComputationResult *computationResult)
         aux = aux->next;
     }
     automaton *dfa = get_deterministic_equivalent(automat);
-    automaton *mdfa = get_minimal_equivalent(dfa, compare_tokens);
+    automaton *mdfa = get_minimal_equivalent(dfa, _compare_tokens);
     free_automaton(automat);
     free_automaton(dfa);
     computationResult->automaton = mdfa;
@@ -217,6 +230,10 @@ uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *ret
             }
             return currentIndex;
         }
+    default:
+        result->succeed = false;
+        result->errorMessage = strdup("Invalid lexeme precursor type");
+        return currentIndex;
     }
 }
 
@@ -239,7 +256,7 @@ char _mapEscapedChar(char c)
     case 'r':
         return '\r';
     default:
-        return 0;
+        return c;
     }
 }
 
@@ -303,6 +320,10 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
         set_transition(automat, finalState, newFinal, LAMBDA);
         set_transition(automat, currentIndex, newFinal, LAMBDA);
         return newFinal;
+    default:
+        result->succeed = false;
+        result->errorMessage = strdup("Invalid lexeme type");
+        return currentIndex;
     }
     if (lexeme->closure == NULL)
     {
@@ -330,6 +351,9 @@ uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner,
 void _regexContent(Regexes *regexes, uint64_t startIndex, uint64_t endIndex)
 {
     _computeRegexClass(regexes->regexClass, startIndex, endIndex);
+    if(result->succeed == false){
+        return;
+    }
     if (regexes->regexes != NULL)
         _regexContent(regexes->regexes, startIndex, endIndex);
 }
@@ -376,6 +400,10 @@ void _computeRegexClass(Regex_class *regexClass, uint64_t startIndex, uint64_t e
             }
             aux2 = aux2->next;
         }
+        return;
+    default:
+        result->succeed = false;
+        result->errorMessage = strdup("Invalid regex class type");
         return;
     }
 }

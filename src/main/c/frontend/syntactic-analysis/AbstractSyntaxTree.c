@@ -101,6 +101,9 @@ void _releaseRule(Rule *rule)
 			_releaseLexemePrecursor(rule->lexeme);
 			_releaseAction(rule->action);
 			break;
+		default:
+			logError(_logger, "Invalid rule type: %d", rule->type);
+			break;
 		}
 		free(rule);
 	}

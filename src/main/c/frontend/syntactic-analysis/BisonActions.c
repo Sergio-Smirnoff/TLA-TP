@@ -178,6 +178,10 @@ Lexeme *LexemeSemanticAction(char *string, Regexes *regex_class, Closure *closur
 	case NAME:
 		lexeme->our_regex_id = string;
 		break;
+	default:
+		compilerState->succeed = false;
+		logError(_logger, "Invalid lexeme type: %d", type);
+		break;
 	}
 
 	lexeme->closure = closure;
@@ -422,7 +426,7 @@ ForInit *ForInitExpressionListSemanticAction(StatementExpressionList *list)
 	return forInit;
 }
 
-ForInit *JavaVarTypeDefinitionSemantictAction(Type *type, char *var_name, ForInitType for_type)
+ForInit *JavaVarTypeDefinitionSemantictAction(Type *type, char *var_name, ForInitType for_type, CompilerState* compilerState)
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	ForInit *forInit = calloc(1, sizeof(ForInit));
@@ -434,6 +438,10 @@ ForInit *JavaVarTypeDefinitionSemantictAction(Type *type, char *var_name, ForIni
 		break;
 	case withoutTypes:
 		forInit->var_name = var_name;
+		break;
+	default:
+		compilerState->succeed = false;
+		logError(_logger, "Invalid for init type: %d", for_type);
 		break;
 	}
 	forInit->for_type = for_type;
