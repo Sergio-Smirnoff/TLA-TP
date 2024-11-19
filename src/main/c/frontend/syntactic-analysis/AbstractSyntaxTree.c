@@ -90,14 +90,14 @@ void _releaseRule(Rule *rule)
 	{
 		switch (rule->type)
 		{
-		case regex:
+		case REGEX:
 			free(rule->our_regex_id);
 			_releaseRegexes(rule->regexes);
 			break;
-		case ignore_lexeme:
+		case IGNORE_LEXEME:
 			_releaseLexemePrecursor(rule->lexeme);
 			break;
-		case lexeme_action:
+		case LEXEME_ACTION:
 			_releaseLexemePrecursor(rule->lexeme);
 			_releaseAction(rule->action);
 			break;
@@ -125,16 +125,16 @@ void _releaseRegexClass(Regex_class *regex_class)
 	{
 		switch (regex_class->type)
 		{
-		case symbol:
+		case SYMBOL_TYPE:
 			_releaseSymbol(regex_class->symbol);
 			break;
 
-		case range:
+		case RANGE:
 			_releaseSymbol(regex_class->startSymbol);
 			_releaseSymbol(regex_class->endSymbol);
 			break;
 
-		case variable:
+		case VARIABLE:
 			free(regex_class->varName);
 			_releaseClousure(regex_class->closure);
 			break;
@@ -153,16 +153,16 @@ void _releaseLexemePrecursor(Lexeme_precursor *lexeme_precursor)
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (lexeme_precursor != NULL)
 	{
-		if (lexeme_precursor->precursor_type != default_t)
+		if (lexeme_precursor->precursor_type != DEFAULT_T)
 		{
 			switch (lexeme_precursor->chain_type)
 			{
-			case end:
+			case END:
 				_releaseLexeme(lexeme_precursor->lex);
 				break;
 
-			case concatenation:
-			case summation:
+			case CONCATENATION:
+			case SUMMATION:
 				_releaseLexeme(lexeme_precursor->lex);
 				_releaseLexemePrecursor(lexeme_precursor->lex_prec);
 				break;
@@ -183,21 +183,21 @@ void _releaseLexeme(Lexeme *lexeme)
 	{
 		switch (lexeme->type)
 		{
-		case regexes:
+		case REGEXES_TYPE:
 			_releaseRegexes(lexeme->regexes);
 			_releaseClousure(lexeme->closure);
 			break;
 
-		case name:
+		case NAME:
 			free(lexeme->our_regex_id);
 			_releaseClousure(lexeme->closure);
 			break;
 
-		case string_lexeme:
+		case STRING_LEXEME:
 			free(lexeme->string);
 			break;
 
-		case precursor_closure:
+		case PRECURSOR_CLOSURE:
 			_releaseLexemePrecursor(lexeme->precursor);
 			_releaseClousure(lexeme->closure);
 			break;
@@ -235,11 +235,11 @@ void _releaseAction(Action *act)
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (act != NULL)
 	{
-		if (act->type == action)
+		if (act->type == ACTION_T)
 		{
 			free(act->varName);
 		}
-		else if (act->type == function_body)
+		else if (act->type == FUNCTION_BODY)
 		{
 			_releaseBlock(act->block);
 		}
@@ -259,13 +259,13 @@ void _releaseBlock(Block *block)
 	{
 		switch (block->type)
 		{
-		case statement:
+		case STATEMENT:
 			_releaseStatement(block->statement);
 			_releaseBlock(block->block);
 			break;
 
-		case ret:
-		case throw:
+		case RET:
+		case THROW:
 			_releaseExpression(block->exp);
 			break;
 
@@ -285,20 +285,20 @@ void _releaseStatement(Statement *statement)
 	{
 		switch (statement->type)
 		{
-		case state:
+		case STATE_TYPE:
 			_releaseStatementExpression(statement->sexp);
 			break;
 
-		case ifThenStatement:
+		case IF_THEN_STATEMENT:
 			_releaseIfThenStatement(statement->ifThen);
 			break;
 
-		case While:
+		case WHILE_TYPE:
 			_releaseExpression(statement->expwhile);
 			_releaseBlock(statement->blockwhile);
 			break;
 
-		case For:
+		case FOR_TYPE:
 			_releaseForInit(statement->forInit);
 			_releaseExpression(statement->expfor);
 			_releaseBlock(statement->blockfor);
@@ -320,15 +320,15 @@ void _releaseStatementExpression(StatementExpression *sexp)
 	{
 		switch (sexp->state_type)
 		{
-		case assignation:
+		case ASSIGNATION:
 			_releaseAssignment(sexp->assignment);
 			break;
 
-		case vaccess:
+		case VAR_ACCESS:
 			_releaseVarAccess(sexp->var_access);
 			break;
 
-		case assigType:
+		case ASSIG_TYPE:
 			free(sexp->var_name);
 			_releaseExpression(sexp->exp);
 			_releaseType(sexp->type);
@@ -401,11 +401,11 @@ void _releaseExpression(Expression *exp)
 	{
 		switch (exp->type)
 		{
-		case xexp:
+		case CONDITIONAL_EXP:
 			_releaseConditionalExpression(exp->xexp);
 			break;
 
-		case assignment:
+		case ASSIGNMENT_TYPE:
 			_releaseAssignment(exp->assignment);
 			break;
 
@@ -469,26 +469,26 @@ void _releaseUnaryExpression(UnaryExpression *unExp)
 	{
 		switch (unExp->globaltype)
 		{
-		case numericComparison:
+		case NUMERIC_COMPARISON:
 			_releaseUnaryExpression(unExp->uexp1_num);
 			_releaseNumericComparison(unExp->numcomp);
 			_releasePostfixExpression(unExp->uexp2_num);
 			break;
 
-		case doubleToken:
+		case DOUBLE_TOKEN:
 			_releaseUnaryExpression(unExp->uexp1_exp);
 			_releasePostfixExpression(unExp->uexp2_exp);
 			break;
 
-		case postfixExpression:
+		case POSTFIX_EXPRESSION:
 			_releasePostfixExpression(unExp->pexp);
 			break;
 
-		case type:
+		case TYPE:
 			_releaseType(unExp->obj_type);
 			break;
 
-		case singleToken:
+		case SINGLE_TOKEN:
 			_releaseUnaryExpression(unExp->uexp);
 
 		default:
@@ -517,12 +517,12 @@ void _releaseUnqualifiedClassInstanceCreationExpression(UnqualifiedClassInstance
 	{
 		switch (unqualClassInstCreationExp->unq_type)
 		{
-		case parargs:
+		case PARARGS_TYPE:
 			_releaseType(unqualClassInstCreationExp->type);
 			_releaseArgumentList(unqualClassInstCreationExp->arglist);
 			break;
 
-		case method:
+		case METHOD_TYPE:
 			_releaseMethodInvocation(unqualClassInstCreationExp->invocation);
 			break;
 
@@ -553,15 +553,15 @@ void _releasePrimary(Primary *primary)
 	{
 		switch (primary->type)
 		{
-		case literal:
+		case LITERAL_TYPE:
 			_releaseLiteral(primary->lit);
 			break;
 
-		case expression:
+		case EXPRESSION_TYPE:
 			_releaseExpression(primary->exp);
 			break;
 
-		case cexp:
+		case CONDITIONAL_EXPRESSION_TYPE:
 			_releaseClassInstanceCreationExpression(primary->cice);
 			break;
 
@@ -580,11 +580,11 @@ void _releaseLiteral(Literal *literal)
 	{
 		switch (literal->type)
 		{
-		case str:
+		case STRING_T:
 			free(literal->str);
 			break;
 
-		case token:
+		case TOKEN_T:
 			break;
 
 		default:

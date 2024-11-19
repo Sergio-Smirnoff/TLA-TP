@@ -226,18 +226,18 @@ ruleset: rule ruleset																																					{ $$ = RulesetSemantic
 	;
 
 rule: VAR_NAME[def] OPEN_BRACKET regexes[regex] CLOSE_BRACKET ENDLINE	    																							{ $$ = RuleNewRegexSemanticAction($def, $regex, currentCompilerState()); }
-	| lexeme_precursor[lex] ARROW action ENDLINE																														{ $$ = RuleDefinitionSemanticAction($lex, $action, lexeme_action); }
-	| lexeme_precursor[lex] ENDLINE																																		{ $$ = RuleDefinitionSemanticAction($lex, NULL, ignore_lexeme); }
+	| lexeme_precursor[lex] ARROW action ENDLINE																														{ $$ = RuleDefinitionSemanticAction($lex, $action, LEXEME_ACTION); }
+	| lexeme_precursor[lex] ENDLINE																																		{ $$ = RuleDefinitionSemanticAction($lex, NULL, IGNORE_LEXEME); }
 	;
 
-lexeme_precursor: lexeme lexeme_precursor																																{ $$ = LexemePrecursorSemanticAction($1, $2, concatenation); }
-	| lexeme PIPE lexeme_precursor																																		{ $$ = LexemePrecursorSemanticAction($1, $3, summation); }
-	| lexeme																																							{ $$ = LexemePrecursorSemanticAction($1, NULL, end); }
+lexeme_precursor: lexeme lexeme_precursor																																{ $$ = LexemePrecursorSemanticAction($1, $2, CONCATENATION); }
+	| lexeme PIPE lexeme_precursor																																		{ $$ = LexemePrecursorSemanticAction($1, $3, SUMMATION); }
+	| lexeme																																							{ $$ = LexemePrecursorSemanticAction($1, NULL, END); }
 	| DEFAULT[string]																																					{ $$ = LexemeDefaultSemanticAction(); }
 	;
 
-lexeme: OPEN_BRACKET regexes[regex] CLOSE_BRACKET closure[closure_p]																									{ $$ = LexemeSemanticAction(NULL, $regex, $closure_p, regexes, NULL); }
-	| OPEN_BRACES VAR_NAME[id] CLOSE_BRACES closure[closure_p]																											{ $$ = LexemeSemanticAction($id, NULL, $closure_p, name, currentCompilerState()); }
+lexeme: OPEN_BRACKET regexes[regex] CLOSE_BRACKET closure[closure_p]																									{ $$ = LexemeSemanticAction(NULL, $regex, $closure_p, REGEXES_TYPE, NULL); }
+	| OPEN_BRACES VAR_NAME[id] CLOSE_BRACES closure[closure_p]																											{ $$ = LexemeSemanticAction($id, NULL, $closure_p, NAME, currentCompilerState()); }
 	| OPEN_PARENTHESES lexeme_precursor[precursor] CLOSE_PARENTHESES closure[clos] 																						{ $$ = LexemeClosureSemanticAction($precursor, $clos);}
 	| STR[string]																																						{ $$ = LexemeStringSemanticAction($string); }
 	;
@@ -367,12 +367,12 @@ EqualityExpression: UnaryExpression																																		{ $$ = Equa
 	| EqualityExpression JAVA_NOT_EXACT_COMPARISON UnaryExpression																										{ $$ = EqualityExpressionSemanticAction($3,$2,$1); }
 	;
 
-UnaryExpression:  UnaryExpression NumericComparison PostfixExpression																									{ $$ = UnaryExpressionNumericComparisonSintaticAction($1,$2,$3); }
-	| UnaryExpression STAR PostfixExpression																															{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,star_t ,$3); }
-	| UnaryExpression DIV PostfixExpression																																{ $$ = UnaryExpressionDoubleTokenSintaticAction($1, div_type,$3); }
-	| UnaryExpression MOD PostfixExpression																																{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,mod_t ,$3); }
-	| UnaryExpression PLUS PostfixExpression																															{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,plus_t ,$3); }
-	| UnaryExpression MINUS PostfixExpression																															{ $$ = UnaryExpressionDoubleTokenSintaticAction($1,minus_t ,$3); }
+UnaryExpression:  UnaryExpression NumericComparison PostfixExpression																									{ $$ = UnaryExpressionNumericComparisonSintaticAction($1, $2, $3); }
+	| UnaryExpression STAR PostfixExpression																															{ $$ = UnaryExpressionDoubleTokenSintaticAction($1, STAR_TYPE, $3); }
+	| UnaryExpression DIV PostfixExpression																																{ $$ = UnaryExpressionDoubleTokenSintaticAction($1, DIV_TYPE, $3); }
+	| UnaryExpression MOD PostfixExpression																																{ $$ = UnaryExpressionDoubleTokenSintaticAction($1, MOD_TYPE, $3); }
+	| UnaryExpression PLUS PostfixExpression																															{ $$ = UnaryExpressionDoubleTokenSintaticAction($1, PLUS_TYPE, $3); }
+	| UnaryExpression MINUS PostfixExpression																															{ $$ = UnaryExpressionDoubleTokenSintaticAction($1, MINUS_TYPE, $3); }
 	| PostfixExpression																																					{ $$ = UnaryExpressionPostfixExpressionSintaticAction($1); }
 	| JAVA_NOT UnaryExpression																																			{ $$ = UnaryExpressionSingleTokenSintaticAction($2,$1); }
 	| OPEN_PARENTHESES type CLOSE_PARENTHESES																															{ $$ = UnaryExpressionTypeSintaticAction($2); }

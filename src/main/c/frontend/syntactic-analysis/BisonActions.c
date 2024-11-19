@@ -82,7 +82,7 @@ Rule *RuleNewRegexSemanticAction(char *our_regex_id, Regexes *regexes, CompilerS
 	Rule *rule = calloc(1, sizeof(Rule));
 	rule->our_regex_id = our_regex_id;
 	rule->regexes = regexes;
-	rule->type = regex;
+	rule->type = REGEX;
 
 	Valid_Regex_List_Node *newNode = calloc(1, sizeof(Valid_Regex_List_Node));
 	newNode->regex_id = our_regex_id;
@@ -113,7 +113,7 @@ Lexeme_precursor *LexemePrecursorSemanticAction(Lexeme *lex, Lexeme_precursor *l
 	Lexeme_precursor *new_lexeme_precursor = calloc(1, sizeof(Lexeme_precursor));
 	new_lexeme_precursor->lex = lex;
 	new_lexeme_precursor->lex_prec = lex_prec;
-	new_lexeme_precursor->precursor_type = nonliterals;
+	new_lexeme_precursor->precursor_type = NONLITERALS;
 	new_lexeme_precursor->chain_type = chain_type;
 	return new_lexeme_precursor;
 }
@@ -122,7 +122,7 @@ Lexeme_precursor *LexemeDefaultSemanticAction()
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Lexeme_precursor *new_lexeme_precursor = calloc(1, sizeof(Lexeme_precursor));
-	new_lexeme_precursor->precursor_type = default_t;
+	new_lexeme_precursor->precursor_type = DEFAULT_T;
 	return new_lexeme_precursor;
 }
 
@@ -172,10 +172,10 @@ Lexeme *LexemeSemanticAction(char *string, Regexes *regex_class, Closure *closur
 
 	switch (type)
 	{
-	case regex:
+	case REGEX:
 		lexeme->regexes = regex_class;
 		break;
-	case name:
+	case NAME:
 		lexeme->our_regex_id = string;
 		break;
 	}
@@ -190,7 +190,7 @@ Lexeme *LexemeStringSemanticAction(char *string)
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Lexeme *lexeme = calloc(1, sizeof(Lexeme));
 	lexeme->string = string;
-	lexeme->type = string_lexeme;
+	lexeme->type = STRING_LEXEME;
 	return lexeme;
 }
 
@@ -198,7 +198,7 @@ Lexeme *LexemeClosureSemanticAction(Lexeme_precursor *lex_prec, Closure *closure
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Lexeme *new_lexeme = calloc(1, sizeof(Lexeme));
-	new_lexeme->type = precursor_closure;
+	new_lexeme->type = PRECURSOR_CLOSURE;
 	new_lexeme->precursor = lex_prec;
 	new_lexeme->closure = closure;
 	return new_lexeme;
@@ -219,7 +219,7 @@ Regex_class *SymbolRegexSemanticAction(Symbol *sym)
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Regex_class *new_regex_class = calloc(1, sizeof(Regex_class));
 	new_regex_class->symbol = sym;
-	new_regex_class->type = symbol;
+	new_regex_class->type = SYMBOL_TYPE;
 	return new_regex_class;
 }
 
@@ -229,7 +229,7 @@ Regex_class *RegexClassRangeSemanticAction(Symbol *startSymbol, Symbol *endSymbo
 	Regex_class *new_regex_class = calloc(1, sizeof(Regex_class));
 	new_regex_class->startSymbol = startSymbol;
 	new_regex_class->endSymbol = endSymbol;
-	new_regex_class->type = range;
+	new_regex_class->type = RANGE;
 	return new_regex_class;
 }
 
@@ -274,7 +274,7 @@ Regex_class *CreatedClassSemanticAction(char *string, Closure *closure, Compiler
 	Regex_class *new_regex_class = calloc(1, sizeof(Regex_class));
 	new_regex_class->varName = string;
 	new_regex_class->closure = closure;
-	new_regex_class->type = variable;
+	new_regex_class->type = VARIABLE;
 	return new_regex_class;
 }
 
@@ -311,7 +311,7 @@ Action *ActionSemanticAction(char *var_name)
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Action *new_action = calloc(1, sizeof(Action));
 	new_action->varName = var_name;
-	new_action->type = action;
+	new_action->type = ACTION_T;
 	return new_action;
 }
 
@@ -320,7 +320,7 @@ Action *ActionJavaSemanticAction(Block *body)
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Action *action = calloc(1, sizeof(Action));
 
-	action->type = function_body;
+	action->type = FUNCTION_BODY;
 	action->block = body;
 
 	return action;
@@ -343,7 +343,7 @@ Block *JavaBlockSemanticAction(Statement *state, Block *block)
 	Block *new_block = calloc(1, sizeof(Block));
 	new_block->statement = state;
 	new_block->block = block;
-	new_block->type = statement;
+	new_block->type = STATEMENT;
 	return new_block;
 }
 
@@ -352,7 +352,7 @@ Block *JavaReturnExpressionSemanticAction(Expression *exp)
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Block *block = calloc(1, sizeof(Block));
 	block->exp = exp;
-	block->type = ret;
+	block->type = RET;
 	return block;
 }
 
@@ -361,7 +361,7 @@ Block *JavaThrowExpressionSemanticAction(Expression *exp)
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Block *block = calloc(1, sizeof(Block));
 	block->exp = exp;
-	block->type = throw;
+	block->type = THROW;
 
 	return block;
 }
@@ -372,7 +372,7 @@ Statement *JavaStatementExpressionSemanticAction(StatementExpression *sexp)
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Statement *statement = calloc(1, sizeof(Statement));
 	statement->sexp = sexp;
-	statement->type = state;
+	statement->type = STATE_TYPE;
 
 	return statement;
 }
@@ -382,7 +382,7 @@ Statement *IfStatementSemanticAction(IfThenStatement *ifs)
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Statement *statement = calloc(1, sizeof(Statement));
 	statement->ifThen = ifs;
-	statement->type = ifThenStatement;
+	statement->type = IF_THEN_STATEMENT;
 
 	return statement;
 }
@@ -393,7 +393,7 @@ Statement *WhileStatementSemanticAction(Expression *exp, Block *block)
 	Statement *statement = calloc(1, sizeof(Statement));
 	statement->expwhile = exp;
 	statement->blockwhile = block;
-	statement->type = While;
+	statement->type = WHILE_TYPE;
 
 	return statement;
 }
@@ -406,7 +406,7 @@ Statement *ForStatementSemanticAction(ForInit *fors, Expression *exp, StatementE
 	statement->expfor = exp;
 	statement->statementExpList = list;
 	statement->blockfor = block;
-	statement->type = For;
+	statement->type = FOR_TYPE;
 
 	return statement;
 }
@@ -468,7 +468,7 @@ StatementExpression *JavaAsignmentSemanticAction(Assignment *assignment)
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	StatementExpression *statementExpression = calloc(1, sizeof(StatementExpression));
 	statementExpression->assignment = assignment;
-	statementExpression->state_type = assignation;
+	statementExpression->state_type = ASSIGNATION;
 	return statementExpression;
 }
 
@@ -477,7 +477,7 @@ StatementExpression *JavaVAccessDefaultSemanticAction(VarAccess *var_access)
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	StatementExpression *statementExpression = calloc(1, sizeof(StatementExpression));
 	statementExpression->var_access = var_access;
-	statementExpression->state_type = vaccess;
+	statementExpression->state_type = VAR_ACCESS;
 	return statementExpression;
 }
 
@@ -488,7 +488,7 @@ StatementExpression *JavaAsignmentTypeSemanticAction(Type *type, char *var_name,
 	statementExpression->type = type;
 	statementExpression->var_name = var_name;
 	statementExpression->exp = exp;
-	statementExpression->state_type = assigType;
+	statementExpression->state_type = ASSIG_TYPE;
 	return statementExpression;
 }
 
@@ -559,12 +559,12 @@ Expression *expressionSematicAction(ConditionalExpression *xexpression, Assignme
 	if (xexpression != NULL)
 	{
 		expression->xexp = xexpression;
-		expression->type = xexp;
+		expression->type = CONDITIONAL_EXP;
 	}
 	else
 	{
 		expression->assignment = assig;
-		expression->type = assignment;
+		expression->type = ASSIGNMENT_TYPE;
 	}
 	return expression;
 }
@@ -619,7 +619,7 @@ UnaryExpression *UnaryExpressionNumericComparisonSintaticAction(UnaryExpression 
 	unaryExpression->uexp1_num = uexp1;
 	unaryExpression->numcomp = numcomp;
 	unaryExpression->uexp2_num = uexp2;
-	unaryExpression->globaltype = numericComparison;
+	unaryExpression->globaltype = NUMERIC_COMPARISON;
 	return unaryExpression;
 }
 
@@ -630,7 +630,7 @@ UnaryExpression *UnaryExpressionDoubleTokenSintaticAction(UnaryExpression *uexp1
 	unaryExpression->uexp1_exp = uexp1;
 	unaryExpression->type = type;
 	unaryExpression->uexp2_exp = uexp2;
-	unaryExpression->globaltype = doubleToken;
+	unaryExpression->globaltype = DOUBLE_TOKEN;
 	return unaryExpression;
 }
 
@@ -639,7 +639,7 @@ UnaryExpression *UnaryExpressionPostfixExpressionSintaticAction(PostfixExpressio
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	UnaryExpression *unaryExpression = calloc(1, sizeof(UnaryExpression));
 	unaryExpression->pexp = pexp;
-	unaryExpression->globaltype = postfixExpression;
+	unaryExpression->globaltype = POSTFIX_EXPRESSION;
 
 	return unaryExpression;
 }
@@ -649,7 +649,7 @@ UnaryExpression *UnaryExpressionTypeSintaticAction(Type *typ)
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	UnaryExpression *unaryExpression = calloc(1, sizeof(UnaryExpression));
 	unaryExpression->obj_type = typ;
-	unaryExpression->globaltype = type;
+	unaryExpression->globaltype = TYPE;
 	return unaryExpression;
 }
 
@@ -659,7 +659,7 @@ UnaryExpression *UnaryExpressionSingleTokenSintaticAction(UnaryExpression *uexp,
 	UnaryExpression *unaryExpression = calloc(1, sizeof(UnaryExpression));
 	unaryExpression->uexp = uexp;
 	unaryExpression->token = token;
-	unaryExpression->globaltype = singleToken;
+	unaryExpression->globaltype = SINGLE_TOKEN;
 
 	return unaryExpression;
 }
@@ -711,7 +711,7 @@ Primary *PrimaryLiteralSemanticAction(Literal *lit)
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Primary *primary = calloc(1, sizeof(Primary));
 	primary->lit = lit;
-	primary->type = literal;
+	primary->type = LITERAL_TYPE;
 	return primary;
 }
 
@@ -720,7 +720,7 @@ Primary *PrimaryExpressionSemanticAction(Expression *exp)
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Primary *primary = calloc(1, sizeof(Primary));
 	primary->exp = exp;
-	primary->type = expression;
+	primary->type = EXPRESSION_TYPE;
 
 	return primary;
 }
@@ -730,7 +730,7 @@ Primary *PrimaryCExpSemanticAction(ClassInstanceCreationExpression *cice)
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Primary *primary = calloc(1, sizeof(Primary));
 	primary->cice = cice;
-	primary->type = cexp;
+	primary->type = CONDITIONAL_EXPRESSION_TYPE;
 
 	return primary;
 }
@@ -769,7 +769,7 @@ UnqualifiedClassInstanceCreationExpression *UnqualifiedClassSemanticAction(Type 
 	UnqualifiedClassInstanceCreationExpression *unqualifiedClassInstanceCreationExpression = calloc(1, sizeof(UnqualifiedClassInstanceCreationExpression));
 	unqualifiedClassInstanceCreationExpression->type = type;
 	unqualifiedClassInstanceCreationExpression->arglist = list;
-	unqualifiedClassInstanceCreationExpression->unq_type = parargs;
+	unqualifiedClassInstanceCreationExpression->unq_type = PARARGS_TYPE;
 	return unqualifiedClassInstanceCreationExpression;
 }
 
@@ -778,7 +778,7 @@ UnqualifiedClassInstanceCreationExpression *UnqualifiedClassSemanticActionInvoca
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	UnqualifiedClassInstanceCreationExpression *unqualifiedClassInstanceCreationExpression = calloc(1, sizeof(UnqualifiedClassInstanceCreationExpression));
 	unqualifiedClassInstanceCreationExpression->invocation = invocation;
-	unqualifiedClassInstanceCreationExpression->unq_type = method;
+	unqualifiedClassInstanceCreationExpression->unq_type = METHOD_TYPE;
 	return unqualifiedClassInstanceCreationExpression;
 }
 
@@ -788,7 +788,7 @@ Literal *JavaLiteralStrSemanticAction(char *string)
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Literal *literal = calloc(1, sizeof(Literal));
 	literal->str = string;
-	literal->type = str;
+	literal->type = STRING_T;
 	return literal;
 };
 
@@ -797,6 +797,6 @@ Literal *JavaLiteralTokenSemanticAction(Token tok)
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Literal *literal = calloc(1, sizeof(Literal));
 	literal->token = tok;
-	literal->type = token;
+	literal->type = TOKEN_T;
 	return literal;
 };
