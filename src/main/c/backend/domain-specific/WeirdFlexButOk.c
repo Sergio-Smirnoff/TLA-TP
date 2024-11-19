@@ -1,7 +1,4 @@
 #include "WeirdFlexButOk.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 
 /* MODULE INTERNAL STATE */
 
