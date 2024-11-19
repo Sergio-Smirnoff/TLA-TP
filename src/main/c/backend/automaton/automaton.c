@@ -7,6 +7,9 @@
 #define BLOCK 32
 #define DTE(x) ((delta_table_entry *)(x))
 #define BIG_PRIME 1000000007
+#define IS_BIT_SET(x, i) (((x)[(i) >> 3] & (1 << ((i) & 7))) != 0)
+#define SET_BIT(x, i) (x)[(i) >> 3] |= (1 << ((i) & 7))
+#define CLEAR_BIT(x, i) (x)[(i) >> 3] &= (1 << ((i) & 7)) ^ 0xFF
 
 char array_contains(const uint64_t *array, uint64_t array_size, uint64_t value)
 {
@@ -836,11 +839,11 @@ uint64_t add_reachable_states(const automaton *source, char *reachables, uint64_
         automaton_state *state = get_state(source, processing_queue[processing_queue_size - 1].state_index);
         for (uint64_t rule_index = processing_queue[processing_queue_size - 1].rule_index; !leave_flag && rule_index < state->delta_size; rule_index++)
         {
-            if (!reachables[state->delta[rule_index]->next_indices[0]])
+            if (!IS_BIT_SET(reachables, state->delta[rule_index]->next_indices[0]))
             {
 
                 reachables_count++;
-                reachables[state->delta[rule_index]->next_indices[0]] = 1;
+                SET_BIT(reachables, state->delta[rule_index]->next_indices[0]);
                 processing_queue[processing_queue_size - 1].rule_index = rule_index + 1;
                 processing_queue[processing_queue_size].rule_index = 0;
                 processing_queue[processing_queue_size].state_index = state->delta[rule_index]->next_indices[0];
@@ -860,17 +863,17 @@ uint64_t add_reachable_states(const automaton *source, char *reachables, uint64_
 /**
  * @brief Get a memory allocated array representing whether each state corresponding to an index is reachable
  *
- * @note result[i] == 0 if state with index i is unreachable. result[i] == 1 if state with index i is reachable
+ * @note bit i in result is 0 if state with index i is unreachable. bit i in result is 1 if state with index i is reachable
  * @note only works on deterministic finite automata
  * @param source
- * @return char*
+ * @return char* where each represents the reachability of one state index
  */
 char *get_reachable_state_indices(const automaton *source)
 {
-    char *reachables = calloc(source->states_size, sizeof(char));
+    char *reachables = calloc(source->states_size, (sizeof(char) >> 3) + 1);
     uint64_t reachables_count = 0;
     reachables_count += add_reachable_states(source, reachables, source->initial_state_index);
-    reachables[source->initial_state_index] = 1;
+    SET_BIT(reachables, source->initial_state_index);
     reachables_count++;
     return reachables;
 }
@@ -882,7 +885,7 @@ automaton *get_minimal_equivalent(const automaton *dfa, compare_token are_equals
     char *reachables = get_reachable_state_indices(dfa);
     for (uint64_t state_index = 0; state_index < dfa->states_size; state_index++)
     {
-        if (reachables[state_index])
+        if (IS_BIT_SET(reachables, state_index))
             add_state_by_token_to_minimization_table(table, are_equals, state_index);
     }
     free(reachables);
