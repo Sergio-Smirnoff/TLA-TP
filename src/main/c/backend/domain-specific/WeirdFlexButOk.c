@@ -210,22 +210,22 @@ uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *ret
         }
         return defaultStateIndex;
     case NONLITERALS:
-        if (lexeme_precursor->lex_prec == NULL)
+        if (lexeme_precursor->lexeme_precursor == NULL)
         {
-            return _computeLexeme(lexeme_precursor->lex, currentIndex, returner, 1, useToken);
+            return _computeLexeme(lexeme_precursor->lexeme, currentIndex, returner, 1, useToken);
         }
         else
         {
             if (lexeme_precursor->chain_type == CONCATENATION)
             {
-                uint64_t finalState = _computeLexeme(lexeme_precursor->lex, currentIndex, NULL, 0, 0);
-                return _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, finalState, useToken);
+                uint64_t finalState = _computeLexeme(lexeme_precursor->lexeme, currentIndex, NULL, 0, 0);
+                return _computeLexemePrecursor(lexeme_precursor->lexeme_precursor, returner, finalState, useToken);
             }
             else if (lexeme_precursor->chain_type == SUMMATION)
             {
                 uint64_t finalState = new_state(automat, 0, NULL);
-                set_transition(automat, _computeLexeme(lexeme_precursor->lex, currentIndex, returner, 0, useToken), finalState, LAMBDA);
-                set_transition(automat, _computeLexemePrecursor(lexeme_precursor->lex_prec, returner, currentIndex, useToken), finalState, LAMBDA);
+                set_transition(automat, _computeLexeme(lexeme_precursor->lexeme, currentIndex, returner, 0, useToken), finalState, LAMBDA);
+                set_transition(automat, _computeLexemePrecursor(lexeme_precursor->lexeme_precursor, returner, currentIndex, useToken), finalState, LAMBDA);
                 return finalState;
             }
             return currentIndex;

@@ -143,8 +143,8 @@ typedef enum Lexeme_chain_type
 
 struct Lexeme_precursor
 {
-	Lexeme *lex;
-	Lexeme_precursor *lex_prec;
+	Lexeme *lexeme;
+	Lexeme_precursor *lexeme_precursor;
 	Lexeme_precursor_type precursor_type;
 	Lexeme_chain_type chain_type;
 };
@@ -215,7 +215,7 @@ struct Block
 			Statement *statement;
 			Block *block;
 		};
-		Expression *exp;
+		Expression *expression;
 	};
 	Block_type type;
 };
@@ -233,19 +233,19 @@ struct Statement
 {
 	union
 	{
-		StatementExpression *sexp;
-		IfThenStatement *ifThen;
+		StatementExpression *statement_expression;
+		IfThenStatement *if_then_statement;
 		struct
 		{
-			Expression *expwhile;
-			Block *blockwhile;
+			Expression *while_expression;
+			Block *while_block;
 		};
 		struct
 		{
-			ForInit *forInit;
-			Expression *expfor;
-			Block *blockfor;
-			StatementExpressionList *statementExpList;
+			ForInit *for_init;
+			Expression *for_expression;
+			Block *for_block;
+			StatementExpressionList *statement_expression_list;
 		};
 	};
 	Statement_type type;
@@ -268,7 +268,7 @@ struct StatementExpression
 		{
 			Type *type;
 			char *var_name;
-			Expression *exp;
+			Expression *expression;
 		};
 	};
 	StatementExpressionType state_type;
@@ -276,23 +276,23 @@ struct StatementExpression
 
 struct IfThenStatement
 {
-	Expression *exp;
-	Block *ifblock;
-	Block *elseblock;
+	Expression *expression;
+	Block *if_block;
+	Block *else_block;
 };
 
 typedef enum ForInitType
 {
-	statementExpList,
-	withTypes,
-	withoutTypes
+	STATEMENT_EXPRESSION_LIST,
+	WITH_TYPES,
+	WITHOUT_TYPES
 } ForInitType;
 
 struct ForInit
 {
 	union
 	{
-		StatementExpressionList *statementExpList;
+		StatementExpressionList *statement_expression_list;
 		struct
 		{
 			Type *type;
@@ -305,8 +305,8 @@ struct ForInit
 
 struct StatementExpressionList
 {
-	StatementExpression *exp;
-	StatementExpressionList *list;
+	StatementExpression *expression;
+	StatementExpressionList *expression_list;
 };
 
 // Expressions
@@ -320,7 +320,7 @@ struct Expression
 {
 	union
 	{
-		ConditionalExpression *xexp;
+		ConditionalExpression *conditional_expression;
 		Assignment *assignment;
 	};
 	Expression_type type;
@@ -328,27 +328,27 @@ struct Expression
 
 struct ConditionalExpression
 {
-	ConditionalOrExpression *corexp;
-	Expression *exp;
-	ConditionalExpression *cexp;
+	ConditionalOrExpression *conditional_or_expression;
+	Expression *expression;
+	ConditionalExpression *conditional_expression;
 };
 
 struct ConditionalOrExpression
 {
-	ConditionalAndExpression *candexp;
-	ConditionalOrExpression *corexp;
+	ConditionalAndExpression *conditional_and_expression;
+	ConditionalOrExpression *conditional_or_expression;
 };
 
 struct ConditionalAndExpression
 {
-	EqualityExpression *eqexp;
-	ConditionalAndExpression *candexp;
+	EqualityExpression *equality_expression;
+	ConditionalAndExpression *conditional_and_expression;
 };
 
 struct EqualityExpression
 {
-	UnaryExpression *uexp;
-	EqualityExpression *eqexp;
+	UnaryExpression *unary_expression;
+	EqualityExpression *equality_expression;
 	Token token;
 };
 
@@ -376,22 +376,22 @@ struct UnaryExpression
 	{
 		struct
 		{
-			UnaryExpression *uexp1_num;
+			UnaryExpression *num_comp_unary_exp1;
 			NumericComparison *numcomp;
-			PostfixExpression *uexp2_num;
+			PostfixExpression *num_comp_unary_exp2;
 		};
 		struct
 		{
-			UnaryExpression *uexp1_exp;
-			UnaryExpressionType type;
-			PostfixExpression *uexp2_exp;
+			UnaryExpression *uexp_unary_expression1;
+			UnaryExpressionType uexp_type;
+			PostfixExpression *uexp_unary_expression2;
 		};
-		PostfixExpression *pexp;
-		Type *obj_type;
+		PostfixExpression *postfix_expression;
+		Type *object_type;
 		struct
 		{
 			Token token;
-			UnaryExpression *uexp;
+			UnaryExpression *unary_expression;
 		};
 	};
 	GlobalUnaryExpressionType globaltype;
@@ -426,7 +426,7 @@ struct UnqualifiedClassInstanceCreationExpression
 
 struct ClassInstanceCreationExpression
 {
-	UnqualifiedClassInstanceCreationExpression *ucice;
+	UnqualifiedClassInstanceCreationExpression *unq_class_inst_creation_exp;
 	VarAccess *vaccess;
 	Primary *primary;
 };
@@ -442,9 +442,9 @@ struct Primary
 {
 	union
 	{
-		Literal *lit;
-		Expression *exp;
-		ClassInstanceCreationExpression *cice;
+		Literal *literal;
+		Expression *expression;
+		ClassInstanceCreationExpression *class_inst_creation_exp;
 	};
 	PrimaryType type;
 };

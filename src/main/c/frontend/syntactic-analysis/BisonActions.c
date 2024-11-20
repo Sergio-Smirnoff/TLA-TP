@@ -111,8 +111,8 @@ Lexeme_precursor *LexemePrecursorSemanticAction(Lexeme *lex, Lexeme_precursor *l
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Lexeme_precursor *new_lexeme_precursor = calloc(1, sizeof(Lexeme_precursor));
-	new_lexeme_precursor->lex = lex;
-	new_lexeme_precursor->lex_prec = lex_prec;
+	new_lexeme_precursor->lexeme = lex;
+	new_lexeme_precursor->lexeme_precursor = lex_prec;
 	new_lexeme_precursor->precursor_type = NONLITERALS;
 	new_lexeme_precursor->chain_type = chain_type;
 	return new_lexeme_precursor;
@@ -355,7 +355,7 @@ Block *JavaReturnExpressionSemanticAction(Expression *exp)
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Block *block = calloc(1, sizeof(Block));
-	block->exp = exp;
+	block->expression = exp;
 	block->type = RET;
 	return block;
 }
@@ -364,7 +364,7 @@ Block *JavaThrowExpressionSemanticAction(Expression *exp)
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Block *block = calloc(1, sizeof(Block));
-	block->exp = exp;
+	block->expression = exp;
 	block->type = THROW;
 
 	return block;
@@ -375,7 +375,7 @@ Statement *JavaStatementExpressionSemanticAction(StatementExpression *sexp)
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Statement *statement = calloc(1, sizeof(Statement));
-	statement->sexp = sexp;
+	statement->statement_expression = sexp;
 	statement->type = STATE_TYPE;
 
 	return statement;
@@ -385,7 +385,7 @@ Statement *IfStatementSemanticAction(IfThenStatement *ifs)
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Statement *statement = calloc(1, sizeof(Statement));
-	statement->ifThen = ifs;
+	statement->if_then_statement = ifs;
 	statement->type = IF_THEN_STATEMENT;
 
 	return statement;
@@ -395,8 +395,8 @@ Statement *WhileStatementSemanticAction(Expression *exp, Block *block)
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Statement *statement = calloc(1, sizeof(Statement));
-	statement->expwhile = exp;
-	statement->blockwhile = block;
+	statement->while_expression = exp;
+	statement->while_block = block;
 	statement->type = WHILE_TYPE;
 
 	return statement;
@@ -406,10 +406,10 @@ Statement *ForStatementSemanticAction(ForInit *fors, Expression *exp, StatementE
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Statement *statement = calloc(1, sizeof(Statement));
-	statement->forInit = fors;
-	statement->expfor = exp;
-	statement->statementExpList = list;
-	statement->blockfor = block;
+	statement->for_init = fors;
+	statement->for_expression = exp;
+	statement->statement_expression_list = list;
+	statement->for_block = block;
 	statement->type = FOR_TYPE;
 
 	return statement;
@@ -420,8 +420,8 @@ ForInit *ForInitExpressionListSemanticAction(StatementExpressionList *list)
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	ForInit *forInit = calloc(1, sizeof(ForInit));
-	forInit->statementExpList = list;
-	forInit->for_type = statementExpList;
+	forInit->statement_expression_list = list;
+	forInit->for_type = STATEMENT_EXPRESSION_LIST;
 
 	return forInit;
 }
@@ -432,11 +432,11 @@ ForInit *JavaVarTypeDefinitionSemantictAction(Type *type, char *var_name, ForIni
 	ForInit *forInit = calloc(1, sizeof(ForInit));
 	switch (for_type)
 	{
-	case withTypes:
+	case WITH_TYPES:
 		forInit->type = type;
 		forInit->var_name_type = var_name;
 		break;
-	case withoutTypes:
+	case WITHOUT_TYPES:
 		forInit->var_name = var_name;
 		break;
 	default:
@@ -454,8 +454,8 @@ StatementExpressionList *StatementExpressionListSemanticAction(StatementExpressi
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	StatementExpressionList *statementExpressionList = calloc(1, sizeof(StatementExpressionList));
-	statementExpressionList->exp = exp;
-	statementExpressionList->list = list;
+	statementExpressionList->expression = exp;
+	statementExpressionList->expression_list = list;
 	return statementExpressionList;
 }
 
@@ -464,9 +464,9 @@ IfThenStatement *JavaIfThenStructureSemanticAction(Expression *exp, Block *ifBlo
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	IfThenStatement *ifThenStatement = calloc(1, sizeof(IfThenStatement));
-	ifThenStatement->exp = exp;
-	ifThenStatement->ifblock = ifBlock;
-	ifThenStatement->elseblock = elseBlock;
+	ifThenStatement->expression = exp;
+	ifThenStatement->if_block = ifBlock;
+	ifThenStatement->else_block = elseBlock;
 	return ifThenStatement;
 }
 
@@ -495,7 +495,7 @@ StatementExpression *JavaAsignmentTypeSemanticAction(Type *type, char *var_name,
 	StatementExpression *statementExpression = calloc(1, sizeof(StatementExpression));
 	statementExpression->type = type;
 	statementExpression->var_name = var_name;
-	statementExpression->exp = exp;
+	statementExpression->expression = exp;
 	statementExpression->state_type = ASSIG_TYPE;
 	return statementExpression;
 }
@@ -566,7 +566,7 @@ Expression *expressionSematicAction(ConditionalExpression *xexpression, Assignme
 	Expression *expression = calloc(1, sizeof(Expression));
 	if (xexpression != NULL)
 	{
-		expression->xexp = xexpression;
+		expression->conditional_expression = xexpression;
 		expression->type = CONDITIONAL_EXP;
 	}
 	else
@@ -582,9 +582,9 @@ ConditionalExpression *JavaConditionalExpSemanticAction(ConditionalOrExpression 
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	ConditionalExpression *conditionalExpression = calloc(1, sizeof(ConditionalExpression));
-	conditionalExpression->corexp = corexp;
-	conditionalExpression->exp = exp;
-	conditionalExpression->cexp = cexp;
+	conditionalExpression->conditional_or_expression = corexp;
+	conditionalExpression->expression = exp;
+	conditionalExpression->conditional_expression = cexp;
 	return conditionalExpression;
 }
 
@@ -593,8 +593,8 @@ ConditionalOrExpression *JavaConditionalOrExpressionSemanticAction(ConditionalAn
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	ConditionalOrExpression *conditionalOrExpression = calloc(1, sizeof(ConditionalOrExpression));
-	conditionalOrExpression->candexp = candexp;
-	conditionalOrExpression->corexp = corexp;
+	conditionalOrExpression->conditional_and_expression = candexp;
+	conditionalOrExpression->conditional_or_expression = corexp;
 	return conditionalOrExpression;
 }
 
@@ -603,8 +603,8 @@ ConditionalAndExpression *JavaConditionalAndExpressionSemanticAction(Conditional
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	ConditionalAndExpression *conditionalAndExpression = calloc(1, sizeof(ConditionalAndExpression));
-	conditionalAndExpression->candexp = andexp;
-	conditionalAndExpression->eqexp = eqexp;
+	conditionalAndExpression->conditional_and_expression = andexp;
+	conditionalAndExpression->equality_expression = eqexp;
 	return conditionalAndExpression;
 }
 
@@ -613,8 +613,8 @@ EqualityExpression *EqualityExpressionSemanticAction(UnaryExpression *uexp, Toke
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	EqualityExpression *equalityExpression = calloc(1, sizeof(EqualityExpression));
-	equalityExpression->uexp = uexp;
-	equalityExpression->eqexp = eqexp;
+	equalityExpression->unary_expression = uexp;
+	equalityExpression->equality_expression = eqexp;
 	equalityExpression->token = token;
 	return equalityExpression;
 }
@@ -624,9 +624,9 @@ UnaryExpression *UnaryExpressionNumericComparisonSintaticAction(UnaryExpression 
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	UnaryExpression *unaryExpression = calloc(1, sizeof(UnaryExpression));
-	unaryExpression->uexp1_num = uexp1;
+	unaryExpression->num_comp_unary_exp1 = uexp1;
 	unaryExpression->numcomp = numcomp;
-	unaryExpression->uexp2_num = uexp2;
+	unaryExpression->num_comp_unary_exp2 = uexp2;
 	unaryExpression->globaltype = NUMERIC_COMPARISON;
 	return unaryExpression;
 }
@@ -635,9 +635,9 @@ UnaryExpression *UnaryExpressionDoubleTokenSintaticAction(UnaryExpression *uexp1
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	UnaryExpression *unaryExpression = calloc(1, sizeof(UnaryExpression));
-	unaryExpression->uexp1_exp = uexp1;
-	unaryExpression->type = type;
-	unaryExpression->uexp2_exp = uexp2;
+	unaryExpression->uexp_unary_expression1 = uexp1;
+	unaryExpression->uexp_type = type;
+	unaryExpression->uexp_unary_expression2 = uexp2;
 	unaryExpression->globaltype = DOUBLE_TOKEN;
 	return unaryExpression;
 }
@@ -646,7 +646,7 @@ UnaryExpression *UnaryExpressionPostfixExpressionSintaticAction(PostfixExpressio
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	UnaryExpression *unaryExpression = calloc(1, sizeof(UnaryExpression));
-	unaryExpression->pexp = pexp;
+	unaryExpression->postfix_expression = pexp;
 	unaryExpression->globaltype = POSTFIX_EXPRESSION;
 
 	return unaryExpression;
@@ -656,7 +656,7 @@ UnaryExpression *UnaryExpressionTypeSintaticAction(Type *typ)
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	UnaryExpression *unaryExpression = calloc(1, sizeof(UnaryExpression));
-	unaryExpression->obj_type = typ;
+	unaryExpression->object_type = typ;
 	unaryExpression->globaltype = TYPE;
 	return unaryExpression;
 }
@@ -665,7 +665,7 @@ UnaryExpression *UnaryExpressionSingleTokenSintaticAction(UnaryExpression *uexp,
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	UnaryExpression *unaryExpression = calloc(1, sizeof(UnaryExpression));
-	unaryExpression->uexp = uexp;
+	unaryExpression->unary_expression = uexp;
 	unaryExpression->token = token;
 	unaryExpression->globaltype = SINGLE_TOKEN;
 
@@ -718,7 +718,7 @@ Primary *PrimaryLiteralSemanticAction(Literal *lit)
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Primary *primary = calloc(1, sizeof(Primary));
-	primary->lit = lit;
+	primary->literal = lit;
 	primary->type = LITERAL_TYPE;
 	return primary;
 }
@@ -727,7 +727,7 @@ Primary *PrimaryExpressionSemanticAction(Expression *exp)
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Primary *primary = calloc(1, sizeof(Primary));
-	primary->exp = exp;
+	primary->expression = exp;
 	primary->type = EXPRESSION_TYPE;
 
 	return primary;
@@ -737,7 +737,7 @@ Primary *PrimaryCExpSemanticAction(ClassInstanceCreationExpression *cice)
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Primary *primary = calloc(1, sizeof(Primary));
-	primary->cice = cice;
+	primary->class_inst_creation_exp = cice;
 	primary->type = CONDITIONAL_EXPRESSION_TYPE;
 
 	return primary;
@@ -748,7 +748,7 @@ ClassInstanceCreationExpression *InstanceCreationExpressionSemanticAction(Unqual
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	ClassInstanceCreationExpression *classInstanceCreationExpression = calloc(1, sizeof(ClassInstanceCreationExpression));
-	classInstanceCreationExpression->ucice = exp;
+	classInstanceCreationExpression->unq_class_inst_creation_exp = exp;
 	return classInstanceCreationExpression;
 }
 
@@ -757,7 +757,7 @@ ClassInstanceCreationExpression *VAccessInstanceCreationExpressionSemanticAction
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	ClassInstanceCreationExpression *classInstanceCreationExpression = calloc(1, sizeof(ClassInstanceCreationExpression));
 	classInstanceCreationExpression->vaccess = vaccess;
-	classInstanceCreationExpression->ucice = exp;
+	classInstanceCreationExpression->unq_class_inst_creation_exp = exp;
 	return classInstanceCreationExpression;
 }
 
@@ -766,7 +766,7 @@ ClassInstanceCreationExpression *PrimaryInstanceCreationExpressionSemanticAction
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	ClassInstanceCreationExpression *classInstanceCreationExpression = calloc(1, sizeof(ClassInstanceCreationExpression));
 	classInstanceCreationExpression->primary = primary;
-	classInstanceCreationExpression->ucice = exp;
+	classInstanceCreationExpression->unq_class_inst_creation_exp = exp;
 	return classInstanceCreationExpression;
 }
 

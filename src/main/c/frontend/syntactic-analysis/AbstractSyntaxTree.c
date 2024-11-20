@@ -161,13 +161,13 @@ void _releaseLexemePrecursor(Lexeme_precursor *lexeme_precursor)
 			switch (lexeme_precursor->chain_type)
 			{
 			case END:
-				_releaseLexeme(lexeme_precursor->lex);
+				_releaseLexeme(lexeme_precursor->lexeme);
 				break;
 
 			case CONCATENATION:
 			case SUMMATION:
-				_releaseLexeme(lexeme_precursor->lex);
-				_releaseLexemePrecursor(lexeme_precursor->lex_prec);
+				_releaseLexeme(lexeme_precursor->lexeme);
+				_releaseLexemePrecursor(lexeme_precursor->lexeme_precursor);
 				break;
 
 			default:
@@ -269,7 +269,7 @@ void _releaseBlock(Block *block)
 
 		case RET:
 		case THROW:
-			_releaseExpression(block->exp);
+			_releaseExpression(block->expression);
 			break;
 
 		default:
@@ -289,23 +289,23 @@ void _releaseStatement(Statement *statement)
 		switch (statement->type)
 		{
 		case STATE_TYPE:
-			_releaseStatementExpression(statement->sexp);
+			_releaseStatementExpression(statement->statement_expression);
 			break;
 
 		case IF_THEN_STATEMENT:
-			_releaseIfThenStatement(statement->ifThen);
+			_releaseIfThenStatement(statement->if_then_statement);
 			break;
 
 		case WHILE_TYPE:
-			_releaseExpression(statement->expwhile);
-			_releaseBlock(statement->blockwhile);
+			_releaseExpression(statement->while_expression);
+			_releaseBlock(statement->while_block);
 			break;
 
 		case FOR_TYPE:
-			_releaseForInit(statement->forInit);
-			_releaseExpression(statement->expfor);
-			_releaseBlock(statement->blockfor);
-			_releaseStatementExpressionList(statement->statementExpList);
+			_releaseForInit(statement->for_init);
+			_releaseExpression(statement->for_expression);
+			_releaseBlock(statement->for_block);
+			_releaseStatementExpressionList(statement->statement_expression_list);
 			break;
 
 		default:
@@ -333,7 +333,7 @@ void _releaseStatementExpression(StatementExpression *sexp)
 
 		case ASSIG_TYPE:
 			free(sexp->var_name);
-			_releaseExpression(sexp->exp);
+			_releaseExpression(sexp->expression);
 			_releaseType(sexp->type);
 			break;
 
@@ -350,9 +350,9 @@ void _releaseIfThenStatement(IfThenStatement *ifThenStatement)
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (ifThenStatement != NULL)
 	{
-		_releaseExpression(ifThenStatement->exp);
-		_releaseBlock(ifThenStatement->ifblock);
-		_releaseBlock(ifThenStatement->elseblock);
+		_releaseExpression(ifThenStatement->expression);
+		_releaseBlock(ifThenStatement->if_block);
+		_releaseBlock(ifThenStatement->else_block);
 		free(ifThenStatement);
 	}
 }
@@ -364,16 +364,16 @@ void _releaseForInit(ForInit *forInit)
 	{
 		switch (forInit->for_type)
 		{
-		case statementExpList:
-			_releaseStatementExpressionList(forInit->statementExpList);
+		case STATEMENT_EXPRESSION_LIST:
+			_releaseStatementExpressionList(forInit->statement_expression_list);
 			break;
 
-		case withTypes:
+		case WITH_TYPES:
 			_releaseType(forInit->type);
 			free(forInit->var_name_type);
 			break;
 
-		case withoutTypes:
+		case WITHOUT_TYPES:
 			free(forInit->var_name);
 			break;
 
@@ -390,8 +390,8 @@ void _releaseStatementExpressionList(StatementExpressionList *statementExpList)
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (statementExpList != NULL)
 	{
-		_releaseStatementExpression(statementExpList->exp);
-		_releaseStatementExpressionList(statementExpList->list);
+		_releaseStatementExpression(statementExpList->expression);
+		_releaseStatementExpressionList(statementExpList->expression_list);
 		free(statementExpList);
 	}
 }
@@ -405,7 +405,7 @@ void _releaseExpression(Expression *exp)
 		switch (exp->type)
 		{
 		case CONDITIONAL_EXP:
-			_releaseConditionalExpression(exp->xexp);
+			_releaseConditionalExpression(exp->conditional_expression);
 			break;
 
 		case ASSIGNMENT_TYPE:
@@ -425,9 +425,9 @@ void _releaseConditionalExpression(ConditionalExpression *condExp)
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (condExp != NULL)
 	{
-		_releaseConditionalOrExpression(condExp->corexp);
-		_releaseExpression(condExp->exp);
-		_releaseConditionalExpression(condExp->cexp);
+		_releaseConditionalOrExpression(condExp->conditional_or_expression);
+		_releaseExpression(condExp->expression);
+		_releaseConditionalExpression(condExp->conditional_expression);
 		free(condExp);
 	}
 }
@@ -437,8 +437,8 @@ void _releaseConditionalOrExpression(ConditionalOrExpression *condOrExp)
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (condOrExp != NULL)
 	{
-		_releaseConditionalAndExpression(condOrExp->candexp);
-		_releaseConditionalOrExpression(condOrExp->corexp);
+		_releaseConditionalAndExpression(condOrExp->conditional_and_expression);
+		_releaseConditionalOrExpression(condOrExp->conditional_or_expression);
 		free(condOrExp);
 	}
 }
@@ -448,8 +448,8 @@ void _releaseConditionalAndExpression(ConditionalAndExpression *condAndExp)
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (condAndExp != NULL)
 	{
-		_releaseEqualityExpression(condAndExp->eqexp);
-		_releaseConditionalAndExpression(condAndExp->candexp);
+		_releaseEqualityExpression(condAndExp->equality_expression);
+		_releaseConditionalAndExpression(condAndExp->conditional_and_expression);
 		free(condAndExp);
 	}
 }
@@ -459,8 +459,8 @@ void _releaseEqualityExpression(EqualityExpression *eqExp)
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (eqExp != NULL)
 	{
-		_releaseUnaryExpression(eqExp->uexp);
-		_releaseEqualityExpression(eqExp->eqexp);
+		_releaseUnaryExpression(eqExp->unary_expression);
+		_releaseEqualityExpression(eqExp->equality_expression);
 		free(eqExp);
 	}
 }
@@ -473,26 +473,26 @@ void _releaseUnaryExpression(UnaryExpression *unExp)
 		switch (unExp->globaltype)
 		{
 		case NUMERIC_COMPARISON:
-			_releaseUnaryExpression(unExp->uexp1_num);
+			_releaseUnaryExpression(unExp->num_comp_unary_exp1);
 			_releaseNumericComparison(unExp->numcomp);
-			_releasePostfixExpression(unExp->uexp2_num);
+			_releasePostfixExpression(unExp->num_comp_unary_exp2);
 			break;
 
 		case DOUBLE_TOKEN:
-			_releaseUnaryExpression(unExp->uexp1_exp);
-			_releasePostfixExpression(unExp->uexp2_exp);
+			_releaseUnaryExpression(unExp->uexp_unary_expression1);
+			_releasePostfixExpression(unExp->uexp_unary_expression2);
 			break;
 
 		case POSTFIX_EXPRESSION:
-			_releasePostfixExpression(unExp->pexp);
+			_releasePostfixExpression(unExp->postfix_expression);
 			break;
 
 		case TYPE:
-			_releaseType(unExp->obj_type);
+			_releaseType(unExp->object_type);
 			break;
 
 		case SINGLE_TOKEN:
-			_releaseUnaryExpression(unExp->uexp);
+			_releaseUnaryExpression(unExp->unary_expression);
 
 		default:
 			logError(_logger, "Invalid unary expression type: %d", unExp->globaltype);
@@ -542,7 +542,7 @@ void _releaseClassInstanceCreationExpression(ClassInstanceCreationExpression *cl
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (classInstCreationExp != NULL)
 	{
-		_releaseUnqualifiedClassInstanceCreationExpression(classInstCreationExp->ucice);
+		_releaseUnqualifiedClassInstanceCreationExpression(classInstCreationExp->unq_class_inst_creation_exp);
 		_releaseVarAccess(classInstCreationExp->vaccess);
 		_releasePrimary(classInstCreationExp->primary);
 		free(classInstCreationExp);
@@ -557,15 +557,15 @@ void _releasePrimary(Primary *primary)
 		switch (primary->type)
 		{
 		case LITERAL_TYPE:
-			_releaseLiteral(primary->lit);
+			_releaseLiteral(primary->literal);
 			break;
 
 		case EXPRESSION_TYPE:
-			_releaseExpression(primary->exp);
+			_releaseExpression(primary->expression);
 			break;
 
 		case CONDITIONAL_EXPRESSION_TYPE:
-			_releaseClassInstanceCreationExpression(primary->cice);
+			_releaseClassInstanceCreationExpression(primary->class_inst_creation_exp);
 			break;
 
 		default:

@@ -290,8 +290,8 @@ char *_computeUnaryExpression(UnaryExpression *unaryExpression)
     {
     case NUMERIC_COMPARISON:
     {
-        char *left = _computeUnaryExpression(unaryExpression->uexp1_num);
-        char *right = _computePostfixExpression(unaryExpression->uexp2_num);
+        char *left = _computeUnaryExpression(unaryExpression->num_comp_unary_exp1);
+        char *right = _computePostfixExpression(unaryExpression->num_comp_unary_exp2);
 
         result = _computeNumericComparison(left, right, unaryExpression->numcomp);
         free(left);
@@ -301,27 +301,27 @@ char *_computeUnaryExpression(UnaryExpression *unaryExpression)
 
     case DOUBLE_TOKEN:
     {
-        char *left = _computeUnaryExpression(unaryExpression->uexp1_exp);
-        char *right = _computePostfixExpression(unaryExpression->uexp2_exp);
-        result = _computeDoubleTokenExpression(left, right, unaryExpression->type);
+        char *left = _computeUnaryExpression(unaryExpression->uexp_unary_expression1);
+        char *right = _computePostfixExpression(unaryExpression->uexp_unary_expression2);
+        result = _computeDoubleTokenExpression(left, right, unaryExpression->uexp_type);
         free(left);
         free(right);
     }
     break;
 
     case POSTFIX_EXPRESSION:
-        result = _computePostfixExpression(unaryExpression->pexp);
+        result = _computePostfixExpression(unaryExpression->postfix_expression);
         break;
 
     case TYPE:
     {
-        if (unaryExpression->obj_type == NULL)
+        if (unaryExpression->object_type == NULL)
         {
             result = strdup("()");
         }
         else
         {
-            char *types = _computeTypes(unaryExpression->obj_type);
+            char *types = _computeTypes(unaryExpression->object_type);
             size_t total = strlen(types) + 3;
             result = malloc(sizeof(char) * total);
             snprintf(result, total, "(%s)", types);
@@ -332,7 +332,7 @@ char *_computeUnaryExpression(UnaryExpression *unaryExpression)
 
     case SINGLE_TOKEN:
     {
-        char *operand = _computeUnaryExpression(unaryExpression->uexp);
+        char *operand = _computeUnaryExpression(unaryExpression->unary_expression);
         result = _computeSingleTokenOperator(operand, unaryExpression->token);
         free(operand);
     }
@@ -451,16 +451,16 @@ char *_computeEqualityExpression(EqualityExpression *equalityExpression)
 
     char *result = NULL;
 
-    if (equalityExpression->eqexp == NULL)
+    if (equalityExpression->equality_expression == NULL)
     {
         // Base case: Compute the unary expression (single UnaryExpression)
-        result = _computeUnaryExpression(equalityExpression->uexp);
+        result = _computeUnaryExpression(equalityExpression->unary_expression);
     }
     else
     {
         // Recursive case: Compute the left-hand side and right-hand side and combine with the operator
-        char *left = _computeEqualityExpression(equalityExpression->eqexp);
-        char *right = _computeUnaryExpression(equalityExpression->uexp);
+        char *left = _computeEqualityExpression(equalityExpression->equality_expression);
+        char *right = _computeUnaryExpression(equalityExpression->unary_expression);
 
         const char *operator= equalityExpression->token == JAVA_EXACT_COMPARISON ? "==" : "!=";
 
@@ -484,14 +484,14 @@ char *_computeConditionalAndExpression(ConditionalAndExpression *conditionalAndE
 
     char *result = NULL;
 
-    if (conditionalAndExpression->candexp == NULL)
+    if (conditionalAndExpression->conditional_and_expression == NULL)
     {
-        result = _computeEqualityExpression(conditionalAndExpression->eqexp);
+        result = _computeEqualityExpression(conditionalAndExpression->equality_expression);
     }
     else
     {
-        char *left = _computeConditionalAndExpression(conditionalAndExpression->candexp);
-        char *right = _computeEqualityExpression(conditionalAndExpression->eqexp);
+        char *left = _computeConditionalAndExpression(conditionalAndExpression->conditional_and_expression);
+        char *right = _computeEqualityExpression(conditionalAndExpression->equality_expression);
 
         const char *operator= "&&";
 
@@ -515,14 +515,14 @@ char *_computeConditionalOrExpression(ConditionalOrExpression *conditionalOrExpr
 
     char *result = NULL;
 
-    if (conditionalOrExpression->corexp == NULL)
+    if (conditionalOrExpression->conditional_or_expression == NULL)
     {
-        result = _computeConditionalAndExpression(conditionalOrExpression->candexp);
+        result = _computeConditionalAndExpression(conditionalOrExpression->conditional_and_expression);
     }
     else
     {
-        char *left = _computeConditionalOrExpression(conditionalOrExpression->corexp);
-        char *right = _computeConditionalAndExpression(conditionalOrExpression->candexp);
+        char *left = _computeConditionalOrExpression(conditionalOrExpression->conditional_or_expression);
+        char *right = _computeConditionalAndExpression(conditionalOrExpression->conditional_and_expression);
 
         const char *operator= "||";
 
@@ -544,16 +544,16 @@ char *_computeConditionalExpression(ConditionalExpression *conditionalExpression
         return strdup("");
     }
 
-    char *left = _computeConditionalOrExpression(conditionalExpression->corexp);
+    char *left = _computeConditionalOrExpression(conditionalExpression->conditional_or_expression);
 
-    if (conditionalExpression->exp == NULL || conditionalExpression->cexp == NULL)
+    if (conditionalExpression->expression == NULL || conditionalExpression->conditional_expression == NULL)
     {
         return left;
     }
 
     // If there's both a middle expression and a right ConditionalExpression, combine them
-    char *middle = _computeExpression(conditionalExpression->exp);
-    char *right = _computeConditionalExpression(conditionalExpression->cexp);
+    char *middle = _computeExpression(conditionalExpression->expression);
+    char *right = _computeConditionalExpression(conditionalExpression->conditional_expression);
     size_t len = strlen(left) + strlen(middle) + strlen("?") + strlen(right) + strlen(":") + 5; // 5 for spaces and null terminator
     char *result = malloc(sizeof(char) * len);
     snprintf(result, len, "%s ? %s : %s", left, middle, right);
@@ -645,15 +645,15 @@ char *_computePrimary(Primary *primary)
     switch (primary->type)
     {
     case LITERAL_TYPE:
-        result = _computeLiteral(primary->lit);
+        result = _computeLiteral(primary->literal);
         break;
 
     case EXPRESSION_TYPE:
-        result = _computeExpression(primary->exp);
+        result = _computeExpression(primary->expression);
         break;
 
     case CONDITIONAL_EXPRESSION_TYPE:
-        result = _computeClassInstanceCreationExpression(primary->cice);
+        result = _computeClassInstanceCreationExpression(primary->class_inst_creation_exp);
         break;
 
     default:
@@ -673,19 +673,19 @@ char *_computeClassInstanceCreationExpression(ClassInstanceCreationExpression *c
 
     char *result = NULL;
 
-    if (classInstanceCreationExpression->ucice != NULL && classInstanceCreationExpression->vaccess != NULL)
+    if (classInstanceCreationExpression->unq_class_inst_creation_exp != NULL && classInstanceCreationExpression->vaccess != NULL)
     {
         char *vaccessStr = _computeVarAccess(classInstanceCreationExpression->vaccess);
-        char *uciceStr = _computeUnqualifiedClassInstanceCreationExpression(classInstanceCreationExpression->ucice);
+        char *uciceStr = _computeUnqualifiedClassInstanceCreationExpression(classInstanceCreationExpression->unq_class_inst_creation_exp);
         result = malloc(sizeof(char) * (strlen(vaccessStr) + strlen(uciceStr) + 2));
         sprintf(result, "%s.%s", vaccessStr, uciceStr);
         free(vaccessStr);
         free(uciceStr);
     }
-    else if (classInstanceCreationExpression->ucice != NULL && classInstanceCreationExpression->primary != NULL)
+    else if (classInstanceCreationExpression->unq_class_inst_creation_exp != NULL && classInstanceCreationExpression->primary != NULL)
     {
         char *primaryStr = _computePrimary(classInstanceCreationExpression->primary);
-        char *uciceStr = _computeUnqualifiedClassInstanceCreationExpression(classInstanceCreationExpression->ucice);
+        char *uciceStr = _computeUnqualifiedClassInstanceCreationExpression(classInstanceCreationExpression->unq_class_inst_creation_exp);
         result = malloc(sizeof(char) * (strlen(primaryStr) + strlen(uciceStr) + 2));
         sprintf(result, "%s.%s", primaryStr, uciceStr);
         free(primaryStr);
@@ -693,7 +693,7 @@ char *_computeClassInstanceCreationExpression(ClassInstanceCreationExpression *c
     }
     else
     {
-        result = _computeUnqualifiedClassInstanceCreationExpression(classInstanceCreationExpression->ucice);
+        result = _computeUnqualifiedClassInstanceCreationExpression(classInstanceCreationExpression->unq_class_inst_creation_exp);
     }
 
     return result;
@@ -743,7 +743,7 @@ char *_computeExpression(Expression *expression)
     switch (expression->type)
     {
     case CONDITIONAL_EXP:
-        return _computeConditionalExpression(expression->xexp);
+        return _computeConditionalExpression(expression->conditional_expression);
 
     case ASSIGNMENT_TYPE:
         return _computeAssignment(expression->assignment);
@@ -798,7 +798,7 @@ char *_computeStatementExpression(StatementExpression *statementExpression)
     }
     case ASSIG_TYPE:
     {
-        char *expStr = _computeExpression(statementExpression->exp);
+        char *expStr = _computeExpression(statementExpression->expression);
         char *typeStr = _computeTypes(statementExpression->type);
 
         size_t totalLength = strlen(statementExpression->var_name) + strlen(expStr) + strlen(typeStr) + 5;
@@ -825,15 +825,15 @@ char *_computeStatementExpressionList(StatementExpressionList *statementExpressi
     }
 
     char *result = NULL;
-    char *currentExprStr = _computeStatementExpression(statementExpressionList->exp);
+    char *currentExprStr = _computeStatementExpression(statementExpressionList->expression);
 
-    if (statementExpressionList->list == NULL)
+    if (statementExpressionList->expression_list == NULL)
     {
         result = currentExprStr;
     }
     else
     {
-        char *restOfListStr = _computeStatementExpressionList(statementExpressionList->list);
+        char *restOfListStr = _computeStatementExpressionList(statementExpressionList->expression_list);
 
         size_t totalLength = strlen(currentExprStr) + strlen(restOfListStr) + 3;
         result = malloc(sizeof(char) * totalLength);
@@ -854,9 +854,9 @@ char *_computeIfThenStatement(IfThenStatement *ifThenStatement)
         return strdup("");
     }
 
-    char *conditionStr = _computeExpression(ifThenStatement->exp);
+    char *conditionStr = _computeExpression(ifThenStatement->expression);
 
-    char *ifStatementStr = _computeBlock(ifThenStatement->ifblock);
+    char *ifStatementStr = _computeBlock(ifThenStatement->if_block);
 
     char *result = malloc(sizeof(char) * (strlen("if () {  }") + strlen(conditionStr) + strlen(ifStatementStr) + 1));
     sprintf(result, "if (%s) { %s }", conditionStr, ifStatementStr);
@@ -864,9 +864,9 @@ char *_computeIfThenStatement(IfThenStatement *ifThenStatement)
     free(conditionStr);
     free(ifStatementStr);
 
-    if (ifThenStatement->elseblock != NULL)
+    if (ifThenStatement->else_block != NULL)
     {
-        char *elseStatementStr = _computeBlock(ifThenStatement->elseblock);
+        char *elseStatementStr = _computeBlock(ifThenStatement->else_block);
 
         size_t totalLength = strlen(result) + strlen(" else { }") + strlen(elseStatementStr) + 3;
 
@@ -887,12 +887,12 @@ char *_computeForInit(ForInit *forInit)
 {
     switch (forInit->for_type)
     {
-    case statementExpList:
+    case STATEMENT_EXPRESSION_LIST:
     {
-        return _computeStatementExpressionList(forInit->statementExpList);
+        return _computeStatementExpressionList(forInit->statement_expression_list);
     }
 
-    case withTypes:
+    case WITH_TYPES:
     {
         char *typeStr = _computeTypes(forInit->type);
         size_t totalLen = strlen(forInit->var_name_type) + strlen(typeStr) + 2;
@@ -902,7 +902,7 @@ char *_computeForInit(ForInit *forInit)
         return result;
     }
 
-    case withoutTypes:
+    case WITHOUT_TYPES:
     {
         return strdup(forInit->var_name);
     }
@@ -919,18 +919,18 @@ char *_computeStatement(Statement *statement)
     {
     case STATE_TYPE:
     {
-        return _computeStatementExpression(statement->sexp);
+        return _computeStatementExpression(statement->statement_expression);
     }
 
     case IF_THEN_STATEMENT:
     {
-        return _computeIfThenStatement(statement->ifThen);
+        return _computeIfThenStatement(statement->if_then_statement);
     }
 
     case WHILE_TYPE:
     {
-        char *whileCondition = _computeExpression(statement->expwhile);
-        char *whileStatement = _computeBlock(statement->blockwhile);
+        char *whileCondition = _computeExpression(statement->while_expression);
+        char *whileStatement = _computeBlock(statement->while_block);
 
         size_t totalLen = strlen(whileCondition) + strlen(whileStatement) + 14;
         char *result = malloc(sizeof(char) * totalLen);
@@ -940,10 +940,10 @@ char *_computeStatement(Statement *statement)
 
     case FOR_TYPE:
     {
-        char *forInit = _computeForInit(statement->forInit);
-        char *forCondition = _computeExpression(statement->expfor);
-        char *forStatementList = _computeStatementExpressionList(statement->statementExpList);
-        char *forBody = _computeBlock(statement->blockfor);
+        char *forInit = _computeForInit(statement->for_init);
+        char *forCondition = _computeExpression(statement->for_expression);
+        char *forStatementList = _computeStatementExpressionList(statement->statement_expression_list);
+        char *forBody = _computeBlock(statement->for_block);
 
         size_t totalLen = strlen(forInit) + strlen(forCondition) + strlen(forStatementList) + strlen(forBody) + 16;
         char *result = malloc(sizeof(char) * totalLen);
@@ -981,7 +981,7 @@ char *_computeBlock(Block *block)
 
     case RET:
     {
-        char *returnExpr = _computeExpression(block->exp);
+        char *returnExpr = _computeExpression(block->expression);
         size_t totalLen = strlen(returnExpr) + 9;
         char *result = malloc(sizeof(char) * totalLen);
         if (result != NULL)
@@ -994,7 +994,7 @@ char *_computeBlock(Block *block)
 
     case THROW:
     {
-        char *throwExpr = _computeExpression(block->exp);
+        char *throwExpr = _computeExpression(block->expression);
         size_t totalLen = strlen(throwExpr) + 9;
         char *result = malloc(sizeof(char) * totalLen);
         if (result != NULL)

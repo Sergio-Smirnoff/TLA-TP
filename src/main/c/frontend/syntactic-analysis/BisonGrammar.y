@@ -303,7 +303,7 @@ Statement: ENDLINE																																						{ $$ = NULL; }
 	;
 
 ForInit: StatementExpressionList																																		{ $$ = ForInitExpressionListSemanticAction($1); }
-	| type VAR_NAME																																						{ $$ = JavaVarTypeDefinitionSemantictAction($1, $2, withTypes, currentCompilerState()); }
+	| type VAR_NAME																																						{ $$ = JavaVarTypeDefinitionSemantictAction($1, $2, WITH_TYPES, currentCompilerState()); }
 	;
 
 StatementExpressionList: %empty																																			{ $$ = NULL; }
