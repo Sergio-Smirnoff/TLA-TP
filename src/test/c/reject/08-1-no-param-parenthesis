@@ -5,7 +5,7 @@
 Regex digit         [0-9];
 
 {digit}+ -> State var {
-                       var.attribute.num = Integer.parseInt(var.text.toString());
+                       var.attribute.num = Integer.parseInt(var.getLexeme());
                        return NUMBER;
  };
 

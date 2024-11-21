@@ -2,35 +2,39 @@
 
 /* MODULE INTERNAL STATE */
 
-static Logger * _logger = NULL;
+static Logger *_logger = NULL;
 static boolean _logIgnoredLexemes = true;
 
-void initializeFlexActionsModule() {
+void initializeFlexActionsModule()
+{
 	_logIgnoredLexemes = getBooleanOrDefault("LOG_IGNORED_LEXEMES", _logIgnoredLexemes);
 	_logger = createLogger("FlexActions");
 }
 
-void shutdownFlexActionsModule() {
-	if (_logger != NULL) {
+void shutdownFlexActionsModule()
+{
+	if (_logger != NULL)
+	{
 		destroyLogger(_logger);
 	}
 }
 
 /* PRIVATE FUNCTIONS */
 
-static void _logLexicalAnalyzerContext(const char * functionName, LexicalAnalyzerContext * lexicalAnalyzerContext);
+static void _logLexicalAnalyzerContext(const char *functionName, LexicalAnalyzerContext *lexicalAnalyzerContext);
 
 /**
  * Logs a lexical-analyzer context in DEBUGGING level.
  */
-static void _logLexicalAnalyzerContext(const char * functionName, LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	char * escapedLexeme = escape(lexicalAnalyzerContext->lexeme);
+static void _logLexicalAnalyzerContext(const char *functionName, LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
+	char *escapedLexeme = escape(lexicalAnalyzerContext->lexeme);
 	logDebugging(_logger, "%s: %s (context = %d, length = %d, line = %d)",
-		functionName,
-		escapedLexeme,
-		lexicalAnalyzerContext->currentContext,
-		lexicalAnalyzerContext->length,
-		lexicalAnalyzerContext->line);
+				 functionName,
+				 escapedLexeme,
+				 lexicalAnalyzerContext->currentContext,
+				 lexicalAnalyzerContext->length,
+				 lexicalAnalyzerContext->line);
 	free(escapedLexeme);
 }
 
@@ -39,196 +43,269 @@ static void _logLexicalAnalyzerContext(const char * functionName, LexicalAnalyze
 // new
 // Comments:
 // Multiline comment functions:
-void BeginMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	if (_logIgnoredLexemes) {
+void BeginMultilineCommentLexemeAction(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
+	if (_logIgnoredLexemes)
+	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
 	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
-void EndMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	if (_logIgnoredLexemes) {
+void EndMultilineCommentLexemeAction(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
+	if (_logIgnoredLexemes)
+	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
 	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
-void IgnoredLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	if (_logIgnoredLexemes) {
+void IgnoredLexemeAction(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
+	if (_logIgnoredLexemes)
+	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
 	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
 // Line comment functions:
-void BeginLineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	if (_logIgnoredLexemes) {
+void BeginLineCommentLexemeAction(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
+	if (_logIgnoredLexemes)
+	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
-void EndLineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	if (_logIgnoredLexemes) {
+void EndLineCommentLexemeAction(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
+	if (_logIgnoredLexemes)
+	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
 // Basic utility:
-Token SimpleTokenInsert(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token){
-	if (_logIgnoredLexemes) {
+Token SimpleTokenInsert(LexicalAnalyzerContext *lexicalAnalyzerContext, Token token)
+{
+	if (_logIgnoredLexemes)
+	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	// si comento esta linea de abajo tira menos leaks pero se pierde el código java
 	lexicalAnalyzerContext->semanticValue->token = token;
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 	return token;
 }
 
-Token SimpleStringInsert(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token) {
-	if (_logIgnoredLexemes) {
+Token SimpleStringInsert(LexicalAnalyzerContext *lexicalAnalyzerContext, Token token)
+{
+	if (_logIgnoredLexemes)
+	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
-	lexicalAnalyzerContext->semanticValue->string = lexicalAnalyzerContext->lexeme;
+	lexicalAnalyzerContext->semanticValue->string = strdup(lexicalAnalyzerContext->lexeme);
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 	return token;
 }
 
 // Regex class names functions:
-void BeginRegexLine(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	if (_logIgnoredLexemes) {
+void BeginRegexLine(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
+	if (_logIgnoredLexemes)
+	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
-void BeginRegexNameLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	if (_logIgnoredLexemes) {
+void BeginRegexNameLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
+	if (_logIgnoredLexemes)
+	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
-Token VarNameLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+Token VarNameLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->string = lexicalAnalyzerContext->lexeme;
+	lexicalAnalyzerContext->semanticValue->string = strdup(lexicalAnalyzerContext->lexeme);
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 	return VAR_NAME;
 }
 
 // Regex class content functions:
-void BeginRegexContentLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	if (_logIgnoredLexemes) {
+void BeginRegexContentLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
+	if (_logIgnoredLexemes)
+	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
-Token RegexContentLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext, Token token) {
+Token RegexContentLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext, Token token)
+{
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->string = lexicalAnalyzerContext->lexeme;
+	if (token != RANGER)
+	{
+		lexicalAnalyzerContext->semanticValue->string = strdup(lexicalAnalyzerContext->lexeme);
+	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 	return token;
 }
 
 // Lexeme for strings functions:
-void BeginStringLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	if (_logIgnoredLexemes) {
+void BeginStringLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
+	if (_logIgnoredLexemes)
+	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
-Token StringLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
+Token StringLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->string = lexicalAnalyzerContext->lexeme;
+	lexicalAnalyzerContext->semanticValue->string = strdup(lexicalAnalyzerContext->lexeme);
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 	return STR;
 }
 
-void EndStringLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
-	if (_logIgnoredLexemes) {
+void EndStringLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
+	if (_logIgnoredLexemes)
+	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
 // Lexeme for regex classes functions:
-void BeginClassLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	if (_logIgnoredLexemes) {
+void BeginClassLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
+	if (_logIgnoredLexemes)
+	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
 // Lexeme for our classes functions:
-void BeginOurClassLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	if (_logIgnoredLexemes) {
+void BeginOurClassLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
+	if (_logIgnoredLexemes)
+	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
-Token ClauseOperator(LexicalAnalyzerContext * lexicalAnalyzerContext, Token clause){
+Token ClauseOperator(LexicalAnalyzerContext *lexicalAnalyzerContext, Token clause)
+{
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	lexicalAnalyzerContext->semanticValue->token = clause;
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 	return clause;
 }
 
 // Default usage functions:
-Token DefaultLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	if (_logIgnoredLexemes) {
+Token DefaultLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
+	if (_logIgnoredLexemes)
+	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
-	lexicalAnalyzerContext->semanticValue->string = lexicalAnalyzerContext->lexeme;
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 	return DEFAULT;
 }
 
 // Actions functions:
-void BeginSimpleActionLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	if (_logIgnoredLexemes) {
+void BeginSimpleActionLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
+	if (_logIgnoredLexemes)
+	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
-void BeginFunctionBodyLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	if (_logIgnoredLexemes) {
+void BeginFunctionBodyLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
+	if (_logIgnoredLexemes)
+	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
-void BeginFunctionParamLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	if (_logIgnoredLexemes) {
+void BeginFunctionTypeLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
+	if (_logIgnoredLexemes)
+	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
-// Function param functions:
-Token FunctionParamLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext, Token param){
-	return SimpleTokenInsert(lexicalAnalyzerContext, param);
+// Function type functions:
+Token FunctionTypeLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext, Token type)
+{
+	return SimpleTokenInsert(lexicalAnalyzerContext, type);
 }
 
-void EndFunctionBodyLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
-	if (_logIgnoredLexemes) {
+void EndFunctionBodyLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
+	if (_logIgnoredLexemes)
+	{
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	}
+	destroyLexicalAnalyzerContext(lexicalAnalyzerContext);
 }
 
 // Endline functions:
-Token EndLineLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
+Token EndLineLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
 	return SimpleTokenInsert(lexicalAnalyzerContext, ENDLINE);
 }
 
-Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+Token UnknownLexemeAction(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	return UNKNOWN;
 }
 
-Token OpenParenthesesLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
+Token OpenParenthesesLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
 	return SimpleTokenInsert(lexicalAnalyzerContext, OPEN_PARENTHESES);
 }
 
-Token CloseParenthesesLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
+Token CloseParenthesesLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
 	return SimpleTokenInsert(lexicalAnalyzerContext, CLOSE_PARENTHESES);
 }
 
-Token OpenBracesLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
+Token OpenBracesLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
 	return SimpleTokenInsert(lexicalAnalyzerContext, OPEN_BRACES);
 }
 
-Token CloseBracesLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
+Token CloseBracesLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
 	return SimpleTokenInsert(lexicalAnalyzerContext, CLOSE_BRACES);
 }
 
- Token ArrowLexeme(LexicalAnalyzerContext * lexicalAnalyzerContext){
+Token ArrowLexeme(LexicalAnalyzerContext *lexicalAnalyzerContext)
+{
 	return SimpleTokenInsert(lexicalAnalyzerContext, ARROW);
- }
+}
 
 // old
 /*

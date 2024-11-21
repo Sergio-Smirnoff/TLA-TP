@@ -2,282 +2,405 @@
 
 /* MODULE INTERNAL STATE */
 
-static Logger * _logger = NULL;
-static transformer_list* list;
-static transformer_list* current;
-static Valid_Regex_List* validRegexList;
-static boolean has_default = false;
+static Logger *_logger = NULL;
+static transformer_list *list;
+static transformer_list *current = NULL;
+static Valid_Regex_List *validRegexList;
+static automaton *automat;
+static ComputationResult *result;
 
 /** PRIVATE FUNCTIONS */
-static void _addToList(char* lexeme, return_struct* returner);
-static int _isInList(char* lexeme);
-static void _freeTransformerList(struct transformer_list* list);
-static char* _strConcat(char* str1, char* str2);
-void ruleset(Ruleset* my_ruleset);
-void computeRule(Rule* my_rule);
-char* regexContent(Regexes* regexes);
-char* computeRegexClass(Regex_class* regexClass);
-char* computeClosure(Closure* closure);
-char* computeLexemePrecursor(Lexeme_precursor* lexeme_precursor);
-char* computeLexeme(Lexeme* lexeme);
-return_struct* computeAction(Action* my_action);
+static void _addToList(Lexeme_precursor *lexeme, Action *returner);
+static char *_strConcat(char *str1, char *str2);
+static char _compare_tokens(token_t t1, token_t t2);
+void _ruleset(Ruleset *my_ruleset);
+void _computeRule(Rule *my_rule);
+void _regexContent(Regexes *regexes, uint64_t startIndex, uint64_t endIndex);
+void _computeRegexClass(Regex_class *regexClass, uint64_t startIndex, uint64_t endIndex);
+uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returner, uint64_t currentIndex, boolean useToken);
+uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner, boolean isEndOfChain, boolean useToken);
 
-static void _addToList(char* lexeme, return_struct* returner){
-    while(lexeme != NULL && returner != NULL){
-        current->next = (transformer_list*)calloc(1, sizeof(transformer_list));
-        if (errno != 0){
-            return; // podriamos loggear el error
+static void _addToList(Lexeme_precursor *lexeme, Action *returner)
+{
+    if (lexeme != NULL)
+    {
+        if (current != NULL)
+        {
+            current->next = (transformer_list *)calloc(1, sizeof(transformer_list));
+            if (errno != 0)
+            {
+                return; // podriamos loggear el error
+            }
+            current = current->next;
         }
-        current = current->next;
-    }
-
-    current->lexeme = lexeme;
-    current->returner = returner;
-    current->next = NULL;
-}
-
-// check if it is in the return list
-static int _isInList(char* lexeme){
-    transformer_list* aux = list;
-    while (aux != NULL){
-        if (strcmp(aux->lexeme, lexeme) == 0){
-            return 0;
+        else
+        {
+            current = list;
         }
-        aux = aux->next;
-    }
-    return 1;
-}
-
-static void _freeTransformerList(struct transformer_list* list){
-    transformer_list* aux = list;
-    while (aux != NULL){
-        transformer_list* to_free = aux;
-        aux = aux->next;
-        if (to_free->lexeme != NULL){
-            free(to_free->lexeme);
-        }
-        if (to_free->returner != NULL){
-            free(to_free->returner);
-        }
-        free(to_free);
+        current->lexeme = lexeme;
+        current->returner = returner;
+        current->next = NULL;
     }
 }
 
-static char* _strConcat(char* str1, char* str2){
-    char* aux = calloc((strlen(str1) + strlen(str2)), sizeof(char));
+static char *_strConcat(char *str1, char *str2)
+{
+    char *aux = calloc((strlen(str1) + strlen(str2) + 1), sizeof(char));
     sprintf(aux, "%s%s", str1, str2);
     return aux;
 }
 
 /** PUBLIC FUNCTIONS */
 
-
-
-void initializeWeirdFlexModule() {
-	_logger = createLogger("Weird Flex");
-    list = (struct transformer_list*)calloc(1, sizeof(struct transformer_list));
-    current = list;
+void initializeWeirdFlexModule()
+{
+    _logger = createLogger("Weird Flex");
+    list = (struct transformer_list *)calloc(1, sizeof(struct transformer_list));
 }
 
-void shutdownWeirdFlexModule() {
-	if (_logger != NULL) {
-		destroyLogger(_logger);
-	}
-    _freeTransformerList(list);
-}
-
-void print_transformerlist(transformer_list* list){
-    transformer_list* aux = list;
-    while (aux != NULL){
-        if (aux->lexeme != NULL){
-            printf("Lexeme: %s\n", aux->lexeme);
+void shutdownWeirdFlexModule()
+{
+    if (_logger != NULL)
+    {
+        destroyLogger(_logger);
+        transformer_list *curr = list;
+        while (curr != NULL)
+        {
+            transformer_list *aux = curr->next;
+            free(curr);
+            curr = aux;
         }
-        if (aux->returner != NULL){
-            switch (aux->returner->type){
-                case RETURN_STRING:
-                    printf("Returner: %s\n", aux->returner->string);
-                    break;
-                case JAVA_BLOCK:
-                    printf("Returner: %d\n", aux->returner->parameters);
-                    printf("Returner: %p\n", aux->returner->java_block);
-                    break;
-                case RETURN_TOKEN:
-                    printf("Returner: %ls\n", aux->returner->token);
-                    break;
-            }
-        }
-        aux = aux->next;
     }
 }
 
-ComputationResult* computeProgram(Program * tree, Valid_Regex_List* regexList) {
-    ComputationResult* result = (ComputationResult*)calloc(1, sizeof(ComputationResult));
+ComputationResult *computeProgram(Program *tree, Valid_Regex_List *regexList)
+{
+    result = (ComputationResult *)calloc(1, sizeof(ComputationResult));
     validRegexList = regexList;
-    ruleset(tree->ruleset);
-    if ( list == NULL){
+
+    _ruleset(tree->ruleset);
+    if (list->lexeme == NULL)
+    {
+        result->errorMessage = strdup("No rules");
+        return result;
+    }
+    if (result->errorMessage != NULL)
+    {
         result->succeed = false;
         return result;
     }
     result->succeed = true;
-    result->value = list;
+    result->list = list;
     return result;
 }
 
-void ruleset(Ruleset* my_ruleset){
-    if (my_ruleset == NULL){
-        return;
-    }
-    computeRule(my_ruleset->rule);
-    ruleset(my_ruleset->ruleset);
-}
-
-void computeRule(Rule* my_rule){
-    if (my_rule == NULL){
-        return;
-    }
-    switch (my_rule->type){
-        char* lexeme;
-        return_struct* returner;
-        case lexeme_action:
-            lexeme = computeLexemePrecursor(my_rule->lex);
-            returner = computeAction(my_rule->action);
-            _addToList(lexeme, returner);
-            break;
-        case ignore_lexeme:
-            lexeme = computeLexemePrecursor(my_rule->lexeme);
-            returner = NULL;
-            _addToList(lexeme, returner);
-            break;
-        case regex: // para mi no hace falta hacer esto
-            char *regex_content = regexContent(my_rule->regexes);
-            Valid_Regex_List_Node* aux = validRegexList->head;
-            while (aux != NULL){
-                if (strcmp(aux->regex_id, my_rule->our_regex_id) == 0){
-                    aux->regex = regex_content;
-                    return;
-                }
-                aux = aux->next;
-            }
-            break;
-    }
-}
-
-char* regexContent(Regexes* regexes) {
-    if(regexes->regexes == NULL) {
-        return computeRegexClass(regexes->regexClass);
-    } else {
-        char* regex_class = computeRegexClass(regexes->regexClass); 
-        char* regex_content = regexContent(regexes->regexes);
-        char* aux = _strConcat(regex_class, regex_content);// problema con mallocs, posible solucion
-        free(regex_class);  
-        free(regex_content);
-        return aux;
-    }
-}
-
-char* computeRegexClass(Regex_class* regexClass) {
-    if(regexClass == NULL) {
-        return "";
-    }
-    switch (regexClass->type) {
-        case symbol:
-            return regexClass->symbol->symbol_tok;
-        case range:
-            char* aux = malloc(4 * sizeof(char));
-            aux[0] = regexClass->startSymbol->symbol_tok[0];
-            aux[1] = '-';
-            aux[2] = regexClass->endSymbol->symbol_tok[0];
-            aux[3] = '\0';
-            return aux;
-        case variable:
-            if(regexClass->closure == NULL || regexClass->closure->closure == NULL/* opción type: || regexClass->closure->type == NULL*/){
-                return regexClass->varName;
-            } else {
-                char* aux = computeClosure(regexClass->closure); // string fijo
-                return _strConcat(regexClass->varName, aux);
-            }
-    }
-}
-
-char* computeClosure(Closure* closure) {
-    switch (closure->closure) {
-        case 42:
-            return "*";
-        case 43:
-            return "+";
-        default:
-            return "";
-    }
-    /* esta opción va si le agregamos type a las clausuras, no se como usar el token
-    switch (closure->type) {
-        case star:
-            return "*";
-        case plus:
-            return "+";
-        default:
-            return "";
-    }
-    */
-}
-
-char* computeLexemePrecursor(Lexeme_precursor* lexeme_precursor){
-    // check if it is a string
-    if ( lexeme_precursor == NULL )
-        return "";
-    switch (lexeme_precursor->precursor_type){
-        case literals:
-            if(lexeme_precursor->type == default_lexeme) {
-                if(has_default) {
-                    perror("There can only be one default lexeme");
-                    return NULL;
-                } else {
-                    has_default = true;
-                    return "default";
-                }
-            }
-            return lexeme_precursor->string;
-        case nonliterals:
-            char* lexeme_prec = computeLexemePrecursor(lexeme_precursor->lex_prec);
-            char* lexeme = computeLexeme(lexeme_precursor->lex);
-            char* aux = _strConcat(lexeme, lexeme_prec);
-            free(lexeme_prec);
-            free(lexeme);
-            return aux;
-    }
-}
-
-char* computeLexeme(Lexeme* lexeme) {
-    char* aux = "";
-    switch(lexeme->type)
+void _ruleset(Ruleset *my_ruleset)
+{
+    if (my_ruleset == NULL)
     {
-        case regexes:
-            aux = regexContent(lexeme->regexes);
-            break;
-        case name: // al pedo hacer esto
-            Valid_Regex_List_Node* aux2 = validRegexList->head;
-            while (aux2 != NULL){
-                if (strcmp(aux2->regex_id, lexeme->our_regex_id) == 0){
-                    aux = aux2->regex;
-                    break;
-                }
-                aux2 = aux2->next;
-            }
-            break;
+        return;
     }
-    return aux;
+    _computeRule(my_ruleset->rule);
+    if (result->errorMessage != NULL)
+    {
+        return;
+    }
+    _ruleset(my_ruleset->ruleset);
 }
 
-return_struct* computeAction(Action* my_action){
-    return_struct* returner = calloc(1, sizeof(return_struct));
-    switch (my_action->type){
-        case action:
-            returner->type = RETURN_STRING;
-            returner->string = my_action->varName;
-            break;
-        case function_body:
-            returner->type = JAVA_BLOCK;
-            returner->parameters = my_action->param->stuff;
-            returner->java_block = my_action->block;
-    }       
-    return returner;
+void _computeRule(Rule *my_rule)
+{
+    if (my_rule == NULL)
+    {
+        return;
+    }
+    Lexeme_precursor *lexeme;
+    Action *returner;
+    switch (my_rule->type)
+    {
+    case LEXEME_ACTION:
+        lexeme = my_rule->lex;
+        returner = my_rule->action;
+        _addToList(lexeme, returner);
+        break;
+    case IGNORE_LEXEME:
+        lexeme = my_rule->lexeme;
+        returner = NULL;
+        _addToList(lexeme, returner);
+        break;
+    case REGEX:
+        Regexes *regex_content = my_rule->regexes;
+        Valid_Regex_List_Node *aux = validRegexList->head;
+        while (aux != NULL)
+        {
+            if (strcmp(aux->regex_id, my_rule->our_regex_id) == 0)
+            {
+                aux->regex = regex_content;
+                return;
+            }
+            aux = aux->next;
+        }
+        break;
+    default:
+        result->errorMessage = strdup("Invalid rule type");
+        break;
+    }
+}
+
+static char _compare_tokens(token_t t1, token_t t2)
+{
+    return t1 == t2;
+}
+
+void buildAutomaton(ComputationResult *computationResult)
+{
+    transformer_list *aux = computationResult->list;
+    result = computationResult;
+    automat = new_automaton();
+    uint64_t initial_state_index = new_state(automat, 0, NULL);
+    set_initial_state(automat, initial_state_index);
+    int i = 1;
+    while (aux != NULL)
+    {
+        if (result->errorMessage != NULL)
+        {
+            return;
+        }
+        if (aux->lexeme != NULL)
+        {
+            _computeLexemePrecursor(aux->lexeme, aux->returner, initial_state_index, 1);
+            if (result->errorMessage != NULL)
+            {
+                free_automaton(automat);
+                return;
+            }
+        }
+        else
+        {
+            computationResult->succeed = false;
+            computationResult->errorMessage = strdup("Lexeme is NULL. Bad built table.");
+            return;
+        }
+        aux = aux->next;
+    }
+    automaton *dfa = get_deterministic_equivalent(automat);
+    automaton *mdfa = get_minimal_equivalent(dfa, _compare_tokens);
+    free_automaton(automat);
+    free_automaton(dfa);
+    computationResult->automaton = mdfa;
+    return;
+}
+
+uint64_t _computeLexemePrecursor(Lexeme_precursor *lexeme_precursor, Action *returner, uint64_t currentIndex, boolean useToken)
+{
+    if (lexeme_precursor == NULL)
+    {
+        return currentIndex;
+    }
+    switch (lexeme_precursor->precursor_type)
+    {
+    case DEFAULT_T:
+        uint64_t defaultStateIndex = useToken ? new_state(automat, 1, returner) : new_state(automat, 0, NULL);
+        for (unsigned char c = 9; c < 127; c++)
+        {
+            if (!(c == 11 || c == 12 || (c >= 14 && c <= 31)))
+            {
+                set_transition(automat, currentIndex, defaultStateIndex, c);
+            }
+        }
+        return defaultStateIndex;
+    case NONLITERALS:
+        if (lexeme_precursor->lexeme_precursor == NULL)
+        {
+            return _computeLexeme(lexeme_precursor->lexeme, currentIndex, returner, 1, useToken);
+        }
+        else
+        {
+            if (lexeme_precursor->chain_type == CONCATENATION)
+            {
+                uint64_t finalState = _computeLexeme(lexeme_precursor->lexeme, currentIndex, NULL, 0, 0);
+                return _computeLexemePrecursor(lexeme_precursor->lexeme_precursor, returner, finalState, useToken);
+            }
+            else if (lexeme_precursor->chain_type == SUMMATION)
+            {
+                uint64_t finalState = new_state(automat, 0, NULL);
+                set_transition(automat, _computeLexeme(lexeme_precursor->lexeme, currentIndex, returner, 0, useToken), finalState, LAMBDA);
+                set_transition(automat, _computeLexemePrecursor(lexeme_precursor->lexeme_precursor, returner, currentIndex, useToken), finalState, LAMBDA);
+                return finalState;
+            }
+            return currentIndex;
+        }
+    default:
+        result->errorMessage = strdup("Invalid lexeme precursor type");
+        return currentIndex;
+    }
+}
+
+char _mapEscapedChar(char c)
+{
+    switch (c)
+    {
+    case 'a':
+        return '\a';
+    case 'b':
+        return '\b';
+    case 't':
+        return '\t';
+    case 'n':
+        return '\n';
+    case 'v':
+        return '\v';
+    case 'f':
+        return '\f';
+    case 'r':
+        return '\r';
+    default:
+        return c;
+    }
+}
+
+uint64_t _computeLexeme(Lexeme *lexeme, uint64_t currentIndex, Action *returner, boolean isEndOfChain, boolean useToken)
+{
+    uint64_t finalState = currentIndex;
+    Regexes *node;
+    switch (lexeme->type)
+    {
+    case REGEXES_TYPE:
+        node = lexeme->regexes;
+        break;
+    case NAME:
+        Valid_Regex_List_Node *aux2 = validRegexList->head;
+        while (aux2 != NULL)
+        {
+            if (strcmp(aux2->regex_id, lexeme->our_regex_id) == 0)
+            {
+                node = aux2->regex;
+                break;
+            }
+            aux2 = aux2->next;
+        }
+        break;
+    case STRING_LEXEME:
+        char *s = lexeme->string;
+        uint64_t currentStateIndex = currentIndex;
+        uint64_t nextStateIndex;
+        while (*s)
+        {
+            if (s[0] == '\\' && s[1])
+            {
+                s++;
+                *s = _mapEscapedChar(*s);
+            }
+            nextStateIndex = s[1] || !useToken ? new_state(automat, 0, NULL) : new_state(automat, 1, returner);
+            set_transition(automat, currentStateIndex, nextStateIndex, *s);
+            set_transition(automat, currentStateIndex, nextStateIndex, *s);
+
+            s++;
+            currentStateIndex = nextStateIndex;
+        }
+        return currentStateIndex;
+    case PRECURSOR_CLOSURE:
+        if (lexeme->closure == NULL)
+        {
+            return _computeLexemePrecursor(lexeme->precursor, returner, currentIndex, useToken);
+        }
+
+        if (lexeme->closure->closure == PLUS)
+        {
+            currentIndex = _computeLexemePrecursor(lexeme->precursor, NULL, currentIndex, 0);
+        }
+
+        uint64_t aux = new_state(automat, 0, NULL);
+        set_transition(automat, currentIndex, aux, LAMBDA);
+
+        finalState = _computeLexemePrecursor(lexeme->precursor, NULL, aux, 0);
+        uint64_t newFinal = useToken ? new_state(automat, 1, returner) : new_state(automat, 0, NULL);
+        set_transition(automat, finalState, aux, LAMBDA);
+        set_transition(automat, finalState, newFinal, LAMBDA);
+        set_transition(automat, currentIndex, newFinal, LAMBDA);
+        return newFinal;
+    default:
+        result->errorMessage = strdup("Invalid lexeme type");
+        return currentIndex;
+    }
+    if (lexeme->closure == NULL)
+    {
+        finalState = isEndOfChain && useToken ? new_state(automat, 1, returner) : new_state(automat, 0, NULL);
+        _regexContent(node, currentIndex, finalState);
+        return finalState;
+    }
+
+    if (lexeme->closure->closure == PLUS)
+    {
+        finalState = isEndOfChain && useToken ? new_state(automat, 1, returner) : new_state(automat, 0, NULL);
+        _regexContent(node, currentIndex, finalState);
+    }
+
+    if (lexeme->closure->closure == STAR && isEndOfChain && useToken)
+    {
+        set_token(automat, currentIndex, returner);
+    }
+
+    _regexContent(node, finalState, finalState);
+
+    return finalState;
+}
+
+void _regexContent(Regexes *regexes, uint64_t startIndex, uint64_t endIndex)
+{
+    _computeRegexClass(regexes->regexClass, startIndex, endIndex);
+    if (result->errorMessage != NULL)
+    {
+        return;
+    }
+    if (regexes->regexes != NULL)
+        _regexContent(regexes->regexes, startIndex, endIndex);
+}
+
+void _computeRegexClass(Regex_class *regexClass, uint64_t startIndex, uint64_t endIndex)
+{
+    if (regexClass == NULL)
+    {
+        return;
+    }
+    switch (regexClass->type)
+    {
+    case SYMBOL_TYPE:
+        set_transition(automat, startIndex, endIndex, regexClass->symbol->symbol_tok[0]);
+        return;
+    case RANGE:
+        if (regexClass->startSymbol->symbol_tok[0] > regexClass->endSymbol->symbol_tok[0])
+        {
+            char *aux = _strConcat(regexClass->startSymbol->symbol_tok, "-");
+            char *range = _strConcat(aux, regexClass->endSymbol->symbol_tok);
+            char *to_print = _strConcat("Invalid range: ", range);
+            result->errorMessage = to_print;
+            free(range);
+            free(aux);
+            return;
+        }
+        else
+        {
+            for (unsigned char c = regexClass->startSymbol->symbol_tok[0]; c <= regexClass->endSymbol->symbol_tok[0]; c++)
+            {
+                set_transition(automat, startIndex, endIndex, c);
+            }
+            return;
+        }
+    case VARIABLE:
+        Valid_Regex_List_Node *aux2 = validRegexList->head;
+        while (aux2 != NULL)
+        {
+            if (strcmp(aux2->regex_id, regexClass->varName) == 0)
+            {
+                _regexContent(aux2->regex, startIndex, endIndex);
+                break;
+            }
+            aux2 = aux2->next;
+        }
+        return;
+    default:
+        result->errorMessage = strdup("Invalid regex class type");
+        return;
+    }
 }

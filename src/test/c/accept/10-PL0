@@ -29,19 +29,20 @@
 Regex digit         [0-9];
 Regex letter        [a-zA-Z];
 
-{letter}[{letter}{digit}]* -> (){
-                       var.attribute.id = var.text.toString(); /* var.text is an instance of StringBuilder */
-                       return IDENT;
+{letter}[{letter}{digit}]* -> {
+                        Token tok = IDENT.setStringContent(var.getLexeme());
+                        return tok;
  };
 
-{digit}+ -> (){
-                       var.attribute.num = Integer.parseInt(var.text.toString());
-                       return NUMBER;
- };
+{digit}+ -> {
+                        var.attribute.num = Integer.parseInt(var.getLexeme());
+                        return NUMBER;
+};
 
 /*Skipps white spaces*/ 
 "\t";
 "\n";
 "\r";
+" ";
 
-"default" -> REJECT;
+default -> REJECT;

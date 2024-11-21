@@ -2,16 +2,46 @@
 #include "closed_hashing.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
+#include <string.h>
 
 #define BLOCK 32
 #define DTE(x) ((delta_table_entry *)(x))
 #define BIG_PRIME 1000000007
+#define IS_BIT_SET(x, i) (((x)[(i) >> 3] & (1 << ((i) & 7))) != 0)
+#define SET_BIT(x, i) (x)[(i) >> 3] |= (1 << ((i) & 7))
+#define CLEAR_BIT(x, i) (x)[(i) >> 3] &= (1 << ((i) & 7)) ^ 0xFF
+
+char array_contains(const uint64_t *array, uint64_t array_size, uint64_t value)
+{
+    for (uint64_t i = 0; i < array_size; i++)
+        if (array[i] == value)
+            return 1;
+    return 0;
+}
+
+void bubble_sort(uint64_t *arr, uint64_t size)
+{
+    char sorted = 0;
+    while (!sorted)
+    {
+        sorted = 1;
+        for (uint64_t i = 0; i < size - 1; i++)
+        {
+            if (arr[i] > arr[i + 1])
+            {
+                uint64_t aux = arr[i + 1];
+                arr[i + 1] = arr[i];
+                arr[i] = aux;
+                sorted = 0;
+            }
+        }
+    }
+}
 
 void resize_automaton(automaton *a)
 {
     a->states_dim *= 2;
-    a->states = realloc(a->states, a->states_dim * sizeof(State *));
+    a->states = realloc(a->states, a->states_dim * sizeof(automaton_state *));
 }
 
 void check_resize_automaton(automaton *a)
@@ -20,40 +50,65 @@ void check_resize_automaton(automaton *a)
         resize_automaton(a);
 }
 
-uint64_t new_state(automaton *a, uint8_t throws_token, uint64_t token)
+uint64_t new_state(automaton *a, uint8_t throws_token, token_t token)
 {
-    State *n_state = malloc(sizeof(State));
+    automaton_state *n_state = malloc(sizeof(automaton_state));
     n_state->delta = calloc(BLOCK, sizeof(rule));
     n_state->delta_dim = BLOCK;
     n_state->delta_size = 0;
     n_state->throws_token = throws_token;
     n_state->token = token;
+    n_state->min_symbol = n_state->max_symbol = UNINITIALIZED_BOUND;
     check_resize_automaton(a);
     a->states[a->states_size] = n_state;
+    if (a->initial_state_index == -1)
+        a->initial_state_index = a->states_size;
     return a->states_size++;
 }
 
-void set_initial_state(automaton *a, State *initial_state)
+void set_initial_state(automaton *a, uint64_t initial_state_index)
 {
-    a->initial_state = initial_state;
+    if (initial_state_index < a->states_size)
+        a->initial_state_index = initial_state_index;
 }
 
 automaton *new_automaton()
 {
     automaton *n_automaton = malloc(sizeof(automaton));
-    n_automaton->states = malloc(sizeof(State *) * BLOCK);
+    n_automaton->states = malloc(sizeof(automaton_state *) * BLOCK);
     n_automaton->states_dim = BLOCK;
     n_automaton->states_size = 0;
+    n_automaton->min_symbol = n_automaton->max_symbol = UNINITIALIZED_BOUND;
+    n_automaton->initial_state_index = -1;
     return n_automaton;
 }
 
-void resize_state(State *s)
+char set_token(automaton *a, uint64_t state_index, token_t token)
+{
+    if (state_index >= a->states_size || a->states[state_index]->throws_token)
+        return 0;
+    a->states[state_index]->throws_token = 1;
+    a->states[state_index]->token = token;
+    return 1;
+}
+
+token_t unset_token(automaton *a, uint64_t state_index)
+{
+    if (state_index >= a->states_size || !a->states[state_index]->throws_token)
+        return (token_t)0;
+    if (!a->states[state_index]->throws_token)
+        return (token_t)0;
+    a->states[state_index]->throws_token = 0;
+    return a->states[state_index]->token;
+}
+
+void resize_state(automaton_state *s)
 {
     s->delta_dim *= 2;
     s->delta = realloc(s->delta, s->delta_dim * sizeof(rule));
 }
 
-void check_resize_state(State *s)
+void check_resize_state(automaton_state *s)
 {
     if (s->delta_dim == s->delta_size)
         resize_state(s);
@@ -71,39 +126,45 @@ void check_resize_rule(rule *r)
         resize_rule(r);
 }
 
-rule *find_rule(const State *s, char symbol)
+rule *find_rule(const automaton_state *s, char symbol)
 {
     uint64_t size = s->delta_size;
     for (uint64_t i = 0; i < size; i++)
-        if (s->delta[i].matcher == symbol)
+        if (s->delta[i]->matcher == symbol)
         {
-            return s->delta + i;
+            return s->delta[i];
         }
     return NULL;
 }
 
-char set_state_transition(State *from, uint64_t to_index, char matcher)
+char set_state_transition(automaton_state *from, uint64_t to_index, char matcher)
 {
     rule *r;
     if ((r = find_rule(from, matcher)) != NULL)
     {
+        if (array_contains(r->next_indices, r->next_indices_size, to_index))
+            return 0;
         check_resize_rule(r);
         r->next_indices[r->next_indices_size++] = to_index;
         return 1;
     }
 
     check_resize_state(from);
-    from->delta[from->delta_size].matcher = matcher;
-    from->delta[from->delta_size].next_indices_dim = 1;
-    from->delta[from->delta_size].next_indices_size = 1;
-    from->delta[from->delta_size].next_indices = malloc(sizeof(uint64_t) * 1);
-    from->delta[from->delta_size++].next_indices[0] = to_index;
+    rule *new_rule = malloc(sizeof(rule) * 1);
+    from->delta[from->delta_size++] = new_rule;
+    new_rule->matcher = matcher;
+    new_rule->next_indices_dim = 1;
+    new_rule->next_indices_size = 1;
+    new_rule->next_indices = malloc(sizeof(uint64_t) * 1);
+    new_rule->next_indices[0] = to_index;
     return 1;
 }
 
-void check_matcher_bounds(automaton *a, char matcher)
+void check_automaton_matcher_bounds(automaton *a, char matcher)
 {
-    if (a->min_symbol == -1)
+    if (matcher < 0)
+        return;
+    if (a->min_symbol == UNINITIALIZED_BOUND)
     {
         a->min_symbol = matcher;
         a->max_symbol = matcher;
@@ -117,12 +178,31 @@ void check_matcher_bounds(automaton *a, char matcher)
     }
 }
 
+void check_state_matcher_bounds(automaton_state *s, char matcher)
+{
+    if (matcher < 0)
+        return;
+    if (s->min_symbol == UNINITIALIZED_BOUND)
+    {
+        s->min_symbol = matcher;
+        s->max_symbol = matcher;
+    }
+    else
+    {
+        if (s->min_symbol > matcher)
+            s->min_symbol = matcher;
+        else if (s->max_symbol < matcher)
+            s->max_symbol = matcher;
+    }
+}
+
 char force_set_transition(automaton *a, uint64_t from_index, uint64_t to_index, char matcher)
 {
     if (from_index >= a->states_size)
         return 0;
-    check_matcher_bounds(a, matcher);
-    State *from = get_state(a, from_index);
+    check_automaton_matcher_bounds(a, matcher);
+    automaton_state *from = get_state(a, from_index);
+    check_state_matcher_bounds(from, matcher);
     return set_state_transition(from, to_index, matcher);
 }
 
@@ -133,7 +213,7 @@ char set_transition(automaton *a, uint64_t from_index, uint64_t to_index, char m
     return force_set_transition(a, from_index, to_index, matcher);
 }
 
-State *next_state(const automaton *a, const State *s, char symbol)
+automaton_state *next_state(const automaton *a, const automaton_state *s, char symbol)
 {
     rule *rule = find_rule(s, symbol);
     if (rule == NULL)
@@ -141,11 +221,11 @@ State *next_state(const automaton *a, const State *s, char symbol)
     return get_state(a, rule->next_indices[0]);
 }
 
-uint64_t get_next_token(const automaton *a, const char **string_p)
+token_t get_next_token(const automaton *a, const char **string_p)
 {
-    State *current = a->initial_state;
+    automaton_state *current = a->states[a->initial_state_index];
     const char *s = *string_p;
-    uint64_t found_token = -1;
+    token_t found_token = UNKNOWN_TOKEN;
     while (current != NULL && *s)
     {
         if (current->throws_token)
@@ -169,7 +249,7 @@ uint64_t get_next_token(const automaton *a, const char **string_p)
 
 char accepts(const automaton *a, const char *string)
 {
-    State *current = a->initial_state;
+    automaton_state *current = a->states[a->initial_state_index];
     while (*string)
     {
         if (current == NULL)
@@ -180,14 +260,15 @@ char accepts(const automaton *a, const char *string)
     return current != NULL && current->throws_token;
 }
 
-uint64_t *get_token_stream(const automaton *a, const char *string, uint64_t *buffer, uint64_t buffer_size)
+token_t *get_token_stream(const automaton *a, const char *string, token_t *buffer, uint64_t buffer_size)
 {
-    uint64_t token, i;
+    token_t token;
+    uint64_t i;
     for (i = 0; i < buffer_size && string[0]; i++)
     {
         token = get_next_token(a, &string);
         buffer[i] = token;
-        if (token == -1)
+        if (token == UNKNOWN_TOKEN)
         {
             i++;
             break;
@@ -198,17 +279,20 @@ uint64_t *get_token_stream(const automaton *a, const char *string, uint64_t *buf
     return buffer;
 }
 
-State *get_state(const automaton *a, uint64_t index)
+automaton_state *get_state(const automaton *a, uint64_t index)
 {
     if (a->states_size > index)
         return a->states[index];
     return NULL;
 }
 
-void free_state(State *s)
+void free_state(automaton_state *s)
 {
     for (uint64_t i = 0; i < s->delta_size; i++)
-        free(s->delta[i].next_indices);
+    {
+        free(s->delta[i]->next_indices);
+        free(s->delta[i]);
+    }
     free(s->delta);
     free(s);
 }
@@ -285,44 +369,17 @@ uint64_t load_entry_column(delta_table *table, uint64_t *state_indices, uint64_t
     return table->entries_size++;
 }
 
-char array_contains(const uint64_t *array, uint64_t array_size, uint64_t value)
-{
-    for (uint64_t i = 0; i < array_size; i++)
-        if (array[i] == value)
-            return 1;
-    return 0;
-}
-
-void bubble_sort(uint64_t *arr, uint64_t size)
-{
-    char sorted = 0;
-    while (!sorted)
-    {
-        sorted = 1;
-        for (uint64_t i = 0; i < size - 1; i++)
-        {
-            if (arr[i] > arr[i + 1])
-            {
-                uint64_t aux = arr[i + 1];
-                arr[i + 1] = arr[i];
-                arr[i] = aux;
-                sorted = 0;
-            }
-        }
-    }
-}
-
-char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint64_t index)
+char populate_delta_table_entry(const automaton *a, automaton *dfa, delta_table *table, uint64_t index)
 {
     if (index >= table->entries_size || table->entries[index]->state_indices == NULL || !table->entries[index]->state_indices_size)
         return 0;
 
     delta_table_entry *entry = table->entries[index];
     char throws_token = 0;
-    uint64_t token = 0;
+    token_t token = 0;
     for (uint64_t i = 0; i < entry->state_indices_size; i++)
     {
-        State *state_in_column = get_state(a, entry->state_indices[i]);
+        automaton_state *state_in_column = get_state(a, entry->state_indices[i]);
         if (state_in_column->throws_token)
         {
             throws_token = 1;
@@ -338,16 +395,18 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
 
         for (uint64_t state_index = 0; state_index < entry->state_indices_size; state_index++)
         {
-            State *current_state = get_state(a, entry->state_indices[state_index]);
+            automaton_state *current_state = get_state(a, entry->state_indices[state_index]);
+            if (current_state->min_symbol == UNINITIALIZED_BOUND || current_state->min_symbol > matcher || current_state->max_symbol < matcher)
+                continue;
             for (uint64_t rule_index = 0; rule_index < current_state->delta_size; rule_index++)
             {
-                rule current_rule = current_state->delta[rule_index];
-                if (current_rule.matcher == matcher)
+                rule *current_rule = current_state->delta[rule_index];
+                if (current_rule->matcher == matcher)
                 {
-                    for (uint64_t transition_index = 0; transition_index < current_rule.next_indices_size; transition_index++)
+                    for (uint64_t transition_index = 0; transition_index < current_rule->next_indices_size; transition_index++)
                     {
-                        if (!array_contains(state_indices, state_indices_size, current_rule.next_indices[transition_index]))
-                            state_indices[state_indices_size++] = current_rule.next_indices[transition_index];
+                        if (!array_contains(state_indices, state_indices_size, current_rule->next_indices[transition_index]))
+                            state_indices[state_indices_size++] = current_rule->next_indices[transition_index];
                     }
                 }
             }
@@ -360,13 +419,13 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
             mock_entry.state_indices = state_indices;
             mock_entry.state_indices_size = state_indices_size;
             mock_entry.state_index = 0;
+            bubble_sort(state_indices, state_indices_size);
 
             void *entry = hashset_get(table->entries_set, &mock_entry);
             uint64_t entry_index;
 
             if (entry == NULL)
             {
-                bubble_sort(state_indices, state_indices_size);
                 entry_index = load_entry_column(table, state_indices, state_indices_size);
             }
             else
@@ -380,7 +439,7 @@ char populate_entry(const automaton *a, automaton *dfa, delta_table *table, uint
     return 1;
 }
 
-uint64_t hash_entries(const void *element)
+uint64_t hash_delta_table_entries(const void *element)
 {
     // This hashing function is terrible
     uint64_t sum = 0;
@@ -389,12 +448,12 @@ uint64_t hash_entries(const void *element)
     return sum % BIG_PRIME;
 }
 
-char compare_entries(const void *elem1, const void *elem2)
+char compare_delta_table_entries(const void *elem1, const void *elem2)
 {
     return are_equal_sorted_entries(DTE(elem1)->state_indices, DTE(elem1)->state_indices_size, DTE(elem2)->state_indices, DTE(elem2)->state_indices_size);
 }
 
-void free_entries(void *elem)
+void free_delta_table_entries(void *elem)
 {
     // The hashset is used in parallel to an array, the elements are freed from that array
     return;
@@ -406,12 +465,86 @@ delta_table *new_delta_table()
     table->entries = malloc(sizeof(delta_table_entry) * BLOCK);
     table->entries_size = 0;
     table->entries_dim = BLOCK;
-    table->entries_set = new_hashset(hash_entries, compare_entries, free_entries, BLOCK);
+    table->entries_set = new_hashset(hash_delta_table_entries, compare_delta_table_entries, free_delta_table_entries, BLOCK);
     return table;
 }
 
-automaton *get_deterministic_equivalent(const automaton *a)
+char remove_transitions_by_matcher(automaton_state *s, char matcher)
 {
+    char removed = 0;
+    for (uint64_t i = 0; i < s->delta_size; i++)
+    {
+        if (s->delta[i]->matcher == matcher)
+        {
+            removed = 1;
+            free(s->delta[i]->next_indices);
+            free(s->delta[i]);
+        }
+        if (i < s->delta_size - 1)
+            s->delta[i] = s->delta[i + removed];
+    }
+    s->delta_size -= removed;
+    return removed;
+}
+
+void merge_lambda_rules(automaton *a, automaton_state *to, uint64_t to_index, uint64_t from_index, uint64_t *ignore_state_indices, uint64_t ignore_state_indices_size)
+{
+    if (to_index == from_index)
+        return;
+    automaton_state *from = get_state(a, from_index);
+    if (from->throws_token && !(to->throws_token))
+    {
+        to->throws_token = 1;
+        to->token = from->token;
+    }
+    for (uint64_t rule_index = 0; rule_index < from->delta_size; rule_index++)
+        if (from->delta[rule_index]->matcher != LAMBDA)
+            for (uint64_t next_state_index = 0; next_state_index < from->delta[rule_index]->next_indices_size; next_state_index++)
+                set_transition(a, to_index, from->delta[rule_index]->next_indices[next_state_index], from->delta[rule_index]->matcher);
+
+    rule *lambda_rule = find_rule(from, LAMBDA);
+    if (lambda_rule != NULL)
+    {
+        for (uint64_t next_state_index = 0; next_state_index < lambda_rule->next_indices_size; next_state_index++)
+        {
+            if (!array_contains(ignore_state_indices, ignore_state_indices_size, lambda_rule->next_indices[next_state_index]))
+            {
+                ignore_state_indices[ignore_state_indices_size++] = lambda_rule->next_indices[next_state_index];
+                merge_lambda_rules(a, to, to_index, lambda_rule->next_indices[next_state_index], ignore_state_indices, ignore_state_indices_size);
+            }
+        }
+    }
+}
+
+/* There is a more efficient way to implement this algorithm, it requires that the automaton contain no lambda-transition-cycles, this is not the case
+** In essence: for every lambda transition in every state, recursively solve every lambda transition in every state led to by those transitions, removing the lambda transition before returning
+** That solution is O(n) time and memory (Though solving the cycles beforehand is O(n) time and likely O(n²) memory)
+** This solution is O(n²) time and O(n) memory. For the purposes of this ADT, that is sufficient.
+*/
+void solve_lambda_transitions(automaton *a)
+{
+    for (uint64_t current_state_index = 0; current_state_index < a->states_size; current_state_index++)
+    {
+        automaton_state *current_state = get_state(a, current_state_index);
+        rule *lambda_rule = find_rule(current_state, LAMBDA);
+        if (lambda_rule != NULL)
+        {
+            for (uint64_t next_state_index = 0; next_state_index < lambda_rule->next_indices_size; next_state_index++)
+            {
+                uint64_t *ignore_state_indices = malloc(sizeof(uint64_t) * a->states_size);
+                ignore_state_indices[0] = current_state_index;
+                merge_lambda_rules(a, current_state, current_state_index, lambda_rule->next_indices[next_state_index], ignore_state_indices, 1);
+                free(ignore_state_indices);
+            }
+        }
+    }
+    for (uint64_t current_state_index = 0; current_state_index < a->states_size; current_state_index++)
+        remove_transitions_by_matcher(get_state(a, current_state_index), LAMBDA);
+}
+
+automaton *get_deterministic_equivalent(automaton *a)
+{
+    solve_lambda_transitions(a);
     automaton *dfa = new_automaton();
     delta_table *table = new_delta_table();
     for (uint64_t state_index = 0; state_index < a->states_size; state_index++)
@@ -422,190 +555,436 @@ automaton *get_deterministic_equivalent(const automaton *a)
     }
     for (uint64_t state_index = 0; table->entries_size > dfa->states_size; state_index++)
     {
-        populate_entry(a, dfa, table, state_index);
+        populate_delta_table_entry(a, dfa, table, state_index);
     }
 
-    set_initial_state(dfa, dfa->states[0]);
+    set_initial_state(dfa, a->initial_state_index);
 
     free_delta_table(table);
 
     return dfa;
 }
 
-// modified from https://stackoverflow.com/questions/3440726/what-is-the-proper-way-of-implementing-a-good-itoa-function
-int itoa(uint64_t v, char *sp)
+typedef struct minimization_table_entry
 {
+    uint64_t *state_indices;
+    uint64_t state_indices_size;
+    uint64_t state_indices_dim;
+    uint64_t state_index;
+    uint64_t rule_count;
+} minimization_table_entry;
 
-    char tmp[BLOCK]; // be careful with the length of the buffer
-    char *tp = tmp;
-    int i;
+typedef struct minimization_table
+{
+    minimization_table_entry **entries;
+    uint64_t *state_lookup_table;
+    uint64_t entries_size;
+    uint64_t entries_dim;
+    const automaton *source;
+    automaton *result;
+} minimization_table;
+void print_minimization_table(const minimization_table *table);
 
-    while (v || tp == tmp)
-    {
-        i = v % 10;
-        v /= 10;
-        *tp++ = i + '0';
-    }
-
-    int len = tp - tmp;
-
-    while (tp > tmp)
-        *sp++ = *--tp;
-
-    return len;
+minimization_table *new_minimization_table(const automaton *source, automaton *result)
+{
+    minimization_table *table = malloc(sizeof(minimization_table));
+    table->entries = malloc(sizeof(minimization_table_entry) * BLOCK);
+    table->state_lookup_table = malloc(sizeof(uint64_t) * source->states_size);
+    table->entries_size = 0;
+    table->entries_dim = BLOCK;
+    table->source = source;
+    table->result = result;
+    return table;
 }
 
-void write_java_initialization(const automaton *a, int file_descriptor)
+uint64_t find_state_in_minimization_table_entry(const minimization_table_entry *entry, uint64_t state_index)
 {
-    char automaton_class_start[] = "import java.util.ArrayList;\n\
-import java.util.HashMap;\n\
-import java.util.List;\n\
-import java.util.Map;\n\
-\n\
-public class Automaton {\n\
-\n\
-    private static State initialState;\n\
-    private static final List<State> states = new ArrayList<>();\n\
-\n\
-    private Automaton() {}\n\
-\n\
-    public static State newStateGetState(Token token) {\n\
-        State State = new State(token);\n\
-        states.add(State);\n\
-        return State;\n\
-    }\n\
-\n\
-    public static int newState(Token token) {\n\
-        State State = new State(token);\n\
-        states.add(State);\n\
-        return states.size() - 1;\n\
-    }\n\
-\n\
-    public static void setInitialState(State State) {\n\
-        initialState = State;\n\
-    }\n\
-\n\
-    public static void setInitialState(int index) {\n\
-        initialState = states.get(index);\n\
-    }\n\
-\n\
-    public static void setTransition(int from, int to, char symbol) {\n\
-        states.get(from).setTransition(states.get(to), symbol);\n\
-    }\n\
-\n\
-    public static List<Token> getTokenList(String s) {\n\
-        char[] chars = s.toCharArray();\n\
-        List<Token> tokens = new ArrayList<>();\n\
-        State currentState = initialState;\n\
-\n\
-        for (char c : chars) {\n\
-            if (currentState == null) break;\n\
-            currentState = currentState.getTransition(c);\n\
-            if (currentState.token != null) {\n\
-                tokens.add(currentState.token);\n\
-            }\n\
-        }\n\
-\n\
-        return tokens;\n\
-    }\n\
-\n\
-    public static class State {\n\
-        private final Map<Character, State> transitions;\n\
-        private final Token token;\n\
-\n\
-        private State(Token token) {\n\
-            this.token = token;\n\
-            this.transitions = new HashMap<>();\n\
-        }\n\
-\n\
-        public void setTransition(State to, char symbol) {\n\
-            transitions.put(symbol, to);\n\
-        }\n\
-\n\
-        public State getTransition(char symbol) {\n\
-            return transitions.get(symbol);\n\
-        }\n\
-    }\n\
-\n\
-    public static class Token {\n\
-\n\
-        private String lexeme;\n\
-        private final int tokenType;\n\
-\n\
-        public Token(int tokenType) {\n\
-            this.tokenType = tokenType;\n\
-        }\n\
-\n\
-        public String getLexeme() {\n\
-            return lexeme;\n\
-        }\n\
-\n\
-        public void setLexeme(String lexeme) {\n\
-            this.lexeme = lexeme;\n\
-        }\n\
-\n\
-        public int getTokenType() {\n\
-            return tokenType;\n\
-        }\n\
-    }\n\
-    \n\
-    private static boolean initialized = false;\n\
-    public void initialize(){\n\
-        if(initialized)\n\
-            throw new IllegalStateException();\n\
-        initialized = true;\n\
-        ";
-    char automaton_class_end[] = "    }\n\
-}";
-    char new_state_start[] = "Automaton.newState(";
-    char new_token_start[] = "new Token(";
-    char new_token_end[] = ")"; // temporary, lexemes will be managed in the future
-    char new_state_end[] = ");\n";
-    char null[] = "null";
-    char buffer[BLOCK]; // this is big enough to hold an uint64_t in decimal notation
-
-    write(file_descriptor, automaton_class_start, sizeof(automaton_class_start) - 1);
-    for (uint64_t state_index = 0; state_index < a->states_size; state_index++)
+    for (uint64_t search_state_index = 0; search_state_index < entry->state_indices_size; search_state_index++)
     {
-        write(file_descriptor, new_state_start, sizeof(new_state_start) - 1);
-        State *s = get_state(a, state_index);
-        if (s->throws_token)
-        {
-            write(file_descriptor, new_token_start, sizeof(new_token_start) - 1);
-            write(file_descriptor, buffer, itoa(s->token, buffer));
-            write(file_descriptor, new_token_end, sizeof(new_token_end) - 1);
-        }
-        else
-        {
-            write(file_descriptor, null, sizeof(null) - 1);
-        }
-        write(file_descriptor, new_state_end, sizeof(new_state_end) - 1);
+        if (entry->state_indices[search_state_index] == state_index)
+            return search_state_index;
     }
+    return -1;
+}
 
-    write(file_descriptor, "\n\n", 2);
+uint64_t find_state_in_minimization_table(const minimization_table *table, uint64_t state_index)
+{
+    return table->state_lookup_table[state_index];
+}
 
-    char set_transition_start[] = "Automaton.setTransition(";
-    char set_transition_end[] = ");\n";
+void resize_minimization_table_entry(minimization_table_entry *entry)
+{
+    entry->state_indices_dim *= 2;
+    entry->state_indices = realloc(entry->state_indices, entry->state_indices_dim * sizeof(uint64_t));
+}
 
-    for (uint64_t state_index = 0; state_index < a->states_size; state_index++)
+void check_minimization_table_entry_resize(minimization_table_entry *entry)
+{
+    if (entry->state_indices_size == entry->state_indices_dim)
+        resize_minimization_table_entry(entry);
+}
+
+void resize_minimization_table(minimization_table *table)
+{
+    table->entries_dim *= 2;
+    table->entries = realloc(table->entries, table->entries_dim * sizeof(minimization_table_entry));
+}
+
+void check_minimization_table_resize(minimization_table *table)
+{
+    if (table->entries_size == table->entries_dim)
+        resize_minimization_table(table);
+}
+
+void add_state_to_minimization_table_entry(minimization_table_entry *entry, uint64_t state_index)
+{
+    check_minimization_table_entry_resize(entry);
+    entry->state_indices[entry->state_indices_size++] = state_index;
+}
+
+uint64_t new_minimization_table_entry(minimization_table *table, uint64_t first_state_index)
+{
+    uint64_t block = BLOCK > 0 ? BLOCK : 1;
+    minimization_table_entry *entry = malloc(sizeof(minimization_table_entry));
+    entry->state_indices = malloc(sizeof(uint64_t) * block);
+    entry->state_indices_dim = block;
+    entry->state_indices_size = 1;
+    entry->state_indices[0] = first_state_index;
+    automaton_state *source_state = get_state(table->source, first_state_index);
+    entry->state_index = new_state(table->result, throws_token(source_state), get_token(source_state));
+
+    check_minimization_table_resize(table);
+    entry->rule_count = source_state->delta_size;
+    table->entries[table->entries_size] = entry;
+    table->state_lookup_table[first_state_index] = table->entries_size;
+    return table->entries_size++;
+}
+
+void free_minimization_table_entry(minimization_table_entry *entry)
+{
+    free(entry->state_indices);
+    free(entry);
+}
+
+void free_minimization_table(minimization_table *table)
+{
+    free(table->state_lookup_table);
+    for (uint64_t i = 0; i < table->entries_size; i++)
+        free_minimization_table_entry(table->entries[i]);
+    free(table->entries);
+    free(table);
+}
+
+void add_state_by_token_to_minimization_table(minimization_table *table, compare_token are_equals, uint64_t state_index)
+{
+    automaton_state *state = get_state(table->source, state_index);
+    for (uint64_t entry_index = 0; entry_index < table->entries_size; entry_index++)
     {
-        State *s = get_state(a, state_index);
-        char state_index_buffer[BLOCK];
-        char state_index_buffer_length = itoa(state_index, state_index_buffer);
-        for (uint64_t rule_index = 0; rule_index < s->delta_size; rule_index++)
+        automaton_state *entry_state = get_state(table->result, table->entries[entry_index]->state_index);
+        if (throws_token(entry_state) == throws_token(state) && ((!throws_token(entry_state) && !throws_token(state)) || are_equals(get_token(entry_state), get_token(state))))
         {
-            rule r = s->delta[rule_index];
-            write(file_descriptor, set_transition_start, sizeof(set_transition_start) - 1);
-            write(file_descriptor, state_index_buffer, state_index_buffer_length);
-            write(file_descriptor, ", ", 2);
-            write(file_descriptor, buffer, itoa(r.next_indices[0], buffer)); // automaton should be dfa, only first transition for each matcher for each State is read
-            write(file_descriptor, ", '", 3);
-            write(file_descriptor, &(r.matcher), 1);
-            write(file_descriptor, "'", 1);
-            write(file_descriptor, set_transition_end, sizeof(set_transition_end) - 1);
+            table->state_lookup_table[state_index] = entry_index;
+            add_state_to_minimization_table_entry(table->entries[entry_index], state_index);
+            return;
         }
     }
+    new_minimization_table_entry(table, state_index);
+}
 
-    write(file_descriptor, ";\n", 2);
-    write(file_descriptor, automaton_class_end, sizeof(automaton_class_end) - 1);
+void populate_minimization_table_entry(minimization_table *table, uint64_t entry_index)
+{
+    automaton_state *templating_state = get_state(table->source, table->entries[entry_index]->state_indices[0]);
+    for (uint64_t rule_index = 0; rule_index < templating_state->delta_size; rule_index++)
+    {
+        set_transition(table->result, table->entries[entry_index]->state_index, find_state_in_minimization_table(table, templating_state->delta[rule_index]->next_indices[0]), templating_state->delta[rule_index]->matcher);
+    }
+}
+
+#define TEMPLATING_STATE(entry_index) (table->source->states[table->entries[(entry_index)]->state_indices[0]])
+
+char state_belongs_in_entry(const minimization_table *table, uint64_t state_index, uint64_t entry_index)
+{
+    automaton_state *state = get_state(table->source, state_index);
+    if (table->entries[entry_index]->rule_count != state->delta_size)
+        return 0;
+    for (uint64_t rule_index = 0; rule_index < table->source->states[state_index]->delta_size; rule_index++)
+    {
+        if (table->source->states[state_index]->delta[rule_index]->matcher != TEMPLATING_STATE(entry_index)->delta[rule_index]->matcher || (find_state_in_minimization_table(table, table->source->states[state_index]->delta[rule_index]->next_indices[0]) != find_state_in_minimization_table(table, TEMPLATING_STATE(entry_index)->delta[rule_index]->next_indices[0])))
+            return 0;
+    }
+    return 1;
+}
+
+uint64_t try_add_to_entries(minimization_table *table, const uint64_t *entry_indices, uint64_t entry_indices_size, uint64_t state_index)
+{
+    for (uint64_t entry_index = 0; entry_index < entry_indices_size; entry_index++)
+    {
+        if (state_belongs_in_entry(table, state_index, entry_indices[entry_index]))
+        {
+            add_state_to_minimization_table_entry(table->entries[entry_indices[entry_index]], state_index);
+            return entry_indices[entry_index];
+        }
+    }
+    return -1;
+}
+
+char remove_state_from_entry(minimization_table *table, uint64_t entry_index, uint64_t state_index)
+{
+    if (entry_index >= table->entries_size || state_index >= table->entries[entry_index]->state_indices_size)
+        return 0;
+    table->entries[entry_index]->state_indices_size--;
+    for (uint64_t i = state_index; i < table->entries[entry_index]->state_indices_size; i++)
+    {
+        table->entries[entry_index]->state_indices[i] = table->entries[entry_index]->state_indices[i + 1];
+    }
+    return 1;
+}
+
+#define IDX(x) (*((uint64_t *)(x)))
+
+void free_state_index(void *elem)
+{
+    free(elem);
+}
+
+uint64_t hash_state_index(const void *element)
+{
+    return IDX(element);
+}
+
+char compare_state_indices(const void *elem1, const void *elem2)
+{
+    return IDX(elem1) == IDX(elem2);
+}
+
+uint64_t remove_elements(uint64_t *array, uint64_t array_size, char *remove_map)
+{
+    uint64_t removed = 0;
+    for (uint64_t i = 0; i + removed < array_size; i++)
+    {
+        if (remove_map[i])
+        {
+            do
+            {
+                removed++;
+                array_size--;
+            } while (i < array_size && remove_map[i + removed]);
+        }
+        if (i < array_size)
+            array[i] = array[i + removed];
+    }
+    return removed;
+}
+
+char check_entry_transitions(minimization_table *table, uint64_t entry_index)
+{
+    uint64_t moved = 0;
+    minimization_table_entry *entry = table->entries[entry_index];
+    uint64_t *new_entry_indices = malloc(sizeof(uint64_t) * table->source->states_size);
+    uint64_t new_entry_indices_size = 0;
+    uint64_t iteration_limit = entry->state_indices_size;
+    char *remove_map = calloc(iteration_limit, sizeof(char));
+    // begins in 1, since the entry has the same transitions as the first state entered into it, that state will always belong
+    for (uint64_t state_index = 1; state_index < iteration_limit; state_index++)
+    {
+        if (!state_belongs_in_entry(table, table->entries[entry_index]->state_indices[state_index], entry_index))
+        {
+            moved++;
+            uint64_t added_to = try_add_to_entries(table, new_entry_indices, new_entry_indices_size, table->entries[entry_index]->state_indices[state_index]);
+            if (added_to == -1)
+            {
+                new_entry_indices[new_entry_indices_size++] = new_minimization_table_entry(table, table->entries[entry_index]->state_indices[state_index]);
+            }
+            else
+            {
+                table->state_lookup_table[table->entries[entry_index]->state_indices[state_index]] = added_to;
+            }
+            remove_map[state_index] = 1;
+        }
+    }
+    table->entries[entry_index]->state_indices_size -= remove_elements(table->entries[entry_index]->state_indices, iteration_limit, remove_map);
+    ;
+    free(remove_map);
+    free(new_entry_indices);
+    return moved > 0;
+}
+
+char check_transitions(minimization_table *table)
+{
+    char made_changes = 0;
+    uint64_t iteration_limit = table->entries_size;
+    for (uint64_t entry_index = 0; entry_index < iteration_limit; entry_index++)
+    {
+        made_changes = check_entry_transitions(table, entry_index) || made_changes;
+    }
+    return made_changes && table->entries_size < table->source->states_size;
+}
+
+typedef struct processing_queue_element
+{
+    uint64_t state_index;
+    uint64_t rule_index;
+} processing_queue_element;
+
+uint64_t add_reachable_states(const automaton *source, char *reachables, uint64_t state_index)
+{
+    uint64_t reachables_count = 0;
+    processing_queue_element *processing_queue = malloc(sizeof(processing_queue_element) * source->states_size);
+    processing_queue[0].state_index = state_index;
+    processing_queue[0].rule_index = 0;
+    uint64_t processing_queue_size = 1;
+    while (processing_queue_size)
+    {
+        char leave_flag = 0;
+        automaton_state *state = get_state(source, processing_queue[processing_queue_size - 1].state_index);
+        for (uint64_t rule_index = processing_queue[processing_queue_size - 1].rule_index; !leave_flag && rule_index < state->delta_size; rule_index++)
+        {
+            if (!IS_BIT_SET(reachables, state->delta[rule_index]->next_indices[0]))
+            {
+
+                reachables_count++;
+                SET_BIT(reachables, state->delta[rule_index]->next_indices[0]);
+                processing_queue[processing_queue_size - 1].rule_index = rule_index + 1;
+                processing_queue[processing_queue_size].rule_index = 0;
+                processing_queue[processing_queue_size].state_index = state->delta[rule_index]->next_indices[0];
+                processing_queue_size++;
+                leave_flag = 1;
+            }
+        }
+        if (!leave_flag)
+        {
+            processing_queue_size--;
+        }
+    }
+    free(processing_queue);
+    return reachables_count;
+}
+
+/**
+ * @brief Get a memory allocated array representing whether each state corresponding to an index is reachable
+ *
+ * @note bit i in result is 0 if state with index i is unreachable. bit i in result is 1 if state with index i is reachable
+ * @note only works on deterministic finite automata
+ * @param source
+ * @return char* where each represents the reachability of one state index
+ */
+char *get_reachable_state_indices(const automaton *source)
+{
+    char *reachables = calloc(source->states_size, (sizeof(char) >> 3) + 1);
+    uint64_t reachables_count = 0;
+    reachables_count += add_reachable_states(source, reachables, source->initial_state_index);
+    SET_BIT(reachables, source->initial_state_index);
+    reachables_count++;
+    return reachables;
+}
+
+automaton *get_minimal_equivalent(const automaton *dfa, compare_token are_equals)
+{
+    automaton *minimal_a = new_automaton();
+    minimization_table *table = new_minimization_table(dfa, minimal_a);
+    char *reachables = get_reachable_state_indices(dfa);
+    for (uint64_t state_index = 0; state_index < dfa->states_size; state_index++)
+    {
+        if (IS_BIT_SET(reachables, state_index))
+            add_state_by_token_to_minimization_table(table, are_equals, state_index);
+    }
+    free(reachables);
+    while (check_transitions(table))
+        ;
+    for (uint64_t entry_index = 0; entry_index < table->entries_size; entry_index++)
+    {
+        populate_minimization_table_entry(table, entry_index);
+    }
+    free_minimization_table(table);
+    return minimal_a;
+}
+
+char get_transition_matcher(rule *rule)
+{
+    return rule->matcher;
+}
+
+uint64_t *get_to_state_indices(rule *rule)
+{
+    return rule->next_indices;
+}
+
+uint64_t get_to_state_indices_size(rule *rule)
+{
+    return rule->next_indices_size;
+}
+
+void free_automaton_iterator(automaton_iterator *iterator)
+{
+    free(iterator);
+}
+void free_state_iterator(state_iterator *iterator)
+{
+    free(iterator);
+}
+
+automaton_iterator *get_automaton_iterator(automaton *a)
+{
+    automaton_iterator *iterator = malloc(sizeof(automaton_iterator));
+    iterator->automaton = a;
+    iterator->state_index = 0;
+    return iterator;
+}
+state_iterator *get_state_iterator(automaton_state *s)
+{
+    state_iterator *iterator = malloc(sizeof(state_iterator));
+    iterator->state = s;
+    iterator->rule_index = 0;
+    return iterator;
+}
+
+automaton_state *get_next_state(automaton_iterator *iterator)
+{
+    if (has_next_state(iterator))
+        return iterator->automaton->states[iterator->state_index++];
+    return NULL;
+}
+
+rule *get_next_rule(state_iterator *iterator)
+{
+    if (has_next_rule(iterator))
+        return iterator->state->delta[iterator->rule_index++];
+    return NULL;
+}
+
+char has_next_state(automaton_iterator *iterator)
+{
+    return iterator->state_index < iterator->automaton->states_size;
+}
+
+char has_next_rule(state_iterator *iterator)
+{
+    return iterator->rule_index < iterator->state->delta_size;
+}
+
+char throws_token(automaton_state *s)
+{
+    return s->throws_token;
+}
+
+token_t get_token(automaton_state *s)
+{
+    return s->token;
+}
+
+void print_minimization_table(const minimization_table *table)
+{
+    printf("Printing minimization table\n");
+    for (uint64_t i = 0; i < table->entries_size; i++)
+    {
+        printf("Entry: %ld, Index: %ld: States: {", i, table->entries[i]->state_index);
+        for (uint64_t j = 0; j < table->entries[i]->state_indices_size; j++)
+        {
+            printf("%ld", table->entries[i]->state_indices[j]);
+            if (j < table->entries[i]->state_indices_size - 1)
+                printf(", ");
+        }
+        printf("}\n");
+    }
+    printf("\n");
 }

@@ -18,7 +18,7 @@ typedef enum RegexType RegexType;
 
 typedef struct Program Program;
 typedef struct Closure Closure;
-typedef struct Param Param;
+typedef struct Type Type;
 typedef struct Lexeme Lexeme;
 typedef struct Lexeme_precursor Lexeme_precursor;
 typedef struct Action Action;
@@ -57,414 +57,463 @@ typedef struct Literal Literal;
 /**
  * Node types for the Abstract Syntax Tree (AST).
  */
-
-
-struct NumericComparison{
-	Token token;
+struct Program
+{
+	Ruleset *ruleset;
 };
 
-typedef enum Block_type{
-	statement,
-	throw,
-	ret
-} Block_type;
+struct Ruleset
+{
+	Rule *rule;
+	Ruleset *ruleset;
+};
 
-struct Block{
+typedef enum Rule_type
+{
+	REGEX,
+	IGNORE_LEXEME,
+	LEXEME_ACTION
+} Rule_type;
+
+struct Rule
+{
 	union
 	{
-		struct{
-			Statement * statement;
-			Block * block;
+		struct
+		{
+			char *our_regex_id;
+			Regexes *regexes;
 		};
-		Expression * exp;
-	};
-	Block_type type;
-};
-
-typedef enum Statement_type{
-	state,
-	ifThenStatement,
-	While,
-	For
-}Statement_type;
-
-struct Statement{
-	union{
-		StatementExpression * sexp;
-		IfThenStatement * ifThen;
-		struct{
-			Expression *expwhile;
-			Statement *statementwhile;
-		};
-		struct{
-			ForInit *forInit;
-			Expression *expfor;
-			Statement *statementfor;
-			StatementExpressionList *statementExpList;
+		Lexeme_precursor *lexeme;
+		struct
+		{
+			Lexeme_precursor *lex;
+			Action *action;
 		};
 	};
-	Statement_type type;
+	Rule_type type;
 };
 
-typedef enum ForInitType{
-	statementExpList,
-	withParams,
-	withoutParams
-} ForInitType;
-
-struct ForInit{
-	union{
-		StatementExpressionList* statementExpList;
-		struct{
-			Param* param;
-			char* var_name_param;
-		};
-		char * var_name;
-	};
-	ForInitType type;
-
-};
-
-
-struct StatementExpressionList{
-	StatementExpression* exp;
-	StatementExpressionList* list;
-};
-
-
-struct IfThenStatement{
-	Expression* exp;
-	Statement* statement1;
-	Statement* statement2;
-};
-
-typedef enum StatementExpressionType{
-	assignation,
-	invocation,
-	assigParam,
-}StatementExpressionType;
-
-
-struct StatementExpression{
-	union{
-		Assignment* assignment;
-		MethodInvocation* method_invocation;
-		struct{
-			Param* param;
-			char* var_name;
-			Expression* exp;
-		};
-	};
-	StatementExpressionType type;
-};
-
-
-struct VarAccess{
-	char* var_name;
-	VarAccess* vaccess;
-	Token token;
-	Param* param;
-	MethodInvocation* method_invocation;
-};
-
-
-struct MethodInvocation{
-	VarAccess* vaccess;
-	ArgumentList* arglist;
-};
-
-
-struct ArgumentList{
-	Expression* expression;
-	ArgumentList* arglist;
-};
-
-typedef enum Expression_type{
-	xexp,
-	assignment
-} Expression_type;
-
-struct Expression{
-	union{
-		ConditionalExpression* xexp;
-		Assignment* assignment;
-	};
-	Expression_type type;
-};
-
-
-struct ConditionalExpression{
-	ConditionalOrExpression* corexp;
-	Expression* exp;
-	ConditionalExpression* cexp;
-};
-
-
-struct ConditionalOrExpression{
-	ConditionalAndExpression* candexp;
-	ConditionalOrExpression* corexp;
-};
-
-
-struct ConditionalAndExpression{
-	EqualityExpression* eqexp;
-	ConditionalAndExpression* candexp;
-};
-
-
-struct EqualityExpression{
-	UnaryExpression* uexp;
-	EqualityExpression* eqexp;
-};
-
-typedef enum GlobalUnaryExpressionType{
-	numericComparison,
-	doubleToken,
-	postfixExpression,
-	param,
-	singleToken
-} GlobalUnaryExpressionType;
-
-typedef enum UnaryExpressionType{
-	star_t,
-	div_type,
-	mod_t,
-	plus_t,
-	minus_t
-} UnaryExpressionType;
-
-
-struct UnaryExpression{
-	union{
-		struct{
-			UnaryExpression* uexp1_num;
-			NumericComparison* numcomp;
-			PostfixExpression* uexp2_num;
-		};
-		struct{
-			UnaryExpression* uexp1_exp;
-			UnaryExpressionType type;
-			PostfixExpression* uexp2_exp;
-		};
-		PostfixExpression* pexp;
-		Param* param;
-		struct{
-			Token token;
-			UnaryExpression* uexp;
-		};
-	};
-	GlobalUnaryExpressionType globaltype;
-};
-
-
-struct PostfixExpression{
-	Primary* primary;
-	VarAccess* vaccess;
-	Token token;
-};
-
-
-struct Assignment{
-	VarAccess * vaccess;
-	Expression * expression;
-};
-
-typedef enum PrimaryType{
-	literal,
-	expression,
-	cexp
-} PrimaryType;
-
-
-struct Primary{
-	union{
-		Literal* lit;
-		Expression* exp;
-		ClassInstanceCreationExpression* cice;
-	};
-	PrimaryType type;
-};
-
-
-struct ClassInstanceCreationExpression{
-	UnqualifiedClassInstanceCreationExpression* ucice;
-	VarAccess* vaccess;
-	Primary* primary;
-};
-
-
-struct UnqualifiedClassInstanceCreationExpression{
-	Param* param;
-	ArgumentList* arglist;
-};
-
-typedef enum Literal_type{
-	str,
-	token
-} Literal_type;
-
-struct Literal{
-	union{
-		char* str;
-		Token token;
-	};
-	Literal_type type;
-};
-
-struct Function_body{
-	char* log;
-	char* ret;
-};
-
-typedef enum Lexeme_type {
-	regexes,
-	name,
-	default_lexeme,
-	string_lexeme
-} Lexeme_type;
-
-struct Lexeme{
-	union{
-		struct{
-			Regexes* regexes;
-		};
-		struct{
-			char* our_regex_id;
-		};
-	};
-	Lexeme_type type;
-	Closure* closure;
-};
-
-typedef enum Lexeme_precursor_type{
-	literals,
-	nonliterals
-} Lexeme_precursor_type;
-
-struct Lexeme_precursor{
-	union {
-		struct {
-			Lexeme *lex;
-			Lexeme_precursor *lex_prec;
-		};
-		struct {
-			char* string;
-			Lexeme_type type;
-		};
-	};
-	Lexeme_precursor_type precursor_type;
-};
-
-struct Param{
-	Token stuff;
-};
-
-/* Opción type comentada
-typedef enum ClosureType{
-	plus,
-	star
-} ClosureType;
-*/
-
-struct Closure{
-	Token closure;
-	// ClosureType type;
-};
-
-struct Regexes{
+// Regexes
+struct Regexes
+{
 	Regex_class *regexClass;
 	Regexes *regexes;
 };
 
-struct Symbol{
-	char* symbol_tok;
-};
-
-typedef enum Regex_class_type{
-	symbol,
-	range,
-	variable
+typedef enum Regex_class_type
+{
+	SYMBOL_TYPE,
+	RANGE,
+	VARIABLE
 } Regex_class_type;
 
-typedef struct Regex_class {
-	union{
-		struct{
-			Symbol* startSymbol;
-			Symbol* endSymbol;
+typedef struct Regex_class
+{
+	union
+	{
+		struct
+		{
+			Symbol *startSymbol;
+			Symbol *endSymbol;
 		};
-		struct{
-			char* varName;
-			Closure* closure;
+		struct
+		{
+			char *varName;
+			Closure *closure;
 		};
 		Symbol *symbol;
 	};
 	Regex_class_type type;
 } Regex_class;
 
-typedef enum Action_type{
-	action,
-	function_body
+// Lexemes
+typedef enum Lexeme_precursor_type
+{
+	DEFAULT_T,
+	NONLITERALS
+} Lexeme_precursor_type;
+
+typedef enum Lexeme_chain_type
+{
+	END,
+	CONCATENATION,
+	SUMMATION
+} Lexeme_chain_type;
+
+struct Lexeme_precursor
+{
+	Lexeme *lexeme;
+	Lexeme_precursor *lexeme_precursor;
+	Lexeme_precursor_type precursor_type;
+	Lexeme_chain_type chain_type;
+};
+
+typedef enum Lexeme_type
+{
+	REGEXES_TYPE,
+	NAME,
+	STRING_LEXEME,
+	PRECURSOR_CLOSURE
+} Lexeme_type;
+
+struct Lexeme
+{
+	union
+	{
+		Regexes *regexes;
+		char *our_regex_id;
+		char *string;
+		Lexeme_precursor *precursor;
+	};
+	Closure *closure;
+	Lexeme_type type;
+};
+
+// Multipurpose (Regexes and Lexemes)
+struct Symbol
+{
+	char *symbol_tok;
+};
+
+struct Closure
+{
+	Token closure;
+};
+
+// Actions
+typedef enum Action_type
+{
+	ACTION_T,
+	FUNCTION_BODY
 } Action_type;
 
-struct Action {
-	union{
-		char* varName;
-		struct{
-			Param* param;
-			Block *block;
-		};
+struct Action
+{
+	union
+	{
+		char *varName;
+		Block *block;
 	};
 	Action_type type;
 };
 
+// Java
+typedef enum Block_type
+{
+	STATEMENT,
+	THROW,
+	RET
+} Block_type;
 
-
-typedef enum Rule_type {
-	regex,
-	ignore_lexeme,
-	lexeme_action
-} Rule_type;
-
-struct Rule {
-	union{
-		struct{
-			char* our_regex_id;
-			Regexes* regexes;
+struct Block
+{
+	union
+	{
+		struct
+		{
+			Statement *statement;
+			Block *block;
 		};
-		Lexeme_precursor* lexeme;
-		struct{
-			Lexeme_precursor* lex;
-			Action* action;
+		Expression *expression;
+	};
+	Block_type type;
+};
+
+// Statements
+typedef enum Statement_type
+{
+	STATE_TYPE,
+	IF_THEN_STATEMENT,
+	WHILE_TYPE,
+	FOR_TYPE
+} Statement_type;
+
+struct Statement
+{
+	union
+	{
+		StatementExpression *statement_expression;
+		IfThenStatement *if_then_statement;
+		struct
+		{
+			Expression *while_expression;
+			Block *while_block;
+		};
+		struct
+		{
+			ForInit *for_init;
+			Expression *for_expression;
+			Block *for_block;
+			StatementExpressionList *statement_expression_list;
 		};
 	};
-	Rule_type type;
+	Statement_type type;
 };
 
-struct Ruleset{
-	Rule* rule;
-	Ruleset* ruleset;
+typedef enum StatementExpressionType
+{
+	ASSIGNATION,
+	VAR_ACCESS,
+	ASSIG_TYPE,
+} StatementExpressionType;
+
+struct StatementExpression
+{
+	union
+	{
+		Assignment *assignment;
+		VarAccess *var_access;
+		struct
+		{
+			Type *type;
+			char *var_name;
+			Expression *expression;
+		};
+	};
+	StatementExpressionType state_type;
 };
 
-struct Program {
-	Ruleset * ruleset;
+struct IfThenStatement
+{
+	Expression *expression;
+	Block *if_block;
+	Block *else_block;
+};
+
+typedef enum ForInitType
+{
+	STATEMENT_EXPRESSION_LIST,
+	WITH_TYPES,
+	WITHOUT_TYPES
+} ForInitType;
+
+struct ForInit
+{
+	union
+	{
+		StatementExpressionList *statement_expression_list;
+		struct
+		{
+			Type *type;
+			char *var_name_type;
+		};
+		char *var_name;
+	};
+	ForInitType for_type;
+};
+
+struct StatementExpressionList
+{
+	StatementExpression *expression;
+	StatementExpressionList *expression_list;
+};
+
+// Expressions
+typedef enum Expression_type
+{
+	CONDITIONAL_EXP,
+	ASSIGNMENT_TYPE
+} Expression_type;
+
+struct Expression
+{
+	union
+	{
+		ConditionalExpression *conditional_expression;
+		Assignment *assignment;
+	};
+	Expression_type type;
+};
+
+struct ConditionalExpression
+{
+	ConditionalOrExpression *conditional_or_expression;
+	Expression *expression;
+	ConditionalExpression *conditional_expression;
+};
+
+struct ConditionalOrExpression
+{
+	ConditionalAndExpression *conditional_and_expression;
+	ConditionalOrExpression *conditional_or_expression;
+};
+
+struct ConditionalAndExpression
+{
+	EqualityExpression *equality_expression;
+	ConditionalAndExpression *conditional_and_expression;
+};
+
+struct EqualityExpression
+{
+	UnaryExpression *unary_expression;
+	EqualityExpression *equality_expression;
+	Token token;
+};
+
+typedef enum GlobalUnaryExpressionType
+{
+	NUMERIC_COMPARISON,
+	DOUBLE_TOKEN,
+	POSTFIX_EXPRESSION,
+	TYPE,
+	SINGLE_TOKEN
+} GlobalUnaryExpressionType;
+
+typedef enum UnaryExpressionType
+{
+	STAR_TYPE,
+	DIV_TYPE,
+	MOD_TYPE,
+	PLUS_TYPE,
+	MINUS_TYPE
+} UnaryExpressionType;
+
+struct UnaryExpression
+{
+	union
+	{
+		struct
+		{
+			UnaryExpression *num_comp_unary_exp1;
+			NumericComparison *numcomp;
+			PostfixExpression *num_comp_unary_exp2;
+		};
+		struct
+		{
+			UnaryExpression *uexp_unary_expression1;
+			UnaryExpressionType uexp_type;
+			PostfixExpression *uexp_unary_expression2;
+		};
+		PostfixExpression *postfix_expression;
+		Type *object_type;
+		struct
+		{
+			Token token;
+			UnaryExpression *unary_expression;
+		};
+	};
+	GlobalUnaryExpressionType globaltype;
+};
+
+struct PostfixExpression
+{
+	Primary *primary;
+	VarAccess *vaccess;
+	Token token;
+};
+
+typedef enum UnqualifiedClassInstanceCreationExpression_type
+{
+	METHOD_TYPE,
+	PARARGS_TYPE
+} UnqualifiedClassInstanceCreationExpression_type;
+
+struct UnqualifiedClassInstanceCreationExpression
+{
+	union
+	{
+		struct
+		{
+			Type *type;
+			ArgumentList *arglist;
+		};
+		MethodInvocation *invocation;
+	};
+	UnqualifiedClassInstanceCreationExpression_type unq_type;
+};
+
+struct ClassInstanceCreationExpression
+{
+	UnqualifiedClassInstanceCreationExpression *unq_class_inst_creation_exp;
+	VarAccess *vaccess;
+	Primary *primary;
+};
+
+typedef enum PrimaryType
+{
+	LITERAL_TYPE,
+	EXPRESSION_TYPE,
+	CONDITIONAL_EXPRESSION_TYPE
+} PrimaryType;
+
+struct Primary
+{
+	union
+	{
+		Literal *literal;
+		Expression *expression;
+		ClassInstanceCreationExpression *class_inst_creation_exp;
+	};
+	PrimaryType type;
+};
+
+typedef enum Literal_type
+{
+	STRING_T,
+	TOKEN_T
+} Literal_type;
+
+struct Literal
+{
+	union
+	{
+		char *str;
+		Token token;
+	};
+	Literal_type type;
+};
+
+// Assignment
+struct Assignment
+{
+	VarAccess *vaccess;
+	Expression *expression;
+	Token token;
+};
+
+// Other stuff
+struct NumericComparison
+{
+	Token token;
+};
+
+struct VarAccess
+{
+	char *var_name;
+	VarAccess *vaccess;
+	Token token;
+	Type *type;
+	MethodInvocation *method_invocation;
+};
+
+struct MethodInvocation
+{
+	VarAccess *vaccess;
+	ArgumentList *arglist;
+};
+
+struct ArgumentList
+{
+	Expression *expression;
+	ArgumentList *arglist;
+};
+
+struct Function_body
+{
+	char *log;
+	char *ret;
+};
+
+struct Type
+{
+	Token stuff;
 };
 
 /**
  * Node recursive destructors.
  */
-/*
-void releaseProgram(Program * program);
-void releaseRuleset(Ruleset * ruleset);
-void releaseRule(Rule * rule);
-void releaseLexeme(Lexeme * lexeme);
-void releaseAction(Action * action);
-void releaseRegexClass(Regex_class * regex_class);
-void releaseClosure(Closure * closure);
-void releaseParam(Param * param);
-void releaseLexemePrecursor(Lexeme_precursor * lexeme_precursor);*/
-//void releaseFunctionBody(Function_body * function_body);
-
+void releaseProgram(Program *program);
 
 #endif
-
-
