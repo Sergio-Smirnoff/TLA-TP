@@ -1,3 +1,0 @@
-// AbstractSyntaxTree.h
-> Clarify field names in the structures.
-  - The fields of the structures should be more descriptive for usage.
