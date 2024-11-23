@@ -132,9 +132,15 @@ char *_computeLiteral(Literal *literal)
     }
     else if (literal->type == TOKEN_T)
     {
-        char *tok = malloc(sizeof(char) * 10);
-        snprintf(tok, 10, "%d", literal->token);
-        return tok;
+        if(literal->token == JAVA_TRUE){
+            return strdup("true");
+        } else if(literal->token == JAVA_FALSE){
+            return strdup("false");
+        } else {
+            char *tok = malloc(sizeof(char) * 10);
+            snprintf(tok, 10, "%d", literal->token);
+            return tok;
+        }
     }
     else
     {
