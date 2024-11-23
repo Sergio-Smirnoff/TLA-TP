@@ -502,7 +502,7 @@ char *_computeConditionalAndExpression(ConditionalAndExpression *conditionalAndE
         const char *operator= "&&";
 
         size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
-        char *result = malloc(sizeof(char) * len);
+        result = malloc(sizeof(char) * len);
         snprintf(result, len, "%s %s %s", left, operator, right);
 
         free(left);
@@ -533,7 +533,7 @@ char *_computeConditionalOrExpression(ConditionalOrExpression *conditionalOrExpr
         const char *operator= "||";
 
         size_t len = strlen(left) + strlen(right) + strlen(operator) + 3;
-        char *result = malloc(sizeof(char) * len);
+        result = malloc(sizeof(char) * len);
         snprintf(result, len, "%s %s %s", left, operator, right);
 
         free(left);
