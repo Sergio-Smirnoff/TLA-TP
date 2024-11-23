@@ -1,0 +1,12 @@
+"ifstr" -> {
+    if((var.attribute2.num < 0 || var.attribute3.num == 0) || var.attribute4.num == 1 && var.attribute5.num > 1) {
+        throw new IllegalStateException("Invalid.");
+    } else {
+        if(var.attribute5.num == 0 || var.attribute2.num == 1) {
+            return CLOSE;
+        } else {
+            return OPEN;
+        }
+    }
+    return CLOSE;
+};
