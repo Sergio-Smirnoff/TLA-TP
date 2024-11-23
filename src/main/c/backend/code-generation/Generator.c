@@ -847,9 +847,6 @@ char *_computeStatementExpressionList(StatementExpressionList *statementExpressi
 
         free(restOfListStr);
     }
-
-    free(currentExprStr);
-
     return result;
 }
 
