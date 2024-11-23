@@ -1,0 +1,8 @@
+"f" -> {
+    for(i = 0; i < 10; i+=1){
+        System.out.println(i);
+        if(i == 5){
+            break;
+        }
+    }
+};
