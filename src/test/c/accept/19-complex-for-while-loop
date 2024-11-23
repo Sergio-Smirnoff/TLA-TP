@@ -1,0 +1,38 @@
+"f" -> {
+    for(i = 0; i < 10; i+=1){
+        System.out.println(i);
+        if(i == 5){
+            break;
+        }
+    }
+};
+
+"w" -> {
+    Integer i = 0;
+    Integer myResult = 1;
+    while(i < 10){
+        System.out.println(i);
+        if(i == 5){
+            continue;
+        } else {
+            for(Integer j = 0; j < 10; j+=1){
+                System.out.println(j);
+                if(j == 5){
+                    break;
+                } else {
+                    myResult = myResult * Math.abs(j - i + 1);
+                }
+            }
+        }
+        i += 1;
+    }
+
+    if(myResult == 0){
+        throw new IllegalStateException("myResult shouldnt be 0");
+    } else {
+        myResult = myResult * 2;
+        System.out.println(myResult);
+    }
+
+    return myResult;
+};
