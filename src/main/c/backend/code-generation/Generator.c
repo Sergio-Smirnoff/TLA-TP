@@ -941,6 +941,8 @@ char *_computeStatement(Statement *statement)
         size_t totalLen = strlen(whileCondition) + strlen(whileStatement) + 14;
         char *result = malloc(sizeof(char) * totalLen);
         snprintf(result, totalLen, "while (%s) { %s }", whileCondition, whileStatement);
+        free(whileCondition);
+        free(whileStatement);
         return result;
     }
 
@@ -957,6 +959,10 @@ char *_computeStatement(Statement *statement)
         {
             snprintf(result, totalLen, "for (%s; %s; %s) { %s }", forInit, forCondition, forStatementList, forBody);
         }
+        free(forInit);
+        free(forCondition);
+        free(forStatementList);
+        free(forBody);
         return result;
     }
 
