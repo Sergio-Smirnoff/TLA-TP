@@ -287,8 +287,10 @@ NumericComparison: JAVA_GEQ																																				{ $$ = JavaNumeri
 	| JAVA_GREATER																																						{ $$ = JavaNumericComparisonSemanticAction($1); }
 	| JAVA_LEQ																																							{ $$ = JavaNumericComparisonSemanticAction($1); }
 	| JAVA_LESSER																																						{ $$ = JavaNumericComparisonSemanticAction($1); }
+	| JAVA_NOT_EXACT_COMPARISON																																			{ $$ = JavaNumericComparisonSemanticAction($1); }
+	| JAVA_EXACT_COMPARISON																																				{ $$ = JavaNumericComparisonSemanticAction($1); }
 	;
-;
+
 Block: Statement Block																																					{ $$ = JavaBlockSemanticAction($1, $2); }
 	| Statement																																							{ $$ = JavaBlockSemanticAction($1, NULL); }
 	| JAVA_RETURN Expression ENDLINE																																	{ $$ = JavaReturnExpressionSemanticAction($2); }
@@ -363,8 +365,6 @@ ConditionalAndExpression: EqualityExpression																															{ $$ 
 	;
 
 EqualityExpression: UnaryExpression																																		{ $$ = EqualityExpressionSemanticAction($1,  0, NULL); }
-	| EqualityExpression JAVA_EXACT_COMPARISON UnaryExpression																											{ $$ = EqualityExpressionSemanticAction($3,$2,$1); }
-	| EqualityExpression JAVA_NOT_EXACT_COMPARISON UnaryExpression																										{ $$ = EqualityExpressionSemanticAction($3,$2,$1); }
 	;
 
 UnaryExpression:  UnaryExpression NumericComparison PostfixExpression																									{ $$ = UnaryExpressionNumericComparisonSintaticAction($1, $2, $3); }
