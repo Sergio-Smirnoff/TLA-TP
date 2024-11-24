@@ -1,4 +1,15 @@
+Regex digit         [0-9];
+
 "f" -> {
+    for(i = 0; i < 10; i+=1){
+        System.out.println(i);
+        if(i == 5){
+            break;
+        }
+    }
+};
+
+{digit}+ -> {
     for(i = 0; i < 10; i+=1){
         System.out.println(i);
         if(i == 5){
