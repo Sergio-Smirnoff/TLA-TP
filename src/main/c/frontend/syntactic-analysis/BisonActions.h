@@ -85,7 +85,7 @@ IfThenStatement *JavaIfThenStructureSemanticAction(Expression *exp, Block *ifs, 
 
 // StatementExpression
 StatementExpression *JavaAsignmentSemanticAction(Assignment *assignment);
-StatementExpression *JavaPostFixAccessDefaultSemanticAction(PostfixExpression * postfix_expression);
+StatementExpression *JavaUnaryAccessDefaultSemanticAction(UnaryExpression * unary_expression);
 StatementExpression *JavaAsignmentTypeSemanticAction(Type *type, char *var_name, Token java_assignment, Expression *exp);
 
 // VarAccess

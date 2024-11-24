@@ -327,8 +327,8 @@ void _releaseStatementExpression(StatementExpression *sexp)
 			_releaseAssignment(sexp->assignment);
 			break;
 
-		case POSTFIX_ACCESS:
-			_releasePostfixExpression(sexp->postfix_expression);
+		case UNARY_ACCESS:
+			_releaseUnaryExpression(sexp->unary_expression);
 			break;
 
 		case ASSIG_TYPE:
@@ -493,7 +493,7 @@ void _releaseUnaryExpression(UnaryExpression *unExp)
 
 		case SINGLE_TOKEN:
 			_releaseUnaryExpression(unExp->unary_expression);
-
+			break;
 		default:
 			logError(_logger, "Invalid unary expression type: %d", unExp->globaltype);
 			break;
