@@ -480,12 +480,12 @@ StatementExpression *JavaAsignmentSemanticAction(Assignment *assignment)
 	return statementExpression;
 }
 
-StatementExpression *JavaVAccessDefaultSemanticAction(VarAccess *var_access)
+StatementExpression *JavaPostFixAccessDefaultSemanticAction(PostfixExpression * postfix_expression)
 {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	StatementExpression *statementExpression = calloc(1, sizeof(StatementExpression));
-	statementExpression->var_access = var_access;
-	statementExpression->state_type = VAR_ACCESS;
+	statementExpression->postfix_expression= postfix_expression;
+	statementExpression->state_type = POSTFIX_ACCESS;
 	return statementExpression;
 }
 

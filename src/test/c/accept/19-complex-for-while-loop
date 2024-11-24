@@ -15,7 +15,7 @@
         if(i == 5){
             continue;
         } else {
-            for(Integer j = 0; j < 10; j+=1){
+            for(Integer j = 0; j < 10; j++){
                 System.out.println(j);
                 if(j == 5){
                     break;
@@ -33,6 +33,5 @@
         myResult = myResult * 2;
         System.out.println(myResult);
     }
-
     return myResult;
 };

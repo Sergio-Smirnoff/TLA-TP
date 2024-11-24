@@ -318,7 +318,7 @@ IfThenStatement: JAVA_IF OPEN_PARENTHESES Expression[expression] CLOSE_PARENTHES
 	;
 
 StatementExpression: Assignment																																			{ $$ = JavaAsignmentSemanticAction($1); }
-	| VarAccess																																							{ $$ = JavaVAccessDefaultSemanticAction($1); }
+	| PostfixExpression																																					{ $$ = JavaPostFixAccessDefaultSemanticAction($1); }
 	| type VAR_NAME JAVA_ASSIGNMENT Expression																															{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
 	| type VAR_NAME JAVA_PLUS_ASSIGN Expression																															{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }
 	| type VAR_NAME JAVA_MINUS_ASSIGN Expression																														{ $$ = JavaAsignmentTypeSemanticAction($1, $2, $3, $4); }

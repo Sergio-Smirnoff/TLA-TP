@@ -327,8 +327,8 @@ void _releaseStatementExpression(StatementExpression *sexp)
 			_releaseAssignment(sexp->assignment);
 			break;
 
-		case VAR_ACCESS:
-			_releaseVarAccess(sexp->var_access);
+		case POSTFIX_ACCESS:
+			_releasePostfixExpression(sexp->postfix_expression);
 			break;
 
 		case ASSIG_TYPE:

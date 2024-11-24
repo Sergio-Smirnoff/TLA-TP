@@ -797,9 +797,9 @@ char *_computeStatementExpression(StatementExpression *statementExpression)
         result = _computeAssignment(statementExpression->assignment);
         break;
     }
-    case VAR_ACCESS:
+    case POSTFIX_ACCESS:
     {
-        result = _computeVarAccess(statementExpression->var_access);
+        result = _computePostfixExpression(statementExpression->postfix_expression);
         break;
     }
     case ASSIG_TYPE:

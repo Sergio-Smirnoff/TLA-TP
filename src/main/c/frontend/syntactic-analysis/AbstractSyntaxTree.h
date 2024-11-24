@@ -254,7 +254,7 @@ struct Statement
 typedef enum StatementExpressionType
 {
 	ASSIGNATION,
-	VAR_ACCESS,
+	POSTFIX_ACCESS,
 	ASSIG_TYPE,
 } StatementExpressionType;
 
@@ -263,7 +263,7 @@ struct StatementExpression
 	union
 	{
 		Assignment *assignment;
-		VarAccess *var_access;
+		PostfixExpression *postfix_expression;
 		struct
 		{
 			Type *type;
