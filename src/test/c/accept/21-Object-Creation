@@ -1,0 +1,54 @@
+"s" -> {
+    String a = new String("hello");
+    String b = "hello";
+
+    if (a == b) { // Compares references, not content
+        System.out.println("a and b are the same object.");
+    } else {
+        System.out.println("a and b are different objects.");
+    }
+
+    if (a.equals(b)) { // Compares content
+        System.out.println("a and b have the same content.");
+    }
+};
+
+"i" -> {
+    Integer i1 = 100; // Autoboxing, uses cached value if within range [-128, 127]
+    Integer i2 = Integer.valueOf(100); // Factory method, cached within range
+    Integer i3 = new Integer(100); // Deprecated, always creates a new object
+
+    System.out.println(i1 == i2); // true, both refer to the cached object
+    System.out.println(i1 == i3); // false, new object created with `new`
+};
+
+"b" -> {
+    Boolean b1 = true; // Autoboxing, uses cached Boolean.TRUE
+    Boolean b2 = Boolean.valueOf(true); // Factory method, cached values
+    Boolean b3 = new Boolean(true); // Deprecated, always creates a new object
+
+    System.out.println(b1 == b2); // true, both refer to the cached Boolean.TRUE
+    System.out.println(b1 == b3); // false, new object created with `new`
+};
+
+"d" -> {
+    Double d1 = 10.5; // Autoboxing, always creates a new object
+    Double d2 = Double.valueOf(10.5); // Factory method, does not use caching
+    Double d3 = new Double(10.5); // Deprecated, always creates a new object
+
+    System.out.println(d1 == d2); // false, no caching for Double
+    System.out.println(d2 == d3); // false, new object created with `new`
+};
+
+"m" -> {
+    Integer intObj = 100; // Autoboxing
+    Double doubleObj = 20.5; // Autoboxing
+    Boolean boolObj = Boolean.TRUE; // Predefined constant
+    String strObj = new String("Dynamic String"); // Always new object
+
+    // Print their types and hash codes to observe differences
+    System.out.println("Integer: " + intObj + " (HashCode: " + System.identityHashCode(intObj) + ")");
+    System.out.println("Double: " + doubleObj + " (HashCode: " + System.identityHashCode(doubleObj) + ")");
+    System.out.println("Boolean: " + boolObj + " (HashCode: " + System.identityHashCode(boolObj) + ")");
+    System.out.println("String: " + strObj + " (HashCode: " + System.identityHashCode(strObj) + ")");
+};

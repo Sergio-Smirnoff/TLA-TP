@@ -1,0 +1,64 @@
+"a" -> {
+    Integer n = 5; // Number for which factorial is calculated
+    Integer factorial = 1;
+    for (Integer i = 1; i <= n; i++) {
+        factorial *= i;
+        System.out.println("Factorial at step " + i + ": " + factorial);
+    }
+
+    if (factorial <= 0) {
+        throw new IllegalArgumentException("Factorial should not be zero or negative");
+    }
+    return factorial;
+};
+
+"f" -> {
+    Integer limit = 10;
+    Integer first = 0;
+    Integer second = 1;
+
+    System.out.println("Fibonacci sequence:");
+    while (limit > 0) {
+        System.out.println(first);
+        Integer next = first + second;
+        first = second;
+        second = next;
+        limit--;
+    }
+};
+
+"c" -> {
+    Integer number = 29;
+    Boolean isPrime = true;
+
+    if (number <= 1) {
+        isPrime = false;
+    } else {
+        for (Integer i = 2; i <= Math.sqrt(number); i++) {
+            if (number % i == 0) {
+                isPrime = false;
+                break; // Exit loop if divisible
+            }
+        }
+    }
+
+    if (isPrime) {
+        System.out.println(number + " is a prime number.");
+    } else {
+        System.out.println(number + " is not a prime number.");
+    }
+    return isPrime;
+};
+
+"p" -> {
+    Integer base = 2;
+    Integer exponent = 3;
+
+    Integer power = Math.pow(base, exponent);
+    System.out.println(base + "^" + exponent + " = " + power);
+
+    if (power < 0) {
+        throw new IllegalArgumentException("Power result should not be negative");
+    }
+    return power;
+};

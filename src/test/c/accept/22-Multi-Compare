@@ -1,0 +1,63 @@
+"t" -> {
+    Integer x = 5;
+    Integer y = 10;
+
+    String result = x > y ? "x is greater" : x == y ? "x equals y" : "x is smaller";
+    System.out.println(result);
+
+    return result;
+};
+
+
+"n" -> {
+    String str = null;
+
+    if (str != null && str.length() > 0) {
+        System.out.println("String is non-null and not empty.");
+    } else {
+        System.out.println("String is null or empty.");
+    }
+
+    if (str == null || str.isEmpty()) { // Throws NullPointerException if str is null
+        System.out.println("String is null or empty (with potential exception).");
+    }
+};
+
+"m" -> {
+    Integer x = 10;
+    Integer y = 3;
+
+    if (x % y == 0) {
+        System.out.println(x + " is divisible by " + y);
+    }
+    if(x % y == 1) {
+        System.out.println("The remainder of " + x + " divided by " + y + " is 1.");
+    } else {
+        System.out.println("Something else happened!");
+    }
+};
+
+"u" -> {
+    String a = "A"; // Unicode 65
+    String b = "a"; // Unicode 97
+
+    if (a < b) {
+        System.out.println(a + " comes before " + b + " in Unicode.");
+    } else {
+        System.out.println(a + " comes after " + b + " in Unicode.");
+    }
+};
+
+"c" -> {
+    Integer a = 5;
+    Integer b = 10;
+    Integer c = 15;
+
+    if (a < b && b < c) {
+        System.out.println("a < b < c is true.");
+    }
+
+    if (a < b || b > c) {
+        System.out.println("At least one of the conditions is true.");
+    }
+};

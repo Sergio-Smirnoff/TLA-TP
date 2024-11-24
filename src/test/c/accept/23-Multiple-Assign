@@ -1,0 +1,86 @@
+"i" -> {
+    Integer a = 10;
+    a += 5; // a = a + 5
+    System.out.println("a: " + a); // Output: a: 15
+};
+
+"h" -> {
+    Double x = 100.0;
+    x -= 25.5; // x = x - 25.5
+    System.out.println("x after -=: " + x); // Output: 74.5
+    
+    x *= 2.0; // x = x * 2.0
+    System.out.println("x after *=: " + x); // Output: 149.0
+    
+    x /= 7.0; // x = x / 7.0
+    System.out.println("x after /=: " + x); // Output: ~21.2857
+};
+
+"g" -> {
+    Boolean flag1 = true;
+    Boolean flag2 = false;
+    
+    flag1 &= flag2; // flag1 = flag1 & flag2 (logical AND)
+    System.out.println("flag1 after &=: " + flag1); // Output: false
+    
+    flag2 |= true; // flag2 = flag2 | true (logical OR)
+    System.out.println("flag2 after |=: " + flag2); // Output: true
+};
+
+"f" -> {
+    String str = "Hello";
+    str += ", World!"; // str = str + ", World!"
+    System.out.println("str: " + str); // Output: Hello, World!
+};
+
+"e" -> {
+    Integer b = 25;
+    b %= 7; // b = b % 7
+    System.out.println("b: " + b); // Output: b: 4
+};
+
+"d" -> {
+    Integer c = 8; // Binary: 1000
+    c <<= 2; // c = c << 2 (Left shift by 2)
+    System.out.println("c after <<=: " + c); // Output: 32 (Binary: 100000)
+    
+    c >>= 1; // c = c >> 1 (Right shift by 1)
+    System.out.println("c after >>=: " + c); // Output: 16 (Binary: 10000)
+    
+    c >>>= 2; // c = c >>> 2 (Unsigned right shift by 2)
+    System.out.println("c after >>>=: " + c); // Output: 4 (Binary: 100)
+};
+
+"c" -> {
+    Integer d = 5;  // Binary: 0101
+    d ^= 3; // d = d ^ 3 (Bitwise XOR with 3 -> Binary: 0011)
+    System.out.println("d: " + d); // Output: 6 (Binary: 0110)
+};
+
+"a" -> {
+    Integer i = 7;
+    Double d = 12.5;
+    String s = "Count: ";
+    
+    i += 3; // i = i + 3
+    d *= 2.0; // d = d * 2.0
+    s += i; // s = s + i (String concatenation with Integer)
+    
+    System.out.println("i: " + i); // Output: 10
+    System.out.println("d: " + d); // Output: 25.0
+    System.out.println("s: " + s); // Output: Count: 10
+};
+
+"b" -> {
+    Boolean bool1 = true;
+    Boolean bool2 = false;
+    
+    bool1 |= bool2; // bool1 = bool1 | bool2
+    System.out.println("bool1 after |=: " + bool1); // Output: true
+    
+    bool1 ^= bool2; // bool1 = bool1 ^ bool2
+    System.out.println("bool1 after ^=: " + bool1); // Output: true
+    
+    bool1 &= false; // bool1 = bool1 & false
+    System.out.println("bool1 after &=: " + bool1); // Output: false
+};
